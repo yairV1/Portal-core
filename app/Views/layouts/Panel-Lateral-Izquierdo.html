@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel lateral — Nav</title>
+<style>
+  :root{
+    --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
+    --color-divider: rgba(32,30,29,.3);
+    --color-accent:#9e1f63; --color-accent-700:#6b123f;
+    --font-heading: system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-heading);background:#efeef0;display:flex}
+
+  aside{
+    width:278px;flex:0 0 auto;border-right:2px solid var(--color-divider);
+    height:100vh;overflow-y:auto;display:flex;flex-direction:column;
+    background:var(--color-bg); transition:width .15s ease;
+  }
+  aside.collapsed{width:0;overflow:hidden}
+
+  .nav-section{border-bottom:2px solid var(--color-divider)}
+  .nav-section-inner{padding:18px 0 10px}
+  .nav-section-label{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
+    opacity:.45;padding:0 20px 8px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:9px 20px;cursor:pointer;
+    border-left:3px solid transparent;font-weight:800;font-size:13px;color:var(--color-text);
+  }
+  .nav-item:hover{background:var(--color-surface)}
+  .nav-item.active{border-left-color:var(--color-accent);background:var(--color-surface);color:var(--color-accent-700)}
+  .nav-item .ic{opacity:.85;width:18px;text-align:center}
+  .nav-item .label{flex:1}
+  .nav-item .chev{opacity:.5;transition:transform .15s}
+  .nav-item.open .chev{transform:rotate(90deg)}
+
+  .nav-children{padding:2px 0 8px;display:none}
+  .nav-children.open{display:block}
+  .nav-child{
+    padding:6px 20px 6px 55px;font-size:12.5px;cursor:pointer;
+    color:rgba(32,30,29,.75);border-left:3px solid transparent;
+  }
+  .nav-child:hover{background:var(--color-surface)}
+
+  .nav-footer{margin-top:auto;padding:18px 20px;font-size:11px;opacity:.5;line-height:1.5}
+
+  .content{flex:1;padding:32px}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div id="navSections"></div>
+  <div class="nav-footer">Portal CORE v1.0<br>Sistema Nervioso Digital<br>COREDUCACIÓN · Honda, Tolima</div>
+</aside>
+
+<div class="content">
+  <p>Contenido de la página. El botón ☰ del navbar superior dispara el evento <code>toggle-nav</code> que colapsa este panel.</p>
+</div>
+
+<script>
+  // Estructura de navegación — reemplaza items/children con tus propias secciones
+  const NAV = [
+    { label: 'Principal', items: [
+      { id: 'inicio', label: 'Inicio', icon: '🏠' },
+      { id: 'tableros', label: 'Tableros Estratégicos', icon: '📊' },
+      { id: 'sitemap', label: 'Mapa del portal', icon: '🗺️' }
+    ]},
+    { label: 'Direcciones', items: [
+      { id: 'institucional', label: 'Gestión Institucional', icon: '🏛️', children: [
+        { label: 'Planeación Estratégica · PDI' },
+        { label: 'PEI y políticas' },
+        { label: 'Planes de acción' }
+      ]},
+      { id: 'talento', label: 'Talento Humano', icon: '👥', children: [
+        { label: 'Organigrama' },
+        { label: 'Manual de funciones' }
+      ]}
+    ]},
+    { label: 'Recursos', items: [
+      { id: 'documental', label: 'Gestión Documental', icon: '📁' },
+      { id: 'aplicaciones', label: 'Aplicaciones', icon: '🔲' }
+    ]}
+  ];
+
+  let activeId = 'inicio';
+  const openState = {};
+
+  function render(){
+    const el = document.getElementById('navSections');
+    el.innerHTML = NAV.map(sec => `
+      <div class="nav-section"><div class="nav-section-inner">
+        <div class="nav-section-label">${sec.label}</div>
+        ${sec.items.map(it => renderItem(it)).join('')}
+      </div></div>
+    `).join('');
+    attachEvents();
+  }
+
+  function renderItem(it){
+    const isActive = it.id === activeId;
+    const isOpen = !!openState[it.id];
+    const chev = it.children ? `<span class="chev">›</span>` : '';
+    const children = it.children ? `
+      <div class="nav-children ${isOpen ? 'open' : ''}" data-children-of="${it.id}">
+        ${it.children.map(ch => `<div class="nav-child" data-goto="${it.id}">${ch.label}</div>`).join('')}
+      </div>` : '';
+    return `
+      <div>
+        <div class="nav-item ${isActive ? 'active' : ''} ${isOpen ? 'open' : ''}" data-id="${it.id}">
+          <span class="ic">${it.icon}</span>
+          <span class="label">${it.label}</span>
+          ${chev}
+        </div>
+        ${children}
+      </div>`;
+  }
+
+  function attachEvents(){
+    document.querySelectorAll('.nav-item').forEach(node => {
+      node.addEventListener('click', () => {
+        const id = node.dataset.id;
+        const item = NAV.flatMap(s => s.items).find(i => i.id === id);
+        if (item.children) {
+          openState[id] = !openState[id];
+        }
+        activeId = id;
+        render();
+      });
+    });
+  }
+
+  render();
+
+  // Colapsar/expandir cuando el navbar superior dispara el evento
+  document.addEventListener('toggle-nav', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+</script>
+</body>
+</html>

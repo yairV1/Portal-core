@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Talento Humano — Portal CORE (HTML de prueba)</title>
+<style>
+  :root{
+    --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
+    --color-divider: rgba(32,30,29,.3);
+    --color-accent:#9e1f63; --color-accent-700:#6b123f;
+    --color-accent-2:#f15a29;
+    --font-heading: system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-heading);background:var(--color-bg);color:var(--color-text)}
+  h1,h2,h3,h4{font-weight:800;margin:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border:1px solid var(--color-divider);background:transparent;padding:6px 10px;color:var(--color-text)}
+  .btn-icon{width:36px;height:36px;padding:0}
+  .btn:hover{background:rgba(0,0,0,.05)}
+
+  .app{display:flex;flex-direction:column;min-height:100vh}
+  .app-body{display:flex;flex:1;align-items:stretch}
+
+  header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;height:68px;padding:0 24px;background:var(--color-bg);border-bottom:2px solid var(--color-divider)}
+  .brand{display:flex;align-items:center;gap:12px;cursor:pointer;padding-right:20px;border-right:2px solid var(--color-divider);height:100%}
+  .brand-logo{width:32px;height:32px;background:var(--color-accent);flex:0 0 auto}
+  .brand-name{font-weight:800;font-size:17px;letter-spacing:-0.02em}
+  .brand-sub{font-size:9px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+  .search-wrap{position:relative;flex:1;max-width:640px}
+  .search-box{display:flex;align-items:center;gap:10px;height:42px;padding:0 12px;background:var(--color-surface);border:1px solid var(--color-divider)}
+  .search-box input{flex:1;height:40px;border:0;background:transparent;color:var(--color-text);font-size:14px;outline:none}
+  .kbd{font-size:10px;letter-spacing:.06em;border:1px solid var(--color-divider);padding:3px 6px;opacity:.55}
+  .right-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .profile{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;border:1px solid var(--color-divider);cursor:pointer}
+  .avatar{width:30px;height:30px;background:var(--color-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+  .profile-name{font-size:12px;font-weight:800}
+  .profile-role{font-size:10px;opacity:.6}
+  .bell-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--color-accent-2);border-radius:50%}
+
+  aside{width:278px;flex:0 0 auto;border-right:2px solid var(--color-divider);position:sticky;top:68px;height:calc(100vh - 68px);overflow-y:auto;display:flex;flex-direction:column;background:var(--color-bg);transition:width .15s ease}
+  aside.collapsed{width:0;overflow:hidden;border-right:0}
+  .nav-section{border-bottom:2px solid var(--color-divider)}
+  .nav-section-inner{padding:18px 0 10px}
+  .nav-section-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;opacity:.45;padding:0 20px 8px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:9px 20px;cursor:pointer;border-left:3px solid transparent;font-weight:800;font-size:13px;color:var(--color-text)}
+  .nav-item:hover{background:var(--color-surface)}
+  .nav-item.active{border-left-color:var(--color-accent);background:var(--color-surface);color:var(--color-accent-700)}
+  .nav-item .ic{opacity:.85;width:18px;text-align:center}
+  .nav-item .label{flex:1}
+  .nav-footer{margin-top:auto;padding:18px 20px;font-size:11px;opacity:.5;line-height:1.5}
+
+  main{flex:1;min-width:0;padding:36px 40px 64px;max-width:1560px}
+  .table{width:100%;border-collapse:collapse;font-size:14px}
+  .table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding:10px;border-bottom:2px solid var(--color-divider)}
+  .table td{padding:10px;border-bottom:1px solid var(--color-divider)}
+  .table tbody tr:hover{background:var(--color-surface)}
+  .tag{display:inline-flex;font-size:10px;padding:3px 8px}
+  .tag-neutral{background:var(--color-surface);color:rgba(32,30,29,.75)}
+  .tag-ok{background:#fbeef5;color:#4d0c2c}
+  .tag-warn{background:#fff0ea;color:#a13309}
+  .tag-outline{display:inline-flex;font-size:11.5px;border:1px solid var(--color-accent);color:var(--color-accent);padding:4px 10px}
+
+  /* ── talento humano ── */
+  .th-tabs{display:flex;border:1px solid var(--color-divider);width:fit-content;margin-bottom:34px;flex-wrap:wrap}
+  .th-tab{padding:10px 18px;border:0;border-right:1px solid var(--color-divider);cursor:pointer;font-weight:800;font-size:12.5px;background:transparent;color:var(--color-text)}
+  .th-tab.active{background:var(--color-accent);color:#fff}
+
+  .org-nivel{padding-bottom:26px}
+  .org-nivel-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;opacity:.45;padding-bottom:10px}
+  .org-cajas{display:flex;gap:1px;background:var(--color-divider);border:1px solid var(--color-divider);flex-wrap:wrap}
+  .org-caja{background:var(--color-bg);padding:16px 18px;flex:1 1 220px;min-width:200px;cursor:pointer}
+  .org-caja:hover{opacity:.88}
+  .org-caja.destacado{background:var(--color-accent);color:#fff}
+  .org-caja .label{font-weight:800;font-size:13.5px;line-height:1.25}
+  .org-caja .meta{font-size:11px;opacity:.65;padding-top:5px}
+
+  .comp-row{padding:10px 0;border-top:1px solid var(--color-divider)}
+  .comp-head{display:flex;justify-content:space-between;font-size:12.5px;padding-bottom:6px}
+  .comp-bar{height:5px;background:var(--color-surface)}
+  .comp-bar-fill{height:5px;background:var(--color-accent)}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider);margin-bottom:32px}
+  .kpi{padding:20px 22px;border-right:1px solid var(--color-divider)}
+  .kpi-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
+  .kpi-value{font-weight:800;font-size:30px;letter-spacing:-.03em;padding-top:8px}
+
+  .bienestar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--color-divider);border:1px solid var(--color-divider)}
+  .bienestar-card{background:var(--color-bg);padding:26px 24px;display:flex;flex-direction:column;gap:12px;min-height:190px}
+  .bienestar-card .ic{color:var(--color-accent);font-size:22px}
+  .bienestar-card .titulo{font-weight:800;font-size:17px;line-height:1.2}
+  .bienestar-card .desc{font-size:13px;opacity:.65}
+  .bienestar-card .cta{margin-top:auto;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-700);font-weight:800}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <button class="btn btn-icon" id="btnToggleNav" title="Menú">☰</button>
+    <div class="brand" onclick="location.reload()">
+      <div class="brand-logo"></div>
+      <span>
+        <span class="brand-name" style="display:block">PORTAL CORE</span>
+        <span class="brand-sub" style="display:block">Coreducación</span>
+      </span>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar documentos, personas, procesos, formatos, indicadores…">
+        <span class="kbd">CTRL K</span>
+      </div>
+    </div>
+    <div class="right-actions">
+      <button class="btn btn-icon" id="btnTheme" title="Modo claro / oscuro">🌙</button>
+      <button class="btn btn-icon" title="Notificaciones" style="position:relative">🔔<span class="bell-dot"></span></button>
+      <div class="profile">
+        <span class="avatar">MR</span>
+        <span>
+          <span class="profile-name" style="display:block">Martha Ruiz</span>
+          <span class="profile-role" style="display:block">Rectoría</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <aside id="sidebar">
+      <div id="navSections"></div>
+      <div class="nav-footer">Portal CORE v1.0<br>Sistema Nervioso Digital<br>COREDUCACIÓN · Honda, Tolima</div>
+    </aside>
+
+    <!-- ═══ CONTENIDO: TALENTO HUMANO ═══ -->
+    <main>
+      <h1 style="font-size:40px;margin:0 0 8px">Talento Humano</h1>
+      <p style="opacity:.65;max-width:640px;margin:0 0 26px">Gestión Humana y Desarrollo Organizacional. Estructura, funciones, desempeño y bienestar en un solo espacio.</p>
+
+      <div class="th-tabs" id="thTabs"></div>
+      <div id="thContenido"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+  /* ═══ Datos de ejemplo ═══ */
+  const ORGANIGRAMA = [
+    { nivel: 'Gobierno', cajas: [
+      { label: 'Consejo de Fundadores', meta: 'Máxima instancia' },
+      { label: 'Consejo Directivo', meta: 'Dirección estratégica' },
+      { label: 'Revisoría Fiscal', meta: 'Externa' },
+      { label: 'Control Interno', meta: 'Evaluación independiente' }
+    ]},
+    { nivel: 'Dirección general', cajas: [
+      { label: 'Rectoría', meta: 'Martha Ruiz Delgado', destacado: true },
+      { label: 'Secretaría General', meta: 'Actos administrativos' },
+      { label: 'Jurídica', meta: 'Asesoría legal' }
+    ]},
+    { nivel: 'Direcciones', cajas: [
+      { label: 'Vicerrectoría Académica', meta: 'Camilo Naranjo' },
+      { label: 'Dirección de Planeación Estratégica y Gestión Humana', meta: 'Laura Gómez' },
+      { label: 'Dirección Administrativa, Contable y Financiera', meta: 'Jorge Bermúdez' },
+      { label: 'Dirección de Investigación, Proyectos e Innovación', meta: 'Ricardo Osorio' }
+    ]}
+  ];
+  const COMITES = ['Consejo Académico', 'Comité de Planeación', 'Comité Financiero y Administrativo', 'Comité de Investigación', 'Comité de Autoevaluación y Acreditación', 'Comité de Bienestar Institucional'];
+
+  const CARGOS = [
+    { cargo: 'Rector', direccion: 'Rectoría', nivel: 'Directivo', codigo: '001' },
+    { cargo: 'Vicerrector Académico', direccion: 'Vicerrectoría Académica', nivel: 'Directivo', codigo: '004' },
+    { cargo: 'Director de Planeación Estratégica', direccion: 'Planeación y Gestión Humana', nivel: 'Directivo', codigo: '007' },
+    { cargo: 'Decano', direccion: 'Decanaturas', nivel: 'Directivo', codigo: '012' },
+    { cargo: 'Contador General', direccion: 'Administrativa y Financiera', nivel: 'Profesional', codigo: '021' },
+    { cargo: 'Líder del Sistema de Gestión Integral', direccion: 'Planeación y Gestión Humana', nivel: 'Profesional', codigo: '028' },
+    { cargo: 'Docente de tiempo completo', direccion: 'Decanaturas', nivel: 'Docente', codigo: '052' }
+  ];
+  const COMPETENCIAS = [
+    { label: 'Orientación al servicio', pct: 88 },
+    { label: 'Trabajo en equipo', pct: 84 },
+    { label: 'Pensamiento analítico', pct: 76 },
+    { label: 'Competencia digital', pct: 71 },
+    { label: 'Liderazgo institucional', pct: 69 }
+  ];
+
+  const KPIS_TALENTO = [
+    { label: 'Colaboradores', valor: '594' },
+    { label: 'Evaluaciones cerradas', valor: '81%' },
+    { label: 'Horas de capacitación', valor: '4.180' },
+    { label: 'Rotación anual', valor: '6,2%' }
+  ];
+  const DESEMPENO = [
+    { area: 'Rectoría', metas: 6, cumplidas: 5, pct: 83, estado: 'Sobresaliente' },
+    { area: 'Vicerrectoría Académica', metas: 9, cumplidas: 6, pct: 67, estado: 'Satisfactorio' },
+    { area: 'Planeación y Gestión Humana', metas: 8, cumplidas: 6, pct: 75, estado: 'Satisfactorio' },
+    { area: 'Investigación e Innovación', metas: 6, cumplidas: 3, pct: 50, estado: 'En riesgo' },
+    { area: 'Sistema de Gestión Integral', metas: 7, cumplidas: 4, pct: 57, estado: 'En riesgo' }
+  ];
+
+  const BIENESTAR = [
+    { icon: '🎓', titulo: 'Formación posgradual', desc: 'Apoyo económico para maestrías y especializaciones de colaboradores con más de dos años.', cta: 'Convocatoria abierta' },
+    { icon: '📘', titulo: 'Plan de capacitación', desc: '4.180 horas programadas en competencias digitales, servicio y liderazgo.', cta: 'Ver programación' },
+    { icon: '❤️', titulo: 'Salud y seguridad', desc: 'Programa de vigilancia epidemiológica, pausas activas y exámenes periódicos.', cta: 'Agendar' },
+    { icon: '🏆', titulo: 'Reconocimientos', desc: 'Talento que Suma: exaltación trimestral por área y por resultados de proceso.', cta: 'Postular' },
+    { icon: '👥', titulo: 'Cultura y deporte', desc: 'Torneos internos, coro institucional y semana cultural del norte del Tolima.', cta: 'Inscribirse' },
+    { icon: '🎯', titulo: 'Clima organizacional', desc: 'Medición anual con 82% de participación y plan de intervención por área.', cta: 'Ver resultados' }
+  ];
+
+  const tagEstado = (estado) => estado === 'Sobresaliente' ? 'tag-ok' : estado === 'En riesgo' ? 'tag-warn' : 'tag-neutral';
+
+  /* ═══ Pestañas ═══ */
+  let tabActivo = 'organigrama';
+  const TABS = [['organigrama','Organigrama'], ['funciones','Manual de funciones'], ['desempeno','Desempeño'], ['bienestar','Bienestar']];
+
+  function renderTabs(){
+    document.getElementById('thTabs').innerHTML = TABS.map(([id,label]) => `
+      <button class="th-tab ${tabActivo===id?'active':''}" data-tab="${id}">${label}</button>`).join('');
+    document.querySelectorAll('.th-tab').forEach(btn => {
+      btn.addEventListener('click', () => { tabActivo = btn.dataset.tab; renderTabs(); renderContenido(); });
+    });
+  }
+
+  function renderContenido(){
+    const cont = document.getElementById('thContenido');
+
+    if (tabActivo === 'organigrama') {
+      cont.innerHTML = `
+        ${ORGANIGRAMA.map(n => `
+          <div class="org-nivel">
+            <div class="org-nivel-label">${n.nivel}</div>
+            <div class="org-cajas">
+              ${n.cajas.map(c => `
+                <div class="org-caja ${c.destacado?'destacado':''}">
+                  <div class="label">${c.label}</div>
+                  <div class="meta">${c.meta}</div>
+                </div>`).join('')}
+            </div>
+          </div>`).join('')}
+        <div style="border-top:2px solid var(--color-divider);padding-top:24px;margin-top:12px">
+          <h4 style="margin:0 0 14px">Consejos y comités</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${COMITES.map(c => `<span class="tag-outline">${c}</span>`).join('')}
+          </div>
+        </div>`;
+
+    } else if (tabActivo === 'funciones') {
+      cont.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:start">
+          <table class="table">
+            <thead><tr><th>Cargo</th><th>Dirección</th><th>Nivel</th><th>Manual</th></tr></thead>
+            <tbody>
+              ${CARGOS.map(c => `
+                <tr style="cursor:pointer">
+                  <td><strong>${c.cargo}</strong></td>
+                  <td style="opacity:.7">${c.direccion}</td>
+                  <td><span class="tag tag-neutral">${c.nivel}</span></td>
+                  <td style="color:var(--color-accent-700);font-weight:800">MF-${c.codigo}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="border:1px solid var(--color-divider);padding:24px">
+            <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;opacity:.5;padding-bottom:12px">Competencias institucionales</div>
+            ${COMPETENCIAS.map(c => `
+              <div class="comp-row">
+                <div class="comp-head"><span>${c.label}</span><span style="font-weight:800">${c.pct}%</span></div>
+                <div class="comp-bar"><div class="comp-bar-fill" style="width:${c.pct}%"></div></div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+
+    } else if (tabActivo === 'desempeno') {
+      cont.innerHTML = `
+        <div class="kpis">
+          ${KPIS_TALENTO.map(k => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.valor}</div></div>`).join('')}
+        </div>
+        <h4 style="margin:0 0 4px">Cascadeo de metas 2026</h4>
+        <table class="table">
+          <thead><tr><th>Área</th><th>Metas</th><th>Cumplidas</th><th>Avance</th><th>Evaluación</th></tr></thead>
+          <tbody>
+            ${DESEMPENO.map(d => `
+              <tr>
+                <td><strong>${d.area}</strong></td>
+                <td style="opacity:.7">${d.metas}</td>
+                <td style="opacity:.7">${d.cumplidas}</td>
+                <td style="width:200px"><span style="display:block;height:6px;background:var(--color-surface)"><span style="display:block;height:6px;background:var(--color-accent);width:${d.pct}%"></span></span></td>
+                <td><span class="tag ${tagEstado(d.estado)}">${d.estado}</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+
+    } else {
+      cont.innerHTML = `
+        <div class="bienestar-grid">
+          ${BIENESTAR.map(b => `
+            <div class="bienestar-card">
+              <span class="ic">${b.icon}</span>
+              <span class="titulo">${b.titulo}</span>
+              <span class="desc">${b.desc}</span>
+              <span class="cta">${b.cta}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+  }
+
+  renderTabs();
+  renderContenido();
+
+  /* ═══ PANEL LATERAL ═══ */
+  const NAV = [
+    { label: 'Principal', items: [
+      { id: 'inicio', label: 'Inicio', icon: '🏠' },
+      { id: 'tableros', label: 'Tableros Estratégicos', icon: '📊' },
+      { id: 'sitemap', label: 'Mapa del portal', icon: '🗺️' }
+    ]},
+    { label: 'Direcciones', items: [
+      { id: 'institucional', label: 'Gestión Institucional', icon: '🏛️' },
+      { id: 'sgi', label: 'Sistema de Gestión Integral', icon: '🗂️' },
+      { id: 'academica', label: 'Vicerrectoría Académica', icon: '🎓' },
+      { id: 'financiera', label: 'Administrativa y Financiera', icon: '💰' },
+      { id: 'talento', label: 'Talento Humano', icon: '👥' }
+    ]},
+    { label: 'Recursos', items: [
+      { id: 'documental', label: 'Gestión Documental', icon: '📁' },
+      { id: 'aplicaciones', label: 'Aplicaciones', icon: '🔲' }
+    ]}
+  ];
+  document.getElementById('navSections').innerHTML = NAV.map(sec => `
+    <div class="nav-section"><div class="nav-section-inner">
+      <div class="nav-section-label">${sec.label}</div>
+      ${sec.items.map(it => `
+        <div class="nav-item ${it.id==='talento'?'active':''}">
+          <span class="ic">${it.icon}</span><span class="label">${it.label}</span>
+        </div>`).join('')}
+    </div></div>`).join('');
+
+  document.getElementById('btnToggleNav').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+  document.getElementById('btnTheme').addEventListener('click', function(){
+    const dark = document.body.dataset.tema === 'oscuro';
+    document.body.dataset.tema = dark ? 'claro' : 'oscuro';
+    this.textContent = dark ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

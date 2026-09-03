@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio</title>
+
+<style>
+  :root{
+    --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
+    --color-divider: rgba(32,30,29,.3);
+    --color-accent:#9e1f63; --color-accent-2:#f15a29;
+    --color-accent-100:#fbeef5; --color-accent-200:#f3d6e6;
+    --color-accent-700:#6b123f; --color-accent-800:#4d0c2c;
+    --color-neutral-300:#d7d3d3; --color-neutral-700:#605d5d;
+    --font-heading: system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-heading);background:var(--color-bg);color:var(--color-text);padding:36px 40px 64px;max-width:1560px}
+  h1,h2,h3,h4{font-weight:800;margin:0}
+  .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:var(--color-accent-700);padding-bottom:10px}
+  .table{width:100%;border-collapse:collapse;font-size:14px}
+  .table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding:8px;border-bottom:2px solid var(--color-divider)}
+  .table td{padding:8px;border-bottom:1px solid var(--color-divider)}
+  .table tbody tr{cursor:pointer}
+  .table tbody tr:hover{background:var(--color-surface)}
+  .tag{display:inline-flex;font-size:10px;padding:3px 8px;background:var(--color-surface)}
+  .card{background:var(--color-bg);border:1px solid var(--color-divider)}
+
+  /* — encabezado — */
+  .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;padding-bottom:28px}
+  .hero h1{font-size:46px;margin:0 0 12px}
+  .hero p{font-size:16px;opacity:.7;max-width:620px;margin:0}
+  .status-box{display:flex;border:1px solid var(--color-divider)}
+  .status-cell{padding:14px 20px}
+  .status-cell + .status-cell{border-left:1px solid var(--color-divider)}
+  .status-label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:800}
+  .status-value{padding-top:6px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+  .dot{width:9px;height:9px;background:var(--color-accent-2);display:inline-block}
+
+  /* — KPIs — */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));border:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider)}
+  .kpi{padding:22px 24px;border-right:1px solid var(--color-divider)}
+  .kpi-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
+  .kpi-value{font-weight:800;font-size:34px;letter-spacing:-.03em;padding:10px 0 4px}
+  .kpi-delta{font-size:12px;color:var(--color-accent-700);font-weight:800}
+
+  /* — layout principal — */
+  .grid-main{display:grid;grid-template-columns:1.6fr 1fr;gap:40px;padding-top:40px;align-items:start}
+  .section-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--color-divider);padding-bottom:10px;margin-bottom:20px}
+  .section-head .link{font-size:12px;cursor:pointer;color:var(--color-accent-700);font-weight:800}
+
+  .accesos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--color-divider);border:1px solid var(--color-divider)}
+  .acceso{background:var(--color-bg);padding:18px 16px;cursor:pointer;display:flex;flex-direction:column;gap:12px;min-height:112px}
+  .acceso:hover{background:var(--color-surface)}
+  .acceso .ic{color:var(--color-accent);font-size:20px}
+  .acceso .label{font-weight:800;font-size:13px;line-height:1.25}
+  .acceso .meta{font-size:11px;opacity:.5;margin-top:auto}
+
+  .noticias{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+  .noticia-foto{height:130px;background:var(--color-neutral-300);display:flex;align-items:flex-end;padding:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)}
+  .noticia-body{padding:16px 18px 18px}
+  .noticia-cat{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700);font-weight:800}
+  .noticia-titulo{font-weight:800;font-size:16px;line-height:1.2;padding:8px 0}
+  .noticia-fecha{font-size:12px;opacity:.55}
+
+  /* — columna lateral — */
+  .side-col{display:flex;flex-direction:column;gap:36px}
+  .pendiente{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--color-divider);align-items:flex-start}
+  .pendiente .dotp{width:8px;height:8px;margin-top:6px;flex:0 0 auto}
+  .pendiente .t{font-weight:800;font-size:13px}
+  .pendiente .m{font-size:11.5px;opacity:.6;padding-top:2px}
+
+  .evento{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--color-divider)}
+  .evento .fecha{width:46px;flex:0 0 auto}
+  .evento .dia{font-weight:800;font-size:19px;line-height:1}
+  .evento .mes{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.55}
+  .evento .t{font-weight:800;font-size:13px}
+  .evento .h{font-size:11.5px;opacity:.6}
+
+  .cumple{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--color-divider)}
+  .cumple .ini{width:30px;height:30px;flex:0 0 auto;background:var(--color-accent-200);color:var(--color-accent-800);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+  .cumple .n{flex:1;font-size:13px;font-weight:800}
+  .cumple .f{font-size:11px;opacity:.6}
+
+  .pdi-card{background:var(--color-accent);color:#fff;padding:26px 24px}
+  .pdi-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;opacity:.8}
+  .pdi-pct{font-weight:800;font-size:52px;letter-spacing:-.04em;line-height:1;padding:14px 0 6px}
+  .pdi-bar{height:6px;background:rgba(255,255,255,.3);margin:8px 0 14px}
+  .pdi-bar-fill{height:6px;background:#fff}
+  .pdi-desc{font-size:13px;opacity:.9}
+</style>
+
+</head>
+<body>
+<link rel="stylesheet" href="/">
+<div class="hero">
+  <div>
+    <div class="kicker">Buenos días</div>
+    <h1>Jeiver, la institución está en marcha.</h1>
+    <p>Tienes 4 pendientes, 2 documentos en revisión y el avance del PDI cerró la semana en 62%. Todo lo institucional, en un solo lugar.</p>
+  </div>
+  <div class="status-box">
+    <div class="status-cell">
+      <div class="status-label">Estado institucional</div>
+      <div class="status-value"><span class="dot"></span>Operación normal</div>
+    </div>
+    <div class="status-cell">
+      <div class="status-label">Ciclo</div>
+      <div class="status-value">2026 · Semestre II</div>
+    </div>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid-main">
+  <div>
+    <div class="section-head">
+      <h4>Accesos rápidos</h4>
+      <span class="link">Centro de aplicaciones</span>
+    </div>
+    <div class="accesos" id="accesos"></div>
+
+    <div class="section-head" style="margin-top:44px">
+      <h4>Documentos recientes</h4>
+      <span class="link">Repositorio</span>
+    </div>
+    <table class="table">
+      <thead><tr><th>Documento</th><th>Área</th><th>Ver.</th><th>Actualizado</th></tr></thead>
+      <tbody id="docsRecientes"></tbody>
+    </table>
+
+    <div class="section-head" style="margin-top:44px">
+      <h4>Novedades institucionales</h4>
+    </div>
+    <div class="noticias" id="noticias"></div>
+  </div>
+
+  <div class="side-col">
+    <div>
+      <div class="section-head" style="margin-bottom:6px"><h4>Mis pendientes</h4></div>
+      <div id="pendientes"></div>
+    </div>
+    <div>
+      <div class="section-head" style="margin-bottom:6px"><h4>Agenda de la semana</h4></div>
+      <div id="eventos"></div>
+    </div>
+    <div>
+      <div class="section-head" style="margin-bottom:6px"><h4>Cumpleaños</h4></div>
+      <div id="cumpleanos"></div>
+    </div>
+    <div class="pdi-card">
+      <div class="pdi-label">Plan de Desarrollo Institucional</div>
+      <div class="pdi-pct">62%</div>
+      <div class="pdi-bar"><div class="pdi-bar-fill" style="width:62%"></div></div>
+      <div class="pdi-desc">Avance acumulado 2026 sobre 48 metas cascadeadas a 11 áreas.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ——— Datos de ejemplo: reemplaza cada arreglo con tus propios datos ———
+  const KPIS = [
+    { label: 'Estudiantes activos', valor: '8.742', delta: '+4,1% vs 2026-I' },
+    { label: 'Retención', valor: '89,4%', delta: 'Meta 91,0%' },
+    { label: 'Avance PDI', valor: '62%', delta: '48 metas cascadeadas' },
+    { label: 'Ejecución presupuestal', valor: '76,8%', delta: 'Al 31 de julio' },
+    { label: 'Colaboradores', valor: '594', delta: '412 docentes' }
+  ];
+
+  const ACCESOS = [
+    { label: 'Manual de funciones', meta: 'Talento Humano', icon: '📘' },
+    { label: 'Repositorio documental', meta: 'Gestión Documental', icon: '📁' },
+    { label: 'Mapa de procesos', meta: 'SGI', icon: '🗂️' },
+    { label: 'Tablero Rectoría', meta: 'Power BI', icon: '📊' },
+    { label: 'Normatividad', meta: 'Acuerdos y resoluciones', icon: '⚖️' },
+    { label: 'Organigrama', meta: 'Estructura 2026', icon: '🌳' },
+    { label: 'Mesa de ayuda', meta: 'Soporte TI', icon: '🛠️' },
+    { label: 'Correo institucional', meta: 'Google Workspace', icon: '✉️' }
+  ];
+
+  const DOCS_RECIENTES = [
+    { nombre: 'Manual de Funciones y Competencias', area: 'Gestión Humana', version: 'V4.0', fecha: '28 jul' },
+    { nombre: 'Manual del Sistema de Gestión Integral', area: 'SGI', version: 'V2.0', fecha: '26 jul' },
+    { nombre: 'Mapa de Procesos Institucional', area: 'SGI', version: 'V3.0', fecha: '21 jul' },
+    { nombre: 'Reglamento Estudiantil', area: 'Secretaría General', version: 'V5.0', fecha: '20 jul' },
+    { nombre: 'Informe de Ejecución Presupuestal', area: 'Financiera', version: 'V1.0', fecha: '30 jul' }
+  ];
+
+  const NOTICIAS = [
+    { categoria: 'Acreditación', titulo: 'Siete programas alcanzan acreditación de alta calidad', fecha: '24 jul 2026' },
+    { categoria: 'Transformación digital', titulo: 'Portal CORE entra en su fase piloto con 120 usuarios', fecha: '22 jul 2026' },
+    { categoria: 'Bienestar', titulo: 'Abierta la convocatoria de formación posgradual 2026', fecha: '19 jul 2026' }
+  ];
+
+  const PENDIENTES = [
+    { titulo: 'Aprobar Manual del SGI V2.0', meta: 'Control documental · vence hoy', color: '#f15a29' },
+    { titulo: 'Firmar Resolución 209 de 2026', meta: 'Secretaría General · 2 días', color: '#9e1f63' },
+    { titulo: 'Revisar plan de acción de Bienestar', meta: 'Planeación · 4 días', color: '#9e1f63' },
+    { titulo: 'Cerrar evaluación de desempeño del equipo', meta: 'Gestión Humana · 12 días', color: '#999' }
+  ];
+
+  const EVENTOS = [
+    { dia: '04', mes: 'Ago', titulo: 'Consejo Directivo ordinario', hora: '08:00 · Sala de juntas' },
+    { dia: '06', mes: 'Ago', titulo: 'Comité de Autoevaluación y Acreditación', hora: '10:00 · Virtual' },
+    { dia: '11', mes: 'Ago', titulo: 'Rendición de cuentas 2026-I', hora: '15:00 · Auditorio' },
+    { dia: '14', mes: 'Ago', titulo: 'Cierre de cascadeo de metas', hora: 'Todo el día' }
+  ];
+
+  const CUMPLEANOS = [
+    { ini: 'DV', nombre: 'Diego Valencia', fecha: 'Hoy' },
+    { ini: 'YT', nombre: 'Yolanda Torres', fecha: '3 ago' },
+    { ini: 'NP', nombre: 'Natalia Peña', fecha: '7 ago' }
+  ];
+
+  // ——— Render ———
+  document.getElementById('kpis').innerHTML = KPIS.map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.valor}</div>
+      <div class="kpi-delta">${k.delta}</div>
+    </div>`).join('');
+
+  document.getElementById('accesos').innerHTML = ACCESOS.map(a => `
+    <div class="acceso">
+      <span class="ic">${a.icon}</span>
+      <span class="label">${a.label}</span>
+      <span class="meta">${a.meta}</span>
+    </div>`).join('');
+
+  document.getElementById('docsRecientes').innerHTML = DOCS_RECIENTES.map(d => `
+    <tr>
+      <td><strong>${d.nombre}</strong></td>
+      <td style="opacity:.7">${d.area}</td>
+      <td><span class="tag">${d.version}</span></td>
+      <td style="opacity:.7">${d.fecha}</td>
+    </tr>`).join('');
+
+  document.getElementById('noticias').innerHTML = NOTICIAS.map(n => `
+    <div class="card">
+      <div class="noticia-foto">Fotografía institucional</div>
+      <div class="noticia-body">
+        <div class="noticia-cat">${n.categoria}</div>
+        <div class="noticia-titulo">${n.titulo}</div>
+        <div class="noticia-fecha">${n.fecha}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('pendientes').innerHTML = PENDIENTES.map(p => `
+    <div class="pendiente">
+      <span class="dotp" style="background:${p.color}"></span>
+      <span style="flex:1">
+        <span class="t" style="display:block">${p.titulo}</span>
+        <span class="m" style="display:block">${p.meta}</span>
+      </span>
+    </div>`).join('');
+
+  document.getElementById('eventos').innerHTML = EVENTOS.map(e => `
+    <div class="evento">
+      <span class="fecha">
+        <span class="dia" style="display:block">${e.dia}</span>
+        <span class="mes" style="display:block">${e.mes}</span>
+      </span>
+      <span style="flex:1">
+        <span class="t" style="display:block">${e.titulo}</span>
+        <span class="h" style="display:block">${e.hora}</span>
+      </span>
+    </div>`).join('');
+
+  document.getElementById('cumpleanos').innerHTML = CUMPLEANOS.map(c => `
+    <div class="cumple">
+      <span class="ini">${c.ini}</span>
+      <span class="n">${c.nombre}</span>
+      <span class="f">${c.fecha}</span>
+    </div>`).join('');
+</script>
+</body>
+</html>

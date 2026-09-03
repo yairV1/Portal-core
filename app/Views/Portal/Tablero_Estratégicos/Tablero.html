@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tableros Estratégicos — Portal CORE (HTML de prueba)</title>
+<style>
+  :root{
+    --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
+    --color-divider: rgba(32,30,29,.3);
+    --color-accent:#9e1f63; --color-accent-100:#fbeef5; --color-accent-200:#f3d6e6;
+    --color-accent-700:#6b123f; --color-accent-800:#4d0c2c; --color-accent-2:#f15a29;
+    --color-neutral-300:#d7d3d3; --color-neutral-700:#605d5d;
+    --font-heading: system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font-heading);background:var(--color-bg);color:var(--color-text)}
+  h1,h2,h3,h4{font-weight:800;margin:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border:1px solid var(--color-divider);background:transparent;padding:6px 10px;color:var(--color-text)}
+  .btn-icon{width:36px;height:36px;padding:0}
+  .btn:hover{background:rgba(0,0,0,.05)}
+
+  .app{display:flex;flex-direction:column;min-height:100vh}
+  .app-body{display:flex;flex:1;align-items:stretch}
+
+  header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;height:68px;padding:0 24px;background:var(--color-bg);border-bottom:2px solid var(--color-divider)}
+  .brand{display:flex;align-items:center;gap:12px;cursor:pointer;padding-right:20px;border-right:2px solid var(--color-divider);height:100%}
+  .brand-logo{width:32px;height:32px;background:var(--color-accent);flex:0 0 auto}
+  .brand-name{font-weight:800;font-size:17px;letter-spacing:-0.02em}
+  .brand-sub{font-size:9px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+  .search-wrap{position:relative;flex:1;max-width:640px}
+  .search-box{display:flex;align-items:center;gap:10px;height:42px;padding:0 12px;background:var(--color-surface);border:1px solid var(--color-divider)}
+  .search-box input{flex:1;height:40px;border:0;background:transparent;color:var(--color-text);font-size:14px;outline:none}
+  .kbd{font-size:10px;letter-spacing:.06em;border:1px solid var(--color-divider);padding:3px 6px;opacity:.55}
+  .search-dropdown{display:none;position:absolute;top:50px;left:0;right:0;background:var(--color-bg);border:1px solid var(--color-divider);box-shadow:0 12px 32px rgba(0,0,0,.15);max-height:60vh;overflow:auto}
+  .search-dropdown.open{display:block}
+  .chips{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--color-divider);flex-wrap:wrap}
+  .chip{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:4px 9px;cursor:pointer;border:1px solid var(--color-divider);background:transparent}
+  .chip.active{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+  .right-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .profile{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;border:1px solid var(--color-divider);cursor:pointer}
+  .avatar{width:30px;height:30px;background:var(--color-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+  .profile-name{font-size:12px;font-weight:800}
+  .profile-role{font-size:10px;opacity:.6}
+  .bell-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--color-accent-2);border-radius:50%}
+
+  aside{width:278px;flex:0 0 auto;border-right:2px solid var(--color-divider);position:sticky;top:68px;height:calc(100vh - 68px);overflow-y:auto;display:flex;flex-direction:column;background:var(--color-bg);transition:width .15s ease}
+  aside.collapsed{width:0;overflow:hidden;border-right:0}
+  .nav-section{border-bottom:2px solid var(--color-divider)}
+  .nav-section-inner{padding:18px 0 10px}
+  .nav-section-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;opacity:.45;padding:0 20px 8px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:9px 20px;cursor:pointer;border-left:3px solid transparent;font-weight:800;font-size:13px;color:var(--color-text)}
+  .nav-item:hover{background:var(--color-surface)}
+  .nav-item.active{border-left-color:var(--color-accent);background:var(--color-surface);color:var(--color-accent-700)}
+  .nav-item .ic{opacity:.85;width:18px;text-align:center}
+  .nav-item .label{flex:1}
+  .nav-item .chev{opacity:.5;transition:transform .15s}
+  .nav-item.open .chev{transform:rotate(90deg)}
+  .nav-children{padding:2px 0 8px;display:none}
+  .nav-children.open{display:block}
+  .nav-child{padding:6px 20px 6px 55px;font-size:12.5px;cursor:pointer;color:rgba(32,30,29,.75);border-left:3px solid transparent}
+  .nav-child:hover{background:var(--color-surface)}
+  .nav-footer{margin-top:auto;padding:18px 20px;font-size:11px;opacity:.5;line-height:1.5}
+
+  main{flex:1;min-width:0;padding:36px 40px 64px;max-width:1560px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider)}
+  .kpi{padding:22px 24px;border-right:1px solid var(--color-divider)}
+  .kpi-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
+  .kpi-value{font-weight:800;font-size:32px;letter-spacing:-.03em;padding:10px 0 4px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══ NAVBAR SUPERIOR ═══ -->
+  <header>
+    <button class="btn btn-icon" id="btnToggleNav" title="Menú">☰</button>
+    <div class="brand" onclick="location.reload()">
+      <div class="brand-logo"></div>
+      <span>
+        <span class="brand-name" style="display:block">PORTAL CORE</span>
+        <span class="brand-sub" style="display:block">Coreducación</span>
+      </span>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <span>🔍</span>
+        <input id="searchInput" type="text" placeholder="Buscar documentos, personas, procesos, formatos, indicadores…">
+        <span class="kbd">CTRL K</span>
+      </div>
+      <div class="search-dropdown" id="searchDropdown">
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+    <div class="right-actions">
+      <button class="btn btn-icon" id="btnTheme" title="Modo claro / oscuro">🌙</button>
+      <button class="btn btn-icon" id="btnBell" title="Notificaciones" style="position:relative">🔔<span class="bell-dot"></span></button>
+      <div class="profile" id="btnProfile">
+        <span class="avatar">MR</span>
+        <span>
+          <span class="profile-name" style="display:block">Martha Ruiz</span>
+          <span class="profile-role" style="display:block">Rectoría</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ PANEL LATERAL + CONTENIDO ═══ -->
+  <div class="app-body">
+
+    <aside id="sidebar">
+      <div id="navSections"></div>
+      <div class="nav-footer">Portal CORE v1.0<br>Sistema Nervioso Digital<br>COREDUCACIÓN · Honda, Tolima</div>
+    </aside>
+
+    <!-- ═══ CONTENIDO: TABLEROS ESTRATÉGICOS ═══ -->
+    <main>
+      <h1 style="font-size:40px;margin:0 0 8px">Tableros Estratégicos</h1>
+      <p style="opacity:.65;max-width:640px;margin:0 0 28px">Indicadores institucionales en tiempo real. Vista Rectoría, con descenso a dirección y área.</p>
+
+      <div style="display:flex;gap:0;border:1px solid var(--color-divider);width:fit-content;margin-bottom:28px" id="tableroTabs"></div>
+
+      <div class="kpis" id="kpisTablero" style="margin-bottom:36px"></div>
+
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:36px;align-items:start">
+        <div style="border:1px solid var(--color-divider);padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--color-divider);padding-bottom:12px;margin-bottom:24px">
+            <h4>Matrícula por facultad · 2026-II</h4>
+            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;font-weight:800">Power BI · en vivo</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:18px;height:230px" id="barras"></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div style="border:1px solid var(--color-divider);padding:24px">
+            <h4 style="margin:0 0 18px">Ejecución presupuestal</h4>
+            <div id="ejecucion"></div>
+          </div>
+          <div style="border:1px solid var(--color-divider);padding:24px">
+            <h4 style="margin:0 0 14px">Alertas de indicador</h4>
+            <div id="alertasKpi"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+  /* ═══ Datos de ejemplo — los mismos que van en las tablas de MySQL ═══ */
+  const KPIS_TABLERO = [
+    { label: 'Estudiantes activos', valor: '8.742', meta: '9.000', pct: 97 },
+    { label: 'Retención', valor: '89,4%', meta: '91,0%', pct: 98 },
+    { label: 'Graduados 2026', valor: '1.126', meta: '1.200', pct: 94 },
+    { label: 'Satisfacción', valor: '4,3/5', meta: '4,5', pct: 96 },
+    { label: 'Avance PDI', valor: '62%', meta: '70%', pct: 89 }
+  ];
+  const MATRICULA_FACULTAD = [
+    { label: 'Tecnologías y Transf. Digital', valor: '2.410', h: '68%' },
+    { label: 'Ciencias Administrativas', valor: '3.180', h: '90%' },
+    { label: 'Infraestructura y Sostenibilidad', valor: '1.520', h: '43%' },
+    { label: 'Centro de Idiomas', valor: '980', h: '28%' },
+    { label: 'Educación continua', valor: '652', h: '19%' }
+  ];
+  const EJECUCION_PRESUPUESTAL = [
+    { label: 'Funcionamiento', pct: '81%' },
+    { label: 'Inversión', pct: '64%' },
+    { label: 'Investigación', pct: '58%' },
+    { label: 'Bienestar', pct: '73%' }
+  ];
+  const ALERTAS_INDICADOR = [
+    { texto: 'Retención estudiantil 1,6 pp por debajo de la meta institucional.' },
+    { texto: 'Ejecución de investigación en 58%; requiere plan de choque a septiembre.' },
+    { texto: '6 hallazgos de auditoría interna sin plan de mejoramiento cargado.' }
+  ];
+
+  /* ═══ NAVBAR: búsqueda, tema ═══ */
+  const TIPOS = ['Todo', 'Documento', 'Persona', 'Proceso', 'Formato', 'Norma'];
+  document.getElementById('chips').innerHTML = TIPOS.map((t,i) => `<button class="chip ${i===0?'active':''}" data-t="${t}">${t}</button>`).join('');
+  document.getElementById('searchInput').addEventListener('focus', () => document.getElementById('searchDropdown').classList.add('open'));
+  document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) document.getElementById('searchDropdown').classList.remove('open'); });
+  document.getElementById('btnTheme').addEventListener('click', function(){
+    const dark = document.body.dataset.tema === 'oscuro';
+    document.body.dataset.tema = dark ? 'claro' : 'oscuro';
+    this.textContent = dark ? '🌙' : '☀️';
+  });
+
+  /* ═══ PANEL LATERAL ═══ */
+  const NAV = [
+    { label: 'Principal', items: [
+      { id: 'inicio', label: 'Inicio', icon: '🏠' },
+      { id: 'tableros', label: 'Tableros Estratégicos', icon: '📊' },
+      { id: 'sitemap', label: 'Mapa del portal', icon: '🗺️' }
+    ]},
+    { label: 'Direcciones', items: [
+      { id: 'institucional', label: 'Gestión Institucional', icon: '🏛️', children: [
+        { label: 'Planeación Estratégica · PDI' }, { label: 'PEI y políticas' }, { label: 'Planes de acción' }
+      ]},
+      { id: 'talento', label: 'Talento Humano', icon: '👥', children: [
+        { label: 'Organigrama' }, { label: 'Manual de funciones' }
+      ]}
+    ]},
+    { label: 'Recursos', items: [
+      { id: 'documental', label: 'Gestión Documental', icon: '📁' },
+      { id: 'aplicaciones', label: 'Aplicaciones', icon: '🔲' }
+    ]}
+  ];
+  let activeId = 'tableros'; // esta página simula estar activa en Tableros
+  const openState = {};
+
+  function renderNav(){
+    document.getElementById('navSections').innerHTML = NAV.map(sec => `
+      <div class="nav-section"><div class="nav-section-inner">
+        <div class="nav-section-label">${sec.label}</div>
+        ${sec.items.map(renderItem).join('')}
+      </div></div>`).join('');
+    attachNavEvents();
+  }
+  function renderItem(it){
+    const isActive = it.id === activeId;
+    const isOpen = !!openState[it.id];
+    const chev = it.children ? `<span class="chev">›</span>` : '';
+    const children = it.children ? `
+      <div class="nav-children ${isOpen ? 'open' : ''}">
+        ${it.children.map(ch => `<div class="nav-child">${ch.label}</div>`).join('')}
+      </div>` : '';
+    return `
+      <div>
+        <div class="nav-item ${isActive ? 'active' : ''} ${isOpen ? 'open' : ''}" data-id="${it.id}">
+          <span class="ic">${it.icon}</span><span class="label">${it.label}</span>${chev}
+        </div>
+        ${children}
+      </div>`;
+  }
+  function attachNavEvents(){
+    document.querySelectorAll('.nav-item').forEach(node => {
+      node.addEventListener('click', () => {
+        const id = node.dataset.id;
+        const item = NAV.flatMap(s => s.items).find(i => i.id === id);
+        if (item.children) openState[id] = !openState[id];
+        activeId = id;
+        renderNav();
+      });
+    });
+  }
+  renderNav();
+
+  document.getElementById('btnToggleNav').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+
+  /* ═══ CONTENIDO: TABLEROS ═══ */
+  const TABS = ['Rectoría', 'Directivos', 'Académico', 'Financiero'];
+  document.getElementById('tableroTabs').innerHTML = TABS.map((t,i) => `
+    <button data-tab="${t}" style="padding:10px 18px;border:0;border-right:1px solid var(--color-divider);cursor:pointer;font-weight:800;font-size:12.5px;background:${i===0?'var(--color-accent)':'transparent'};color:${i===0?'#fff':'var(--color-text)'}">${t}</button>`).join('');
+  document.getElementById('tableroTabs').addEventListener('click', e => {
+    if (e.target.tagName !== 'BUTTON') return;
+    document.querySelectorAll('#tableroTabs button').forEach(b => { b.style.background = 'transparent'; b.style.color = 'var(--color-text)'; });
+    e.target.style.background = 'var(--color-accent)'; e.target.style.color = '#fff';
+  });
+
+  document.getElementById('kpisTablero').innerHTML = KPIS_TABLERO.map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.valor}</div>
+      <div style="font-size:12px;opacity:.6">Meta ${k.meta}</div>
+      <div style="height:5px;background:var(--color-surface);margin-top:10px"><div style="height:5px;background:var(--color-accent);width:${k.pct}%"></div></div>
+    </div>`).join('');
+
+  document.getElementById('barras').innerHTML = MATRICULA_FACULTAD.map(b => `
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;height:100%">
+      <span style="font-weight:800;font-size:13px">${b.valor}</span>
+      <span style="background:var(--color-accent);height:${b.h}"></span>
+      <span style="font-size:10.5px;opacity:.6;line-height:1.2;min-height:26px">${b.label}</span>
+    </div>`).join('');
+
+  document.getElementById('ejecucion').innerHTML = EJECUCION_PRESUPUESTAL.map(e => `
+    <div style="padding:9px 0">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;padding-bottom:6px"><span>${e.label}</span><span style="font-weight:800">${e.pct}</span></div>
+      <div style="height:6px;background:var(--color-surface)"><div style="height:6px;background:var(--color-accent-2);width:${e.pct}"></div></div>
+    </div>`).join('');
+
+  document.getElementById('alertasKpi').innerHTML = ALERTAS_INDICADOR.map(a => `
+    <div style="display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--color-divider)">
+      <span style="color:var(--color-accent-2);flex:0 0 auto">⚠️</span>
+      <span style="font-size:12.5px;flex:1">${a.texto}</span>
+    </div>`).join('');
+</script>
+</body>
+</html>
