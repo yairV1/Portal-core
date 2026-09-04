@@ -1,4 +1,4 @@
-  .table{width:100%;border-collapse:collapse;font-size:14px}
+  .table{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
   .table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding:10px;border-bottom:2px solid var(--color-divider)}
   .table td{padding:10px;border-bottom:1px solid var(--color-divider)}
   .table tbody tr{cursor:pointer}
@@ -16,7 +16,7 @@
   .modulo-kpi .label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
   .modulo-kpi .valor{font-weight:800;font-size:30px;letter-spacing:-.03em;padding-top:8px}
 
-  .modulo-grid{display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:start}
+  .modulo-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:start}
   .section-head{border-bottom:2px solid var(--color-divider);padding-bottom:10px;margin-bottom:2px}
 
   .area-item{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--color-divider);cursor:pointer}
@@ -33,3 +33,9 @@
   .responsable .nombre{display:block;font-weight:800;font-size:13px}
   .responsable .cargo{display:block;font-size:11px;opacity:.6}
   .software-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--color-divider);font-size:12.5px}
+
+  /* — responsive: apila la columna lateral debajo en pantallas angostas — */
+  @media (max-width: 880px){
+    .modulo-titulo{font-size:30px}
+    .modulo-grid{grid-template-columns:1fr}
+  }

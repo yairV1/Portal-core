@@ -78,11 +78,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Botón ☰ del navbar: colapsa el sidebar (la función vive en sidebar.js)
+  // Botón ☰ del navbar: en escritorio colapsa el sidebar a íconos; en
+  // pantallas angostas (sidebar ya es un panel deslizante, ver paneles.css)
+  // lo abre/cierra en su lugar. Ambas funciones viven en sidebar.js.
   const btnToggleNav = document.getElementById('btnToggleNav');
   if (btnToggleNav) {
     btnToggleNav.addEventListener('click', function () {
-      if (typeof window.toggleSidebarCollapse === 'function') {
+      const esMobile = window.matchMedia('(max-width: 880px)').matches;
+      if (esMobile && typeof window.toggleSidebarMobile === 'function') {
+        window.toggleSidebarMobile();
+      } else if (typeof window.toggleSidebarCollapse === 'function') {
         window.toggleSidebarCollapse();
       }
     });
@@ -104,6 +109,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const colapsado = sidebar.classList.toggle('collapsed');
     try { localStorage.setItem('sidebarCollapsed', colapsado ? '1' : '0'); } catch (e) {}
   };
+
+  // Panel deslizante en pantallas angostas (<=880px): no se guarda
+  // preferencia, cada carga de página empieza cerrado.
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  window.toggleSidebarMobile = function () {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.toggle('open');
+  };
+  function cerrarSidebarMobile() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.classList.remove('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('open');
+  }
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', cerrarSidebarMobile);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrarSidebarMobile();
+  });
 
   // Tooltip con el nombre del ítem al pasar el mouse, cuando el sidebar está
   // contraído. Va con position:fixed y se posiciona aquí por JS porque un

@@ -27,6 +27,11 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
+<!-- Librerías de animación (ver docs para uso: AOS = scroll-reveal, Animate.css = clases de utilidad, Swiper = carruseles, GSAP se carga en el footer) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/swiper@14.2.0/swiper-bundle.min.css" rel="stylesheet">
+
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/layouts/css/paneles.css">
 </head>
 <body>
@@ -57,8 +62,8 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   <div class="brand" onclick="location.reload()">
     <div class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
     <span>
-      <span class="brand-name" style="display:block">PORTAL CORE</span>
-      <span class="brand-sub" style="display:block">Coreducación</span>
+      <span class="brand-name">PORTAL CORE</span>
+      <span class="brand-sub">Coreducación</span>
     </span>
   </div>
 
@@ -75,8 +80,8 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     <div class="profile" id="btnProfile">
       <span class="avatar"><?= e($inicial) ?></span>
       <span>
-        <span class="profile-name" style="display:block"><?= e($nombre) ?></span>
-        <span class="profile-role" style="display:block"><?= e($cargo) ?></span>
+        <span class="profile-name"><?= e($nombre) ?></span>
+        <span class="profile-role"><?= e($cargo) ?></span>
       </span>
       <i class="fa-solid fa-chevron-down profile-chevron"></i>
     </div>

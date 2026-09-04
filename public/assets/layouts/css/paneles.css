@@ -69,8 +69,8 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   display:flex; align-items:center; justify-content:center;
 }
 .brand-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
-.brand-name{ font-weight:700; font-size:15.5px; letter-spacing:-.01em; }
-.brand-sub{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#83808a; }
+.brand-name{ display:block; font-weight:700; font-size:15.5px; letter-spacing:-.01em; }
+.brand-sub{ display:block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#83808a; }
 
 .topbar-clock{
   flex: 1;
@@ -121,8 +121,8 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
   box-shadow: 0 2px 6px rgba(158,31,99,.35);
 }
-.profile-name{ font-size:12.5px; font-weight:600; }
-.profile-role{ font-size:10.5px; color:#83808a; }
+.profile-name{ display:block; font-size:12.5px; font-weight:600; }
+.profile-role{ display:block; font-size:10.5px; color:#83808a; }
 .profile-chevron{
   font-size:11px; color:#83808a; margin-left:2px;
   transition: transform .18s ease;
@@ -212,7 +212,6 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   .breadcrumb-bar{ padding: 0 14px; }
   .breadcrumb-date{ display: none; }
 }
-
 
 
 
@@ -319,3 +318,33 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   z-index: 200;
 }
 .sidebar-tooltip.visible{ opacity: 1; visibility: visible; }
+
+/* ── Responsive: sidebar como panel deslizante en pantallas angostas ──
+   Por debajo de este ancho, el sidebar fijo de 268px ya no cabe junto al
+   contenido sin apretarlo (o forzar scroll horizontal de toda la página),
+   así que pasa a ser un panel superpuesto que se abre con el botón ☰ del
+   topbar (ver #btnToggleNav / toggleSidebarMobile en paneles.js).
+   Va al final del archivo a propósito: para ganarle en cascada a las
+   reglas base .sidebar{...} y .sidebar.collapsed{...} de más arriba. */
+@media (max-width: 880px){
+  .content{ padding: 24px 18px 48px; }
+
+  .sidebar{
+    position: fixed;
+    top: 108px; left: 0; bottom: 0;
+    width: 268px;
+    height: auto;
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    z-index: 150;
+  }
+  .sidebar.mobile-open{ transform: translateX(0); box-shadow: 12px 0 32px rgba(32,30,29,.18); }
+
+  .sidebar-backdrop{
+    display: none;
+    position: fixed; top: 108px; left: 0; right: 0; bottom: 0;
+    background: rgba(20,18,22,.4);
+    z-index: 140;
+  }
+  .sidebar-backdrop.open{ display: block; }
+}

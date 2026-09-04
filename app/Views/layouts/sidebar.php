@@ -10,14 +10,18 @@ function sb_activo(string $ruta, string $actual): string {
 }
 $rutaActual = $uri ?? '';
 ?>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <aside class="sidebar" id="sidebar">
 
 <script>
   // Aplica el estado contraído/expandido ANTES de pintar la página, para que
   // no se vea un parpadeo (expandido un instante y luego contraído).
+  // La preferencia "contraído a íconos" es solo de escritorio: por debajo de
+  // 880px el sidebar ya es un panel deslizante (ver paneles.css/paneles.js),
+  // así que ahí no se aplica aunque esté guardada.
   (function () {
     try {
-      if (localStorage.getItem('sidebarCollapsed') === '1') {
+      if (localStorage.getItem('sidebarCollapsed') === '1' && window.innerWidth > 880) {
         document.getElementById('sidebar').classList.add('collapsed');
       }
     } catch (e) {}
