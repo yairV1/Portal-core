@@ -1,0 +1,321 @@
+/* ══════════════════════════════════════════════════════════
+   paneles.css — Barra superior (topbar) y layout general
+   El panel lateral vive aparte en sidebar.css
+   ══════════════════════════════════════════════════════════ */
+
+:root{
+  --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
+  --color-divider: rgba(32,30,29,.14);
+  --color-accent:#9e1f63; --color-accent-100:#fbeef5; --color-accent-200:#f3d6e6;
+  --color-accent-700:#6b123f; --color-accent-800:#4d0c2c; --color-accent-2:#f15a29;
+  --color-neutral-300:#d7d3d3; --color-neutral-700:#605d5d;
+  --font-heading: 'Poppins', system-ui, sans-serif;
+}
+
+/* ── Modo oscuro ──
+   Redefine las mismas variables que ya usan el topbar, el sidebar y las 13
+   vistas del Portal (todas comparten estos nombres), así que con esto solo
+   se re-tematiza todo el sitio sin tocar cada página. Mayor especificidad
+   que un simple ":root" para ganarle al ":root" propio de cada vista. */
+body[data-tema="oscuro"]{
+  color-scheme: dark;
+  --color-bg:#1c1a1f; --color-surface:#26232a; --color-text:#f2f0f2;
+  --color-divider: rgba(255,255,255,.14);
+  --color-accent:#e8558f; --color-accent-100: rgba(232,85,143,.16); --color-accent-200: rgba(232,85,143,.28);
+  --color-accent-700:#ff9dc4; --color-accent-800:#ffd2e8; --color-accent-2:#ff7043;
+  --color-neutral-300:#3a3740; --color-neutral-700:#b5b0b8;
+
+  --sb-bg:#1c1a1f; --sb-border: rgba(255,255,255,.14); --sb-text:#f2f0f2;
+  --sb-text-muted:#9c96a0; --sb-hover:#29262d;
+  --sb-active-bg: rgba(232,85,143,.16); --sb-active-text:#ff9dc4; --sb-accent:#e8558f;
+}
+
+*{ box-sizing: border-box; }
+body{ margin:0; font-family: var(--font-heading); background: var(--color-bg); color: var(--color-text); transition: background .15s ease, color .15s ease; }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; border:1px solid var(--color-divider); background:var(--color-bg);
+  padding:6px 10px; color:var(--color-text); font-family: inherit;
+  box-shadow: 0 1px 2px rgba(32,30,29,.05);
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+}
+.btn-icon{ width:36px; height:36px; padding:0; border-radius: var(--sb-radius); }
+.btn:hover{
+  background: var(--color-accent-100);
+  border-color: var(--color-accent);
+  color: var(--color-accent-700);
+  box-shadow: 0 2px 6px rgba(32,30,29,.08);
+}
+.btn:active{ transform: translateY(1px); }
+
+/* ── Ícono luna/sol: se alterna solo con CSS según data-tema ── */
+.icon-oscuro{ display:none; }
+body[data-tema="oscuro"] .icon-claro{ display:none; }
+body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
+
+/* ── Barra superior ── */
+.topbar{
+  position: sticky; top: 0; z-index: 60;
+  display:flex; align-items:center; gap:20px;
+  height:64px; padding:0 24px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-divider);
+  box-shadow: 0 4px 16px rgba(32,30,29,.06);
+}
+.brand{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+.brand-logo{
+  width:52px; height:36px; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+}
+.brand-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
+.brand-name{ font-weight:700; font-size:15.5px; letter-spacing:-.01em; }
+.brand-sub{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#83808a; }
+
+.topbar-clock{
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #83808a;
+  letter-spacing: .02em;
+}
+.topbar-clock i{ font-size: 13px; opacity: .7; }
+
+/* ── Barra de ruta (breadcrumb) — debajo del topbar, cambia por página ── */
+.breadcrumb-bar{
+  position: sticky; top: 64px; z-index: 55;
+  height: 44px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 24px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-divider);
+}
+.breadcrumb-path{
+  display:flex; align-items:center; gap:8px;
+  font-size: 12.5px; font-weight:600; color:#83808a;
+}
+.breadcrumb-path .sep{ opacity:.5; }
+.breadcrumb-path .current{ color: var(--color-text); }
+.breadcrumb-date{
+  font-size: 12.5px; color:#83808a; text-transform:capitalize;
+}
+
+.right-actions{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+.profile{
+  display:flex; align-items:center; gap:9px; padding:5px 10px 5px 5px;
+  border-radius: var(--sb-radius); cursor:pointer;
+  border: 1px solid transparent;
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.profile:hover{
+  background: var(--color-surface);
+  border-color: var(--color-divider);
+  box-shadow: 0 2px 6px rgba(32,30,29,.06);
+}
+.avatar{
+  width:30px; height:30px; border-radius:999px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700)); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
+  box-shadow: 0 2px 6px rgba(158,31,99,.35);
+}
+.profile-name{ font-size:12.5px; font-weight:600; }
+.profile-role{ font-size:10.5px; color:#83808a; }
+.profile-chevron{
+  font-size:11px; color:#83808a; margin-left:2px;
+  transition: transform .18s ease;
+}
+.profile:hover .profile-chevron{ transform: translateY(1px); }
+.profile.open .profile-chevron{ transform: rotate(180deg); }
+.bell-dot{
+  position:absolute; top:4px; right:4px; width:7px; height:7px;
+  background: var(--color-accent-2); border-radius:50%;
+  animation: bell-pulse 2.2s ease-out infinite;
+}
+@keyframes bell-pulse{
+  0%   { box-shadow: 0 0 0 0 rgba(241,90,41,.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(241,90,41,0); }
+  100% { box-shadow: 0 0 0 0 rgba(241,90,41,0); }
+}
+
+/* ── Panel de perfil (drawer deslizante desde la derecha) ── */
+.profile-drawer-backdrop{
+  position: fixed; inset: 0; background: rgba(20,18,22,.4);
+  opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease;
+  z-index: 300;
+}
+.profile-drawer-backdrop.open{ opacity: 1; visibility: visible; }
+
+.profile-drawer{
+  position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 90vw;
+  background: var(--color-bg); box-shadow: -12px 0 32px rgba(32,30,29,.18);
+  z-index: 301; padding: 28px 24px; overflow-y: auto;
+  transform: translateX(100%); transition: transform .25s ease;
+}
+.profile-drawer.open{ transform: translateX(0); }
+
+.profile-drawer-close{
+  position: absolute; top: 20px; right: 20px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--color-divider); background: var(--color-bg);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  color: var(--color-text); transition: background .15s ease;
+}
+.profile-drawer-close:hover{ background: var(--color-surface); }
+
+.profile-drawer-avatar{
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:22px; margin: 8px 0 16px;
+  box-shadow: 0 3px 10px rgba(158,31,99,.4);
+}
+.profile-drawer-name{ font-size:19px; font-weight:800; margin:0 0 6px; }
+.profile-drawer-desc{ font-size:13px; color:#83808a; line-height:1.5; margin:0 0 22px; }
+
+.profile-drawer-actions{ display:flex; gap:10px; margin-bottom:28px; }
+.profile-drawer-actions .btn{
+  flex:1; height:38px; border-radius: var(--sb-radius); font-size:13px; font-weight:700;
+}
+.profile-drawer-actions .btn-primary{
+  background: var(--color-accent); border-color: var(--color-accent); color:#fff;
+}
+.profile-drawer-actions .btn-primary:hover{ background: var(--color-accent-700); border-color: var(--color-accent-700); color:#fff; }
+
+.profile-drawer-fields{ display:flex; flex-direction:column; }
+.profile-drawer-field{
+  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  padding: 12px 0; border-bottom: 1px solid var(--color-divider);
+  font-size: 13px;
+}
+.profile-drawer-field .label{ color:#83808a; }
+.profile-drawer-field .value{ font-weight:600; text-align:right; }
+
+/* ── Layout general: sidebar + contenido ──
+   64px del topbar + 44px de la barra de ruta = 108px de encabezado fijo. */
+.app-shell{ display:flex; align-items:stretch; min-height: calc(100vh - 108px); }
+.content{ flex:1; min-width:0; padding: 36px 40px 64px; }
+
+/* ── Responsive: topbar y barra de ruta en pantallas angostas ──
+   Oculta lo secundario (reloj, fecha, texto del perfil) en vez de dejar
+   que el layout se rompa o se encime. */
+@media (max-width: 720px){
+  .topbar{ gap: 10px; padding: 0 14px; }
+  .brand-sub{ display: none; }
+  .topbar-clock{ display: none; }
+  .right-actions{ gap: 4px; }
+  .profile{ padding: 5px; }
+  .profile-name, .profile-role, .profile-chevron{ display: none; }
+
+  .breadcrumb-bar{ padding: 0 14px; }
+  .breadcrumb-date{ display: none; }
+}
+
+
+
+
+/* ══════════════════════════════════════════════════════════
+   sidebar.css — Panel lateral del Portal CORE
+   Inspirado en el mockup de referencia: buscador arriba,
+   navegación con íconos, sección de Direcciones con puntos de
+   color, y perfil de usuario abajo con menú desplegable.
+   ══════════════════════════════════════════════════════════ */
+
+:root{
+  --sb-bg: #ffffff;
+  --sb-border: #e8e6e9;
+  --sb-text: #201e1d;
+  --sb-text-muted: #837e86;
+  --sb-hover: #f5f3f4;
+  --sb-active-bg: #fbeef5;
+  --sb-active-text: #9e1f63;
+  --sb-accent: #9e1f63;
+  --sb-radius: 12px;
+}
+
+.sidebar{
+  width: 268px;
+  flex: 0 0 auto;
+  height: calc(100vh - 108px);
+  position: sticky;
+  top: 108px;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--sb-border);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--sb-text);
+}
+
+/* ── Scroll del contenido central ── */
+.sidebar-scroll{
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 14px 0;
+}
+
+/* ── Separador entre secciones ── */
+.sidebar-divider{
+  height: 1px;
+  background: var(--sb-border);
+  margin: 16px 10px;
+}
+
+/* ── Ítems de navegación ── */
+.sidebar-nav{ display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+.sidebar-item{
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--sb-radius);
+  color: var(--sb-text);
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+}
+.sidebar-item:hover{ background: var(--sb-hover); }
+.sidebar-item.active{ background: var(--sb-active-bg); color: var(--sb-active-text); font-weight: 600; }
+.sidebar-item i{ width: 18px; text-align: center; font-size: 14.5px; opacity: .85; }
+.sidebar-item.active i{ opacity: 1; }
+.sidebar-item .label{ flex: 1; font-size: 13.5px; }
+
+/* ── Encabezado de sección (Direcciones / Recursos) ── */
+.sidebar-section-head{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px 10px;
+}
+.sidebar-section-title{
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--sb-text-muted); font-weight: 700;
+}
+
+/* ── Colapsado (solo íconos) ── */
+.sidebar.collapsed{ width: 72px; }
+.sidebar.collapsed .label,
+.sidebar.collapsed .sidebar-section-head{ display: none; }
+.sidebar.collapsed .sidebar-item{ justify-content: center; }
+
+/* ── Tooltip del nombre al pasar el mouse (modo contraído) ──
+   position:fixed + posicionado por JS, para escapar del scroll del sidebar
+   (un tooltip absolute dentro de .sidebar-scroll queda recortado). */
+.sidebar-tooltip{
+  position: fixed;
+  /* Fondo fijo (no usa --sb-text): en modo oscuro esa variable pasa a ser
+     casi blanca, y dejaría el tooltip blanco sobre blanco. */
+  background: #201e1d;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease;
+  z-index: 200;
+}
+.sidebar-tooltip.visible{ opacity: 1; visibility: visible; }

@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Si el archivo o carpeta pedido existe de verdad (css, js, imágenes...), sírvelo tal cual
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Si no existe, manda todo a index.php para que el router decida qué mostrar
+RewriteRule ^ index.php [QSA,L]
