@@ -19,6 +19,18 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#9E1F63">
+<script>
+  // Si el navegador restaura esta página desde su caché de "atrás/adelante"
+  // (bfcache) — por ejemplo, al volver con el botón "atrás" justo después
+  // de cerrar sesión — la vuelve a pedir al servidor en vez de mostrarla
+  // tal cual quedó pintada. El Cache-Control: no-store de public/index.php
+  // ya evita que la guarde en la mayoría de los casos, pero esto cubre el
+  // resto: sin esto, alcanza a verse un instante como si la sesión
+  // siguiera activa antes de que la redirección real se complete.
+  window.addEventListener('pageshow', function (evento) {
+    if (evento.persisted) window.location.reload();
+  });
+</script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
 
@@ -26,11 +38,6 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
-<!-- Librerías de animación (ver docs para uso: AOS = scroll-reveal, Animate.css = clases de utilidad, Swiper = carruseles, GSAP se carga en el footer) -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/swiper@14.2.0/swiper-bundle.min.css" rel="stylesheet">
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/layouts/css/paneles.css">
 </head>

@@ -20,11 +20,26 @@ $rutaActual = $uri ?? '';
   // 880px el sidebar ya es un panel deslizante (ver paneles.css/paneles.js),
   // así que ahí no se aplica aunque esté guardada.
   (function () {
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
     try {
       if (localStorage.getItem('sidebarCollapsed') === '1' && window.innerWidth > 880) {
-        document.getElementById('sidebar').classList.add('collapsed');
+        sidebar.classList.add('collapsed');
       }
     } catch (e) {}
+
+    // Cada clic en el menú recarga la página completa (esto no es una SPA),
+    // así que este mismo bloque corre en CADA navegación. Sin esto, la
+    // transición de ancho/etiquetas del panel (pensada solo para cuando el
+    // usuario lo colapsa/expande a mano) también se dispara acá, y se ve
+    // como un parpadeo entre expandido y contraído al cambiar de página.
+    // Se apaga con "no-anim" y se reactiva recién después del primer pintado.
+    sidebar.classList.add('no-anim');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        sidebar.classList.remove('no-anim');
+      });
+    });
   })();
 </script>
 
@@ -97,7 +112,7 @@ $rutaActual = $uri ?? '';
 
   <!-- ── Cerrar sesión ── -->
   <div class="sidebar-nav" style="padding: 8px 12px 12px">
-    <a href="<?= BASE_URL ?>/logout" class="sidebar-item">
+    <a href="<?= BASE_URL ?>/logout" class="sidebar-item" id="btnCerrarSesion">
       <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Cerrar sesión</span>
     </a>
   </div>

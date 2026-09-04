@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#9E1F63">
+<script>
+  // Si el navegador restaura esta página desde su caché de "atrás/adelante"
+  // (bfcache), la vuelve a pedir al servidor en vez de mostrarla tal cual
+  // quedó pintada — evita, por ejemplo, volver acá y ver el overlay de
+  // "Redirigiendo a tu panel…" congelado de un envío anterior del login.
+  window.addEventListener('pageshow', function (evento) {
+    if (evento.persisted) window.location.reload();
+  });
+</script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Control de Salones AC</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
 

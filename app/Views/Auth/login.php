@@ -1,62 +1,160 @@
 <?php $titulo = 'Iniciar sesión'; require ROOT_PATH . '/app/Views/layouts/header.php'; ?>
 
-<div class="auth-split">
-  <div class="auth-split-brand">
-    <div class="auth-logo mb-3" style="background: rgba(255,255,255,.16);">
-      <i class="fa-solid fa-snowflake"></i>
-    </div>
-    <h2 class="fw-bold mb-2">Control de Salones AC</h2>
-    <p class="mb-1 opacity-75">COREDUCACIÓN — Patrimonio Educativo Regional</p>
-    <p class="opacity-75" style="max-width:420px;">
-      Panel de administración, apoyo operativo y consulta docente para el uso
-      de salones y salas de sistemas con aire acondicionado.
-    </p>
-    <ul class="list-unstyled mt-4 opacity-75 small">
-      <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i> Dashboard con estado en tiempo real</li>
-      <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i> Reportes y estadísticas de uso</li>
-      <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i> Historial exportable a CSV</li>
-    </ul>
-  </div>
+<div class="auth-shell">
+  <div class="slide-auth" id="slideAuth">
 
-  <div class="auth-split-form">
-    <div class="auth-card">
-      <div class="text-center mb-4">
-        <div class="auth-logo"><i class="fa-solid fa-right-to-bracket"></i></div>
-        <h4 class="mb-0">Iniciar sesión</h4>
-        <small class="text-muted">Ingresa con tu cuenta institucional</small>
-      </div>
+    <!-- ── Iniciar sesión ── -->
+    <div class="form-container sign-in-container">
+      <form method="POST" action="<?= BASE_URL ?>/login" class="slide-form" id="formLogin">
+        <div class="slide-form-logo"><i class="fa-solid fa-right-to-bracket"></i></div>
+        <h2>Iniciar sesión</h2>
+        <p class="slide-form-sub">Portal CORE — COREDUCACIÓN</p>
 
-      <?php if (!empty($error)): ?>
-        <div class="alert alert-danger py-2"><i class="fa-solid fa-triangle-exclamation"></i> <?= e($error) ?></div>
-      <?php endif; ?>
-
-      <form method="POST" action="<?= BASE_URL ?>/login">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-        <div class="mb-3">
-          <label class="form-label">Correo institucional</label>
-          <input type="email" name="correo" class="form-control form-control-lg" required autofocus placeholder="nombre@coreducacion.edu.co">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Contraseña</label>
-          <input type="password" name="password" class="form-control form-control-lg" required placeholder="••••••••">
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">
-          <i class="fa-solid fa-right-to-bracket"></i> Ingresar
-        </button>
+        <input type="email" name="correo" required autofocus placeholder="Correo institucional">
+        <input type="password" name="password" required placeholder="Contraseña">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Ingresar</button>
+
+        <button type="button" class="slide-mobile-link" id="btnIrRecuperarMobile">¿Olvidaste tu contraseña?</button>
+        <a href="<?= BASE_URL ?>/horario" class="slide-form-link">Consultar mi horario sin iniciar sesión</a>
+      </form>
+    </div>
+
+    <!-- ── Recuperar contraseña ── -->
+    <div class="form-container recover-container">
+      <form class="slide-form" id="formRecuperar">
+        <div class="slide-form-logo"><i class="fa-solid fa-key"></i></div>
+        <h2>Recuperar contraseña</h2>
+        <p class="slide-form-sub">Ingresa tu correo institucional. Por seguridad no hay restablecimiento automático: un administrador te contactará para verificar tu identidad.</p>
+        <input type="email" id="recuperarCorreo" required placeholder="Correo institucional">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Enviar solicitud</button>
+        <button type="button" class="slide-mobile-link" id="btnIrLoginMobile">Volver a iniciar sesión</button>
       </form>
 
-      <div class="text-center mt-4 small text-muted">
-        <i class="fa-solid fa-lock"></i> ¿Olvidaste tu contraseña? Solicítala a un administrador —
-        por seguridad, no hay recuperación automática.
-      </div>
-
-      <div class="text-center mt-3">
-        <a href="<?= BASE_URL ?>/horario" class="btn btn-outline-secondary btn-sm w-100">
-          <i class="fa-solid fa-magnifying-glass"></i> Consultar mi horario de clase (sin iniciar sesión)
-        </a>
+      <div class="slide-form" id="confirmRecuperar" hidden>
+        <div class="slide-form-logo slide-form-logo-ok"><i class="fa-solid fa-check"></i></div>
+        <h2>Solicitud recibida</h2>
+        <p class="slide-form-sub">Un administrador se pondrá en contacto contigo para restablecer tu acceso.</p>
+        <button type="button" class="btn btn-outline-primary" id="btnVolverLogin">Volver a iniciar sesión</button>
       </div>
     </div>
+
+    <!-- ── Panel deslizante ── -->
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <div class="slide-form-logo slide-form-logo-ghost"><i class="fa-solid fa-right-to-bracket"></i></div>
+          <h2>¿Ya la recuerdas?</h2>
+          <p>Vuelve a la pantalla de inicio de sesión con tu correo y contraseña institucional.</p>
+          <button type="button" class="btn btn-outline-light" id="btnIrLogin">Iniciar sesión</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <div class="slide-form-logo slide-form-logo-ghost"><i class="fa-solid fa-key"></i></div>
+          <h2>¿Olvidaste tu contraseña?</h2>
+          <p>Por seguridad no hay recuperación automática: solicítala y un administrador la restablecerá contigo.</p>
+          <button type="button" class="btn btn-outline-light" id="btnIrRecuperar">Recuperar contraseña</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Overlay de carga tras enviar el login ── -->
+    <div class="slide-loading" id="slideLoading" hidden>
+      <div class="slide-loading-spinner"></div>
+      <p>Redirigiendo a tu panel…</p>
+    </div>
+
   </div>
 </div>
+
+<script>
+  (function () {
+    var container = document.getElementById('slideAuth');
+    var formRecuperar = document.getElementById('formRecuperar');
+    var confirmRecuperar = document.getElementById('confirmRecuperar');
+
+    function mostrarRecuperar() { container.classList.add('right-panel-active'); }
+    function mostrarLogin() {
+      container.classList.remove('right-panel-active');
+      // Espera a que termine el deslizamiento antes de resetear el formulario
+      // de recuperación, para no ver el cambio de "confirmación" a "formulario"
+      // a medio camino de la animación.
+      setTimeout(function () {
+        formRecuperar.hidden = false;
+        confirmRecuperar.hidden = true;
+        formRecuperar.reset();
+      }, 650);
+    }
+
+    ['btnIrRecuperar', 'btnIrRecuperarMobile'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', mostrarRecuperar);
+    });
+    ['btnIrLogin', 'btnIrLoginMobile', 'btnVolverLogin'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', mostrarLogin);
+    });
+
+    // Sin backend de recuperación real (a propósito, ver docs/política de
+    // seguridad arriba): solo confirma que la solicitud "llegó" y remite a
+    // un administrador, tal como decía el aviso que reemplaza esta pantalla.
+    if (formRecuperar) {
+      formRecuperar.addEventListener('submit', function (e) {
+        e.preventDefault();
+        formRecuperar.hidden = true;
+        confirmRecuperar.hidden = false;
+      });
+    }
+
+    // Overlay de carga al enviar el login. En local (o cualquier conexión
+    // rápida) el servidor responde casi al instante y el spinner apenas
+    // alcanza a verse, así que acá SÍ se frena el envío un momento
+    // (preventDefault + submit real después) — tiempo mínimo para que el
+    // overlay se note, se sume al tiempo real que tarde el servidor.
+    var formLogin = document.getElementById('formLogin');
+    var slideLoading = document.getElementById('slideLoading');
+    if (formLogin && slideLoading) {
+      formLogin.addEventListener('submit', function (e) {
+        e.preventDefault();
+        slideLoading.hidden = false;
+        var btn = formLogin.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+        setTimeout(function () { formLogin.submit(); }, 800);
+      });
+    }
+  })();
+
+  // Avisos con SweetAlert2 (SwalBrand se define en footer.php, cargado
+  // después de este bloque — por eso se espera a DOMContentLoaded, que no
+  // dispara hasta que TODO el HTML, incluido footer.php, ya se ejecutó).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    <?php if (!empty($error)): ?>
+      SwalBrand.fire({
+        icon: 'error',
+        title: 'No se pudo iniciar sesión',
+        text: <?= json_encode($error) ?>
+      });
+    <?php elseif (!empty($_GET['salida'])): ?>
+      // toast: true → aviso pequeño en la esquina, sin fondo oscurecido ni
+      // modal encima de la tarjeta de login (antes se tapaban entre sí).
+      SwalBrand.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Sesión cerrada',
+        text: 'Vuelve cuando quieras.',
+        timer: 3200,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
+    <?php elseif (!empty($_GET['expirada'])): ?>
+      SwalBrand.fire({
+        icon: 'warning',
+        title: 'Tu sesión expiró',
+        text: 'Cerramos tu sesión por inactividad. Inicia sesión de nuevo para continuar.'
+      });
+    <?php endif; ?>
+  });
+</script>
 
 <?php require ROOT_PATH . '/app/Views/layouts/footer.php'; ?>

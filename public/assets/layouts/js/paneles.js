@@ -92,6 +92,29 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  // Confirmación antes de cerrar sesión (SweetAlert2, cargado en
+  // portal-footer.php). El aviso de "sesión cerrada" ya lo muestra
+  // login.php al volver, vía el ?salida=1 que agrega AuthController.
+  const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+  if (btnCerrarSesion) {
+    btnCerrarSesion.addEventListener('click', function (e) {
+      if (typeof SwalBrand === 'undefined') return; // sin SweetAlert2, deja el enlace normal
+      e.preventDefault();
+      SwalBrand.fire({
+        icon: 'question',
+        title: '¿Cerrar sesión?',
+        text: 'Tendrás que volver a ingresar tu correo y contraseña.',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+      }).then(function (resultado) {
+        if (resultado.isConfirmed) {
+          window.location.href = btnCerrarSesion.href;
+        }
+      });
+    });
+  }
 });
 
 
