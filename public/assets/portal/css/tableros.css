@@ -1,0 +1,4 @@
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider)}
+  .kpi{padding:22px 24px;border-right:1px solid var(--color-divider)}
+  .kpi-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
+  .kpi-value{font-weight:800;font-size:32px;letter-spacing:-.03em;padding:10px 0 4px}
