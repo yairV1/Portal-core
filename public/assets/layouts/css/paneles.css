@@ -224,7 +224,7 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
 /* ── Layout general: sidebar + contenido ──
    64px del topbar + 44px de la barra de ruta = 108px de encabezado fijo. */
 .app-shell{ display:flex; align-items:stretch; min-height: calc(100vh - 108px); }
-.content{ flex:1; min-width:0; padding: 36px 40px 64px; }
+.content{ flex:1; min-width:0; padding: 36px 40px 64px; background: var(--color-surface); }
 
 /* ── Responsive: topbar y barra de ruta en pantallas angostas ──
    Oculta lo secundario (reloj, fecha, texto del perfil) en vez de dejar

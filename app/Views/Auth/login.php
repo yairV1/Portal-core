@@ -1,4 +1,10 @@
-<?php $titulo = 'Iniciar sesión'; require ROOT_PATH . '/app/Views/layouts/header.php'; ?>
+<?php
+// $csrf y $error ya vienen listos desde public/index.php / AuthController.php
+// (mismo patrón que $pdo/$uri en los demás controladores) — no están
+// "sin definir", el editor no puede rastrear el require que los trae.
+$titulo = 'Iniciar sesión';
+require ROOT_PATH . '/app/Views/layouts/header.php';
+?>
 
 <div class="auth-shell">
   <div class="slide-auth" id="slideAuth">

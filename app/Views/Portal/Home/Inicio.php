@@ -45,15 +45,15 @@
   </div>
 
   <div class="side-col">
-    <div>
+    <div class="side-card">
       <div class="section-head" style="margin-bottom:6px"><h4>Mis pendientes</h4></div>
       <div id="pendientes"></div>
     </div>
-    <div>
+    <div class="side-card">
       <div class="section-head" style="margin-bottom:6px"><h4>Agenda de la semana</h4></div>
       <div id="eventos"></div>
     </div>
-    <div>
+    <div class="side-card">
       <div class="section-head" style="margin-bottom:6px"><h4>Cumpleaños</h4></div>
       <div id="cumpleanos"></div>
     </div>
