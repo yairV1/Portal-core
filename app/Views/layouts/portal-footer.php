@@ -1,6 +1,31 @@
 </div><!-- /.content -->
 </div><!-- /.app-shell -->
 
+<!-- ── Asistente flotante "Core" (ver asistente.js) ── -->
+<button class="asistente-fab" id="btnAsistente" title="Asistente del portal">
+  <img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core">
+  <span class="badge-nuevo" id="asistenteBadge"></span>
+</button>
+<div class="asistente-panel" id="asistentePanel" hidden>
+  <div class="asistente-header">
+    <span class="asistente-avatar"><img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core"></span>
+    <div>
+      <strong>Core</strong>
+      <small>Asistente del Portal</small>
+    </div>
+    <button type="button" class="asistente-close" id="asistenteClose" title="Cerrar">&times;</button>
+  </div>
+  <div class="asistente-mensajes" id="asistenteMensajes"></div>
+  <form class="asistente-form" id="asistenteForm">
+    <input type="text" id="asistenteInput" placeholder="¿Qué estás buscando?" autocomplete="off">
+    <button type="submit" title="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+  </form>
+</div>
+<script>
+  window.BASE_URL = <?= json_encode(BASE_URL) ?>;
+  window.usuarioNombre = <?= json_encode(!empty($nombre) && $nombre !== 'Invitado' ? explode(' ', trim($nombre))[0] : '') ?>;
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   // Mismo tema institucional de SweetAlert2 que usa la pantalla de login
@@ -27,8 +52,9 @@
       toast: true,
       position: 'top-end',
       icon: 'success',
+      iconHtml: '<img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core" style="width:100%;height:100%;object-fit:cover;border-radius:50%">',
       title: <?= json_encode('¡Bienvenido' . (!empty($nombre) && $nombre !== 'Invitado' ? ', ' . explode(' ', trim($nombre))[0] : '') . '!') ?>,
-      text: 'Iniciaste sesión correctamente.',
+      text: 'Core está lista para ayudarte a encontrar lo que necesites.',
       timer: 3200,
       timerProgressBar: true,
       showConfirmButton: false
@@ -37,6 +63,7 @@
 </script>
 <?php endif; ?>
 
-<script src="<?= BASE_URL ?>/assets/layouts/js/paneles.js"></script>
+<script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
+<script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
 </body>
 </html>

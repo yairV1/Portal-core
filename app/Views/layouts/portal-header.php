@@ -43,7 +43,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
      Font Awesome de arriba es solo para el topbar/sidebar estáticos. -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/layouts/css/paneles.css">
+<link rel="stylesheet" href="<?= v('/assets/layouts/css/paneles.css') ?>">
 </head>
 <body>
 <script>

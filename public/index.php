@@ -58,6 +58,18 @@ function e(?string $texto): string {
     return htmlspecialchars($texto ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+// v(): agrega "?v=<fecha de modificación>" a una ruta de asset (css/js).
+// Las páginas PHP ya tienen Cache-Control: no-store, pero los .css/.js
+// estáticos no — el navegador los cachea con sus propias reglas, así que
+// sin esto una copia vieja puede quedar pegada en el navegador después de
+// editar el archivo (ej.: un botón que "no responde" porque corre el JS
+// de antes del cambio). $rutaRelativa empieza con "/", ej. "/assets/x.js".
+function v(string $rutaRelativa): string {
+    $archivo = ROOT_PATH . '/public' . $rutaRelativa;
+    $version = is_file($archivo) ? filemtime($archivo) : time();
+    return BASE_URL . $rutaRelativa . '?v=' . $version;
+}
+
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)
 require ROOT_PATH . '/config/database.php';
 
