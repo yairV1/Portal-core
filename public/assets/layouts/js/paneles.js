@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
         text: 'Tendrás que volver a ingresar tu correo y contraseña.',
         showCancelButton: true,
         confirmButtonText: 'Sí, cerrar sesión',
+        confirmButtonColor: '#d63859', // --color-danger: es la única acción destructiva real del Portal
         cancelButtonText: 'Cancelar'
       }).then(function (resultado) {
         if (resultado.isConfirmed) {
@@ -151,6 +152,19 @@ document.addEventListener('DOMContentLoaded', function () {
   if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', cerrarSidebarMobile);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') cerrarSidebarMobile();
+  });
+
+  // Submenús de dirección (ej. "Gestión Institucional" → "Mejoras"): el
+  // atributo data-bs-toggle="collapse" es solo semántico acá — este
+  // proyecto no carga el JS de Bootstrap, así que el toggle real es este.
+  document.querySelectorAll('.sidebar-group > [data-bs-toggle="collapse"]').forEach(function (trigger) {
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      const panel = document.getElementById(trigger.getAttribute('aria-controls'));
+      if (!panel) return;
+      const abierto = panel.classList.toggle('show');
+      trigger.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    });
   });
 
   // Tooltip con el nombre del ítem al pasar el mouse, cuando el sidebar está

@@ -1,20 +1,8 @@
-  /* ═══ Datos de ejemplo — Administrativa y Financiera ═══ */
+  /* kicker/titulo/desc/kpis/areas ya los renderiza Financiera.php con
+     datos reales desde $pdo (ver PortalController.php) — acá solo queda
+     lo que todavía no tiene tabla real (docs/responsables/software, ver
+     plan). */
   const MODULO = {
-    kicker: 'Dirección Administrativa, Contable y Financiera',
-    titulo: 'Administrativa y Financiera',
-    desc: 'Contabilidad, tesorería, presupuesto, cartera y servicios generales. Estados financieros e indicadores de sostenibilidad.',
-    kpis: [
-      { label: 'Ejecución presupuestal', valor: '76,8%' },
-      { label: 'Cartera corriente', valor: '92,1%' },
-      { label: 'Ingresos 2026', valor: '$41.260 M' },
-      { label: 'Margen operacional', valor: '8,4%' }
-    ],
-    areas: [
-      { label: 'Contador General', meta: 'Estados financieros · NIIF' },
-      { label: 'Tesorería y Cartera', meta: 'Recaudo · Crédito y cobranzas' },
-      { label: 'Infraestructura Física y Tecnológica', meta: 'Planta física · Mantenimiento' },
-      { label: 'Servicios Generales', meta: 'Aseo · Vigilancia · Transporte' }
-    ],
     docs: [
       { nombre: 'Estados Financieros 2025 (auditados)', tipo: 'Informe', version: 'V1.0', fecha: '31 mar 2026' },
       { nombre: 'Presupuesto Institucional 2026', tipo: 'Plan', version: 'V2.0', fecha: '15 ene 2026' },
@@ -29,22 +17,9 @@
     software: ['Software Contable', 'ERP Institucional', 'Power BI · Financiero']
   };
 
-  document.getElementById('moduloKicker').textContent = MODULO.kicker;
-  document.getElementById('moduloTitulo').textContent = MODULO.titulo;
-  document.getElementById('moduloDesc').textContent = MODULO.desc;
-
-  document.getElementById('moduloKpis').innerHTML = MODULO.kpis.map(k => `
-    <div class="modulo-kpi"><div class="label">${k.label}</div><div class="valor">${k.valor}</div></div>`).join('');
-
-  document.getElementById('moduloAreas').innerHTML = MODULO.areas.map(a => `
-    <div class="area-item">
-      <span class="ic"><i class="bi bi-folder2"></i></span>
-      <span style="flex:1">
-        <span class="label">${a.label}</span>
-        <span class="meta">${a.meta}</span>
-      </span>
-      <span class="arrow">→</span>
-    </div>`).join('');
+  document.querySelectorAll('.modulo-kpi .spark[data-valor]').forEach(el => {
+    window.sparkline(el, window.tendenciaSintetica(el.dataset.valor));
+  });
 
   document.getElementById('moduloDocs').innerHTML = MODULO.docs.map(d => `
     <tr>

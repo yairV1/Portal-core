@@ -3,45 +3,61 @@
 
 // Resalta como "activo" el ítem cuya ruta coincide con la página actual ($uri
 // viene de public/index.php y llega hasta aquí sin cortes, vía require).
-function sb_activo(string $ruta, string $actual): string {
-    $actual = rtrim($actual, '/') ?: '/';
-    $ruta   = rtrim($ruta, '/') ?: '/';
-    return $ruta === $actual ? ' active' : '';
+function sb_activo(string $ruta, string $actual): string
+{
+  $actual = rtrim($actual, '/') ?: '/';
+  $ruta   = rtrim($ruta, '/') ?: '/';
+  return $ruta === $actual ? ' active' : '';
 }
+
+// Marca el padre de un grupo como activo si la ruta actual es el padre
+// o alguna de sus subrutas (ej. "/gestion-institucional/mejoras").
+function sb_grupo_activo(string $rutaPadre, array $subrutas, string $rutaActual): bool
+{
+  return $rutaActual === $rutaPadre || in_array($rutaActual, $subrutas, true);
+}
+
 $rutaActual = $uri ?? '';
 ?>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <aside class="sidebar" id="sidebar">
 
-<script>
-  // Aplica el estado contraído/expandido ANTES de pintar la página, para que
-  // no se vea un parpadeo (expandido un instante y luego contraído).
-  // La preferencia "contraído a íconos" es solo de escritorio: por debajo de
-  // 880px el sidebar ya es un panel deslizante (ver paneles.css/paneles.js),
-  // así que ahí no se aplica aunque esté guardada.
-  (function () {
-    var sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    try {
-      if (localStorage.getItem('sidebarCollapsed') === '1' && window.innerWidth > 880) {
-        sidebar.classList.add('collapsed');
-      }
-    } catch (e) {}
+  <script>
+    // Aplica el estado contraído/expandido ANTES de pintar la página, para que
+    // no se vea un parpadeo (expandido un instante y luego contraído).
+    // La preferencia "contraído a íconos" es solo de escritorio: por debajo de
+    // 880px el sidebar ya es un panel deslizante (ver paneles.css/paneles.js),
+    // así que ahí no se aplica aunque esté guardada.
+    (function() {
+      var sidebar = document.getElementById('sidebar');
+      if (!sidebar) return;
+      try {
+        var pref = localStorage.getItem('sidebarCollapsed');
+        var ancho = window.innerWidth;
+        // Sin preferencia guardada todavía (primera visita) y en rango
+        // tablet (881-1279px): arranca contraído por defecto, como mejor
+        // uso del espacio — nunca pisa una preferencia explícita del
+        // usuario ("0" se respeta aunque esté en ese rango).
+        var esTabletSinPreferencia = pref === null && ancho > 880 && ancho <= 1279;
+        if (ancho > 880 && (pref === '1' || esTabletSinPreferencia)) {
+          sidebar.classList.add('collapsed');
+        }
+      } catch (e) {}
 
-    // Cada clic en el menú recarga la página completa (esto no es una SPA),
-    // así que este mismo bloque corre en CADA navegación. Sin esto, la
-    // transición de ancho/etiquetas del panel (pensada solo para cuando el
-    // usuario lo colapsa/expande a mano) también se dispara acá, y se ve
-    // como un parpadeo entre expandido y contraído al cambiar de página.
-    // Se apaga con "no-anim" y se reactiva recién después del primer pintado.
-    sidebar.classList.add('no-anim');
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        sidebar.classList.remove('no-anim');
+      // Cada clic en el menú recarga la página completa (esto no es una SPA),
+      // así que este mismo bloque corre en CADA navegación. Sin esto, la
+      // transición de ancho/etiquetas del panel (pensada solo para cuando el
+      // usuario lo colapsa/expande a mano) también se dispara acá, y se ve
+      // como un parpadeo entre expandido y contraído al cambiar de página.
+      // Se apaga con "no-anim" y se reactiva recién después del primer pintado.
+      sidebar.classList.add('no-anim');
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          sidebar.classList.remove('no-anim');
+        });
       });
-    });
-  })();
-</script>
+    })();
+  </script>
 
   <div class="sidebar-scroll">
 
@@ -61,28 +77,102 @@ $rutaActual = $uri ?? '';
     <div class="sidebar-divider"></div>
 
     <!-- ── Direcciones (equivalente a "Shared" del mockup) ── -->
-    <div class="sidebar-section-head">
-      <span class="sidebar-section-title">Direcciones</span>
-    </div>
     <div class="sidebar-nav">
-      <a href="<?= BASE_URL ?>/gestion-institucional" class="sidebar-item<?= sb_activo('/gestion-institucional', $rutaActual) ?>">
-        <i class="fa-solid fa-building-columns"></i><span class="label">Gestión Institucional</span>
-      </a>
-      <a href="<?= BASE_URL ?>/sgi" class="sidebar-item<?= sb_activo('/sgi', $rutaActual) ?>">
-        <i class="fa-solid fa-folder-tree"></i><span class="label">Sistema de Gestión Integral</span>
-      </a>
-      <a href="<?= BASE_URL ?>/vicerrectoria-academica" class="sidebar-item<?= sb_activo('/vicerrectoria-academica', $rutaActual) ?>">
-        <i class="fa-solid fa-graduation-cap"></i><span class="label">Vicerrectoría Académica</span>
-      </a>
-      <a href="<?= BASE_URL ?>/administrativa-financiera" class="sidebar-item<?= sb_activo('/administrativa-financiera', $rutaActual) ?>">
-        <i class="fa-solid fa-sack-dollar"></i><span class="label">Administrativa y Financiera</span>
-      </a>
-      <a href="<?= BASE_URL ?>/talento-humano" class="sidebar-item<?= sb_activo('/talento-humano', $rutaActual) ?>">
-        <i class="fa-solid fa-users"></i><span class="label">Talento Humano</span>
-      </a>
+
+      <?php
+      $subGestion = ['/gestion-institucional/mejoras'];
+      $activoGestion = sb_grupo_activo('/gestion-institucional', $subGestion, $rutaActual);
+      ?>
+      <div class="sidebar-group">
+        <a href="#submenuGestion" class="sidebar-item<?= $activoGestion ? ' active' : '' ?>"
+          data-bs-toggle="collapse" role="button"
+          aria-expanded="<?= $activoGestion ? 'true' : 'false' ?>" aria-controls="submenuGestion">
+          <i class="fa-solid fa-building-columns"></i><span class="label">Gestión Institucional</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse<?= $activoGestion ? ' show' : '' ?>" id="submenuGestion">
+          <a href="<?= BASE_URL ?>/gestion-institucional/mejoras"
+            class="sidebar-subitem<?= sb_activo('/gestion-institucional/mejoras', $rutaActual) ?>">Mejoras</a>
+        </div>
+      </div>
+
+      <?php
+      $subSGI = ['/sgi/mejoras'];
+      $activoSGI = sb_grupo_activo('/sgi', $subSGI, $rutaActual);
+      ?>
+      <div class="sidebar-group">
+        <a href="#submenuSGI" class="sidebar-item<?= $activoSGI ? ' active' : '' ?>"
+          data-bs-toggle="collapse" role="button"
+          aria-expanded="<?= $activoSGI ? 'true' : 'false' ?>" aria-controls="submenuSGI">
+          <i class="fa-solid fa-folder-tree"></i><span class="label">Sistema de Gestión Integral</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse<?= $activoSGI ? ' show' : '' ?>" id="submenuSGI">
+          <a href="<?= BASE_URL ?>/sgi/mejoras"
+            class="sidebar-subitem<?= sb_activo('/sgi/mejoras', $rutaActual) ?>">Mejoras</a>
+        </div>
+      </div>
+
+      <?php
+      $subVicerrectoria = ['/vicerrectoria-academica/mejoras'];
+      $activoVicerrectoria = sb_grupo_activo('/vicerrectoria-academica', $subVicerrectoria, $rutaActual);
+      ?>
+      <div class="sidebar-group">
+        <a href="#submenuVicerrectoria" class="sidebar-item<?= $activoVicerrectoria ? ' active' : '' ?>"
+          data-bs-toggle="collapse" role="button"
+          aria-expanded="<?= $activoVicerrectoria ? 'true' : 'false' ?>" aria-controls="submenuVicerrectoria">
+          <i class="fa-solid fa-graduation-cap"></i><span class="label">Vicerrectoría Académica</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse<?= $activoVicerrectoria ? ' show' : '' ?>" id="submenuVicerrectoria">
+          <a href="<?= BASE_URL ?>/vicerrectoria-academica/mejoras"
+            class="sidebar-subitem<?= sb_activo('/vicerrectoria-academica/mejoras', $rutaActual) ?>">Mejoras</a>
+        </div>
+      </div>
+
+      <?php
+      $subAdmin = ['/administrativa-financiera/mejoras'];
+      $activoAdmin = sb_grupo_activo('/administrativa-financiera', $subAdmin, $rutaActual);
+      ?>
+      <div class="sidebar-group">
+        <a href="#submenuAdmin" class="sidebar-item<?= $activoAdmin ? ' active' : '' ?>"
+          data-bs-toggle="collapse" role="button"
+          aria-expanded="<?= $activoAdmin ? 'true' : 'false' ?>" aria-controls="submenuAdmin">
+          <i class="fa-solid fa-sack-dollar"></i><span class="label">Administrativa y Financiera</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse<?= $activoAdmin ? ' show' : '' ?>" id="submenuAdmin">
+          <a href="<?= BASE_URL ?>/administrativa-financiera/mejoras"
+            class="sidebar-subitem<?= sb_activo('/administrativa-financiera/mejoras', $rutaActual) ?>">Mejoras</a>
+        </div>
+      </div>
+
+      <?php
+      $subTalento = ['/talento-humano/mejoras'];
+      $activoTalento = sb_grupo_activo('/talento-humano', $subTalento, $rutaActual);
+      ?>
+      <div class="sidebar-group">
+        <a href="#submenuTalento" class="sidebar-item<?= $activoTalento ? ' active' : '' ?>"
+          data-bs-toggle="collapse" role="button"
+          aria-expanded="<?= $activoTalento ? 'true' : 'false' ?>" aria-controls="submenuTalento">
+          <i class="fa-solid fa-users"></i><span class="label">Talento Humano</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse<?= $activoTalento ? ' show' : '' ?>" id="submenuTalento">
+          <a href="<?= BASE_URL ?>/talento-humano/mejoras"
+            class="sidebar-subitem<?= sb_activo('/talento-humano/mejoras', $rutaActual) ?>">Mejoras</a>
+        </div>
+      </div>
+
+      <?php
+      $subInvestigacion = ['/investigacion-innovacion/mejoras'];
+      $activoInvestigacion = sb_grupo_activo('/investigacion-innovacion', $subInvestigacion, $rutaActual);
+      ?>
+
       <a href="<?= BASE_URL ?>/investigacion-innovacion" class="sidebar-item<?= sb_activo('/investigacion-innovacion', $rutaActual) ?>">
-        <i class="fa-solid fa-lightbulb"></i><span class="label">Investigación e Innovación</span>
+        <i class="fa-solid fa-lightbulb"></i><span class="label">Investigación e Innovación</span> 
       </a>
+
     </div>
 
     <div class="sidebar-divider"></div>

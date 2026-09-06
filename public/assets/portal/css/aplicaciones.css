@@ -1,7 +1,7 @@
 
   /* ── centro de aplicaciones ── */
   .apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-  .app-card{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);box-shadow:var(--shadow-soft);padding:24px 22px;display:flex;flex-direction:column;gap:14px;min-height:176px;cursor:pointer;transition:box-shadow .2s ease,transform .2s ease}
+  .app-card{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px 22px;display:flex;flex-direction:column;gap:14px;min-height:176px;cursor:pointer;transition:box-shadow .2s ease,transform .2s ease}
   .app-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
   .app-card-top{display:flex;align-items:center;justify-content:space-between}
   .app-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;background:var(--color-accent-100);color:var(--color-accent-700);font-size:20px;border-radius:var(--radius-sm)}

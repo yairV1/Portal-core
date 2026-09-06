@@ -31,6 +31,50 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     if (evento.persisted) window.location.reload();
   });
 </script>
+<script>
+  // sparkline(el, valores, opts): mini gráfica de línea en SVG, sin
+  // librería (todo el proyecto evita dependencias de gráficas). Se define
+  // acá arriba —no en paneles.js, que carga al final del body— porque el
+  // script propio de cada página (que la llama) corre antes que ese.
+  window.sparkline = function (el, valores, opts) {
+    if (!el || !valores || valores.length < 2) return;
+    opts = opts || {};
+    var w = opts.width || 64, h = opts.height || 24;
+    var color = opts.color || 'var(--color-accent)';
+    var min = Math.min.apply(null, valores), max = Math.max.apply(null, valores);
+    var rango = (max - min) || 1;
+    var paso = w / (valores.length - 1);
+    var puntos = valores.map(function (v, i) {
+      var x = i * paso;
+      var y = h - ((v - min) / rango) * h;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    // opts.fill (opcional): además de la línea, rellena el área debajo
+    // con el mismo color a baja opacidad — para KPIs donde la tendencia
+    // merece más presencia visual que una línea sola.
+    var area = '';
+    if (opts.fill) {
+      area = '<polygon points="0,' + h + ' ' + puntos + ' ' + w + ',' + h + '" fill="' + color + '" opacity=".14"/>';
+    }
+    el.innerHTML =
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none">' +
+        area +
+        '<polyline points="' + puntos + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  };
+
+  // tendenciaSintetica(valorTexto): arma 6 puntos crecientes que terminan
+  // en el valor mostrado, para dibujar un sparkline sin inventar un
+  // histórico "real" en datos de ejemplo — la usan las páginas de módulo.
+  window.tendenciaSintetica = function (valorTexto) {
+    var n = parseFloat(String(valorTexto).replace(/\./g, '').replace(',', '.')) || 0;
+    var base = n * 0.82;
+    var paso = (n - base) / 5;
+    var puntos = [];
+    for (var i = 0; i < 6; i++) puntos.push(base + paso * i);
+    return puntos;
+  };
+</script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
 

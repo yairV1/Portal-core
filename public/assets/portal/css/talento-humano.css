@@ -1,39 +1,38 @@
-  .table{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
-  .table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;padding:10px;border-bottom:2px solid var(--color-divider)}
-  .table td{padding:10px;border-bottom:1px solid var(--color-divider)}
-  .table tbody tr:hover{background:var(--color-surface)}
-  .tag{display:inline-flex;font-size:10px;padding:3px 8px;border-radius:999px}
+  /* .table y .tag base ya viven en paneles.css. Estas son variantes
+     semánticas de estado (antes en hex suelto, ahora con los tokens
+     --color-success/-warning que también usa el resto del Portal). */
   .tag-neutral{background:var(--color-surface);color:rgba(32,30,29,.75)}
-  .tag-ok{background:#fbeef5;color:#4d0c2c}
-  .tag-warn{background:#fff0ea;color:#a13309}
-  .tag-outline{display:inline-flex;font-size:11.5px;border:1px solid var(--color-accent);color:var(--color-accent);padding:4px 10px;border-radius:999px}
+  .tag-ok{background:var(--color-success-bg);color:var(--color-success)}
+  .tag-warn{background:var(--color-warning-bg);color:var(--color-warning)}
 
   /* ── talento humano ── */
-  .th-tabs{display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);box-shadow:var(--shadow-soft);width:fit-content;margin-bottom:34px;flex-wrap:wrap;overflow:hidden}
-  .th-tab{padding:10px 18px;border:0;border-right:1px solid var(--color-divider);cursor:pointer;font-weight:800;font-size:12.5px;background:transparent;color:var(--color-text)}
-  .th-tab.active{background:var(--color-accent);color:#fff}
+  /* Las pestañas usan .pill-tabs/.pill-tab (paneles.css); acá solo el margen propio de esta página. */
+  #thTabs{margin-bottom:34px}
+
+  /* .subsection y .chip-row ya viven en paneles.css. */
+  .two-col{display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:start}
+  @media (max-width:880px){ .two-col{grid-template-columns:1fr} }
 
   .org-nivel{padding-bottom:26px}
   .org-nivel-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;opacity:.45;padding-bottom:10px}
   .org-cajas{display:flex;gap:10px;flex-wrap:wrap}
-  .org-caja{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);box-shadow:var(--shadow-soft);padding:16px 18px;flex:1 1 220px;min-width:200px;cursor:pointer;transition:box-shadow .2s ease}
+  .org-caja{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:16px 18px;flex:1 1 220px;min-width:200px;cursor:pointer;transition:box-shadow .2s ease}
   .org-caja:hover{box-shadow:var(--shadow-hover)}
   .org-caja.destacado{background:var(--color-accent);border-color:var(--color-accent);color:#fff;box-shadow:var(--shadow-accent)}
   .org-caja .label{font-weight:800;font-size:13.5px;line-height:1.25}
   .org-caja .meta{font-size:11px;opacity:.65;padding-top:5px}
 
+  .side-box-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;opacity:.5;padding-bottom:12px}
   .comp-row{padding:10px 0;border-top:1px solid var(--color-divider)}
   .comp-head{display:flex;justify-content:space-between;font-size:12.5px;padding-bottom:6px}
   .comp-bar{height:5px;background:var(--color-surface);border-radius:999px;overflow:hidden}
   .comp-bar-fill{height:5px;background:var(--color-accent);border-radius:999px}
 
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--color-divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);overflow:hidden;margin-bottom:32px}
-  .kpi{padding:20px 22px;border-right:1px solid var(--color-divider)}
-  .kpi-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
-  .kpi-value{font-weight:800;font-size:30px;letter-spacing:-.03em;padding-top:8px}
+  /* .kpis/.kpi ya viven en paneles.css; acá solo el margen de esta sección. */
+  #thContenido .kpis{margin-bottom:32px}
 
   .bienestar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-  .bienestar-card{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);box-shadow:var(--shadow-soft);padding:26px 24px;display:flex;flex-direction:column;gap:12px;min-height:190px;transition:box-shadow .2s ease,transform .2s ease}
+  .bienestar-card{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:26px 24px;display:flex;flex-direction:column;gap:12px;min-height:190px;transition:box-shadow .2s ease,transform .2s ease}
   .bienestar-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
   .bienestar-card .ic{color:var(--color-accent);font-size:22px}
   .bienestar-card .titulo{font-weight:800;font-size:17px;line-height:1.2}
