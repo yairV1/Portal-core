@@ -71,6 +71,27 @@ body[data-tema="oscuro"]{
 *{ box-sizing: border-box; }
 body{ margin:0; font-family: var(--font-heading); background: var(--color-bg); color: var(--color-text); transition: background .15s ease, color .15s ease; }
 
+/* ── Scroll de marca (todo el Portal) ──
+   Antes cada página lo resolvía por su cuenta (o no lo resolvía —
+   inicio.css apuntaba a --color-accent-400/500, tokens que nunca
+   existieron, así que ese estilo nunca se aplicaba y quedaba el
+   scrollbar por defecto del navegador). Va centralizado acá, con los
+   mismos --color-accent-* que ya cambian solos entre claro/oscuro, para
+   que se vea igual de cuidado en cualquier página sin repetirlo. */
+*{
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-200) transparent;
+}
+*::-webkit-scrollbar{ width: 9px; height: 9px; }
+*::-webkit-scrollbar-track{ background: transparent; }
+*::-webkit-scrollbar-thumb{
+  background-color: var(--color-accent-200);
+  border-radius: 999px;
+  transition: background-color .15s ease;
+}
+*::-webkit-scrollbar-thumb:hover{ background-color: var(--color-accent); }
+*::-webkit-scrollbar-corner{ background: transparent; }
+
 .btn{
   display:inline-flex; align-items:center; justify-content:center; gap:6px;
   cursor:pointer; border:1px solid var(--color-divider); background:var(--color-bg);
@@ -344,11 +365,17 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   box-shadow: 0 2px 6px rgba(32,30,29,.06);
 }
 .avatar{
-  width:30px; height:30px; border-radius:999px;
+  width:30px; height:30px; border-radius:999px; position:relative;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700)); color:#fff;
   display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
   box-shadow: 0 2px 6px rgba(158,31,99,.35);
+  overflow: hidden; scrollbar-gutter: auto;
 }
+/* position:absolute (no depende de flex) — con solo width/height:100% en un
+   contenedor flex, una imagen con otra proporción (no cuadrada) no llega a
+   ocupar el 100% del ancho: el navegador la deja más angosta según su
+   relación de aspecto en vez de estirarla a la caja. */
+.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
 .profile-name{ display:block; font-size:12.5px; font-weight:600; }
 .profile-role{ display:block; font-size:10.5px; color:#83808a; }
 .profile-chevron{
@@ -394,13 +421,25 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
 .profile-drawer-close:hover{ background: var(--color-surface); }
 
 .profile-drawer-avatar{
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 64px; height: 64px; border-radius: 50%; position:relative;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700));
   color:#fff; display:flex; align-items:center; justify-content:center;
   font-weight:800; font-size:22px; margin: 8px 0 16px;
   box-shadow: 0 3px 10px rgba(158,31,99,.4);
+  overflow: hidden; scrollbar-gutter: auto;
 }
+.profile-drawer-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.profile-drawer-name-row{ display:flex; align-items:center; gap:8px; }
 .profile-drawer-name{ font-size:19px; font-weight:800; margin:0 0 6px; }
+.profile-drawer-editar{
+  width:26px; height:26px; flex:0 0 auto; margin-bottom:6px;
+  border:1px solid var(--color-divider); background:var(--color-bg); border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:11px;
+  color:#83808a; cursor:pointer; transition:background .15s ease, color .15s ease;
+}
+.profile-drawer-editar:hover{ background:var(--color-accent-100); color:var(--color-accent-700); }
+
 .profile-drawer-desc{ font-size:13px; color:#83808a; line-height:1.5; margin:0 0 22px; }
 
 .profile-drawer-actions{ display:flex; gap:10px; margin-bottom:28px; }
@@ -416,6 +455,36 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
 }
 .profile-drawer-field .label{ color:#83808a; }
 .profile-drawer-field .value{ font-weight:600; text-align:right; }
+
+/* ── Formulario de edición (nombre/cargo/foto) — oculto hasta el lápiz ── */
+.profile-drawer-form{ display:flex; flex-direction:column; }
+.profile-drawer-avatar-edit{ position:relative; width:64px; }
+.profile-drawer-avatar-img{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.profile-drawer-avatar-img img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
+.profile-drawer-foto-btn{
+  position:absolute; right:-2px; bottom:14px; width:24px; height:24px;
+  border-radius:50%; background:var(--color-accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:10.5px;
+  cursor:pointer; border:2px solid var(--color-bg);
+}
+.profile-drawer-form input[type="file"]{
+  position:absolute; width:1px; height:1px; overflow:hidden; opacity:0;
+}
+
+.profile-drawer-label{
+  display:flex; flex-direction:column; gap:6px;
+  font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+  color:#83808a; margin-bottom:16px;
+}
+.profile-drawer-label input[type="text"]{
+  font-family:inherit; font-size:14px; font-weight:600; text-transform:none;
+  letter-spacing:normal; color:var(--color-text);
+  padding:9px 12px; border:1px solid var(--color-divider); border-radius:var(--radius-sm);
+  background:var(--color-bg);
+}
+.profile-drawer-label input[type="text"]:focus-visible{
+  outline:none; box-shadow:var(--shadow-focus); border-color:var(--color-accent);
+}
 
 /* ── Layout general: sidebar + contenido ──
    64px del topbar + 44px de la barra de ruta = 108px de encabezado fijo. */
@@ -542,8 +611,13 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   display: grid; grid-template-rows: minmax(0, 0fr); overflow: hidden;
   transition: grid-template-rows .2s ease;
 }
-.collapse > *{ min-height: 0; overflow: hidden; }
 .collapse.show{ grid-template-rows: minmax(0, 1fr); }
+/* El truco de 0fr solo colapsa la ÚNICA fila explícita del grid: si los
+   .sidebar-subitem fueran hijos directos, del 2do en adelante caerían en
+   filas implícitas (auto) que no colapsan y quedan visibles encima del
+   siguiente grupo. Por eso van envueltos en .collapse-inner — un solo
+   hijo, una sola fila. */
+.collapse-inner{ min-height: 0; overflow: hidden; }
 
 .sidebar-subitem{
   display: flex; align-items: center; gap: 10px;
@@ -623,6 +697,34 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   z-index: 200;
 }
 .sidebar-tooltip.visible{ opacity: 1; visibility: visible; }
+
+/* ── Flyout de submenú en modo contraído (solo íconos) ──
+   El .collapse normal queda oculto ahí (ver ".sidebar.collapsed .collapse"
+   más abajo — no hay espacio para las etiquetas), así que este flyout es
+   la forma de seguir llegando a esas mismas áreas sin expandir el panel:
+   aparece al pasar el mouse sobre el ícono del grupo (ver paneles.js),
+   con position:fixed por la misma razón que el tooltip de arriba. */
+.sidebar-flyout{
+  position: fixed;
+  min-width: 210px;
+  background: var(--sb-bg);
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius);
+  box-shadow: var(--shadow-hover);
+  padding: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateX(-4px);
+  transition: opacity .12s ease, transform .12s ease;
+  z-index: 210;
+}
+.sidebar-flyout.visible{ opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0); }
+.sidebar-flyout-title{
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--sb-text-muted); font-weight: 700;
+  padding: 6px 10px 8px;
+}
+.sidebar-flyout .sidebar-subitem{ margin: 1px 0; border-left: none; padding: 8px 10px; }
 
 /* ── Responsive: sidebar como panel deslizante en pantallas angostas ──
    Por debajo de este ancho, el sidebar fijo de 268px ya no cabe junto al

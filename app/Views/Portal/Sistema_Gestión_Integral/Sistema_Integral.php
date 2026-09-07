@@ -25,7 +25,7 @@
             <?php if (!$moduloAreas): ?>
               <p class="text-muted">Sin áreas registradas por ahora.</p>
             <?php else: foreach ($moduloAreas as $a): ?>
-              <div class="area-item">
+              <div class="area-item" id="<?= e(sb_slug($a['label'])) ?>">
                 <span class="ic"><i class="bi bi-folder2"></i></span>
                 <span style="flex:1">
                   <span class="label"><?= e($a['label']) ?></span>

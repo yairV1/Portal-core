@@ -15,7 +15,7 @@
     <div class="kicker" id="saludoKicker">Buenos días</div>
     <h1>La institución está en marcha.</h1>
     <p>
-      Jeiver, tienes <?= count($pendientes) ?> pendiente<?= count($pendientes) === 1 ? '' : 's' ?>
+      <?= e($nombre) ?>, tienes <?= count($pendientes) ?> pendiente<?= count($pendientes) === 1 ? '' : 's' ?>
       <?php if ($docsEnRevision > 0): ?>
         y <?= $docsEnRevision ?> documento<?= $docsEnRevision === 1 ? '' : 's' ?> en revisión.
       <?php else: ?>
