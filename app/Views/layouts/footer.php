@@ -11,6 +11,5 @@
     });
   }
 </script>
-<script src="<?= BASE_URL ?>/assets/js/login/main.js"></script>
 </body>
 </html>

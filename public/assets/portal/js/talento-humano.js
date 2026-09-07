@@ -38,10 +38,10 @@
   ];
 
   const KPIS_TALENTO = [
-    { label: 'Colaboradores', valor: '594' },
-    { label: 'Evaluaciones cerradas', valor: '81%' },
-    { label: 'Horas de capacitación', valor: '4.180' },
-    { label: 'Rotación anual', valor: '6,2%' }
+    { label: 'Colaboradores', valor: '594', estado: 'accent' },
+    { label: 'Evaluaciones cerradas', valor: '81%', estado: 'success' },
+    { label: 'Horas de capacitación', valor: '4.180', estado: 'accent' },
+    { label: 'Rotación anual', valor: '6,2%', estado: 'warning' }
   ];
   const DESEMPENO = [
     { area: 'Rectoría', metas: 6, cumplidas: 5, pct: 83, estado: 'Sobresaliente' },
@@ -61,15 +61,16 @@
   ];
 
   const tagEstado = (estado) => estado === 'Sobresaliente' ? 'tag-ok' : estado === 'En riesgo' ? 'tag-warn' : 'tag-neutral';
+  const COLOR_ESTADO = { success: 'var(--color-success)', warning: 'var(--color-warning)', accent: 'var(--color-accent)' };
 
   /* ═══ Pestañas ═══ */
   let tabActivo = 'organigrama';
   const TABS = [['organigrama','Organigrama'], ['funciones','Manual de funciones'], ['desempeno','Desempeño'], ['bienestar','Bienestar']];
 
   function renderTabs(){
-    document.getElementById('thTabs').innerHTML = TABS.map(([id,label]) => `
-      <button class="th-tab ${tabActivo===id?'active':''}" data-tab="${id}">${label}</button>`).join('');
-    document.querySelectorAll('.th-tab').forEach(btn => {
+    document.getElementById('thTabs').innerHTML = `<div class="pill-tabs">` + TABS.map(([id,label]) => `
+      <button type="button" class="pill-tab ${tabActivo===id?'active':''}" data-tab="${id}">${label}</button>`).join('') + `</div>`;
+    document.querySelectorAll('.pill-tab').forEach(btn => {
       btn.addEventListener('click', () => { tabActivo = btn.dataset.tab; renderTabs(); renderContenido(); });
     });
   }
@@ -90,33 +91,33 @@
                 </div>`).join('')}
             </div>
           </div>`).join('')}
-        <div style="border-top:2px solid var(--color-divider);padding-top:24px;margin-top:12px">
-          <h4 style="margin:0 0 14px">Consejos y comités</h4>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <div class="subsection">
+          <h4 class="section-title">Consejos y comités</h4>
+          <div class="chip-row">
             ${COMITES.map(c => `<span class="tag-outline">${c}</span>`).join('')}
           </div>
         </div>`;
 
     } else if (tabActivo === 'funciones') {
       cont.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:start">
+        <div class="two-col">
           <table class="table">
             <thead><tr><th>Cargo</th><th>Dirección</th><th>Nivel</th><th>Manual</th></tr></thead>
             <tbody>
               ${CARGOS.map(c => `
-                <tr style="cursor:pointer">
+                <tr>
                   <td><strong>${c.cargo}</strong></td>
-                  <td style="opacity:.7">${c.direccion}</td>
+                  <td class="text-muted">${c.direccion}</td>
                   <td><span class="tag tag-neutral">${c.nivel}</span></td>
-                  <td style="color:var(--color-accent-700);font-weight:800">MF-${c.codigo}</td>
+                  <td class="text-accent">MF-${c.codigo}</td>
                 </tr>`).join('')}
             </tbody>
           </table>
-          <div style="border:1px solid var(--color-divider);padding:24px">
-            <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;opacity:.5;padding-bottom:12px">Competencias institucionales</div>
+          <div class="box-card">
+            <div class="side-box-title">Competencias institucionales</div>
             ${COMPETENCIAS.map(c => `
               <div class="comp-row">
-                <div class="comp-head"><span>${c.label}</span><span style="font-weight:800">${c.pct}%</span></div>
+                <div class="comp-head"><span>${c.label}</span><strong>${c.pct}%</strong></div>
                 <div class="comp-bar"><div class="comp-bar-fill" style="width:${c.pct}%"></div></div>
               </div>`).join('')}
           </div>
@@ -125,22 +126,25 @@
     } else if (tabActivo === 'desempeno') {
       cont.innerHTML = `
         <div class="kpis">
-          ${KPIS_TALENTO.map(k => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.valor}</div></div>`).join('')}
+          ${KPIS_TALENTO.map((k, i) => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.valor}</div><div class="kpi-foot"><span></span><span class="kpi-spark" id="thKpiSpark${i}"></span></div></div>`).join('')}
         </div>
-        <h4 style="margin:0 0 4px">Cascadeo de metas 2026</h4>
+        <h4 class="section-title">Cascadeo de metas 2026</h4>
         <table class="table">
           <thead><tr><th>Área</th><th>Metas</th><th>Cumplidas</th><th>Avance</th><th>Evaluación</th></tr></thead>
           <tbody>
             ${DESEMPENO.map(d => `
               <tr>
                 <td><strong>${d.area}</strong></td>
-                <td style="opacity:.7">${d.metas}</td>
-                <td style="opacity:.7">${d.cumplidas}</td>
-                <td style="width:200px"><span style="display:block;height:6px;background:var(--color-surface)"><span style="display:block;height:6px;background:var(--color-accent);width:${d.pct}%"></span></span></td>
+                <td class="text-muted">${d.metas}</td>
+                <td class="text-muted">${d.cumplidas}</td>
+                <td class="progress-cell"><span class="progress-track"><span class="progress-fill" style="width:${d.pct}%"></span></span></td>
                 <td><span class="tag ${tagEstado(d.estado)}">${d.estado}</span></td>
               </tr>`).join('')}
           </tbody>
         </table>`;
+      KPIS_TALENTO.forEach((k, i) => {
+        window.sparkline(document.getElementById('thKpiSpark' + i), window.tendenciaSintetica(k.valor), { color: COLOR_ESTADO[k.estado] });
+      });
 
     } else {
       cont.innerHTML = `

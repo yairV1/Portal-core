@@ -282,23 +282,6 @@ a:hover { color: var(--pr-dark); }
 }
 .auth-shell::before { width: 340px; height: 340px; top: -120px; left: -120px; }
 .auth-shell::after { width: 260px; height: 260px; bottom: -100px; right: -80px; }
-.auth-card {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 420px;
-  background: var(--surface);
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
-  padding: 2.25rem 2rem;
-}
-.auth-logo {
-  width: 56px; height: 56px; border-radius: 14px;
-  background: var(--gradient-brand);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 1.4rem;
-  margin: 0 auto .9rem;
-}
 
 /* Estados finales (uso finalizado, salón ocupado, 404) reutilizan .status-shell */
 .status-shell {
@@ -340,7 +323,6 @@ a:hover { color: var(--pr-dark); }
     padding-left: 12px;
     padding-right: 12px;
   }
-  .auth-card { padding: 1.75rem 1.35rem; }
 }
 
 /* ============================================================
@@ -608,25 +590,130 @@ a:hover { color: var(--pr-dark); }
 .badge-rol-pasante_sena { background-color: var(--warn) !important; color:#3a2b00 !important; }
 .badge-rol-vicerrectoria { background-color: #343a40 !important; }
 
-/* ---- Login: pantalla dividida con imagen de marca ---- */
-.auth-split { min-height: 100vh; display: flex; }
-.auth-split-brand {
-  flex: 1.1;
+/* ---- Login: panel deslizante Iniciar sesión / Recuperar contraseña ────
+   Mismo patrón que el mockup de referencia (overlay de color que se
+   desliza de un lado a otro), con la paleta institucional en vez de rojo,
+   y el segundo panel como recuperación en vez de registro (este sistema
+   no tiene registro público). */
+.slide-auth {
+  position: relative;
+  width: 100%;
+  max-width: 840px;
+  min-height: 540px;
+  background: var(--surface);
+  border-radius: 22px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* ── Overlay de carga tras enviar el login ──
+   El formulario se envía normal (sin AJAX): esto solo cubre la tarjeta con
+   un spinner mientras el navegador espera la redirección del servidor, en
+   vez de dejar el clic en "Ingresar" sin ninguna señal de que algo pasó. */
+.slide-loading{
+  position: absolute; inset: 0; z-index: 300;
+  background: var(--surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem;
+}
+.slide-loading-spinner{
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 4px solid var(--border); border-top-color: var(--pr);
+  animation: slide-loading-spin .7s linear infinite;
+}
+.slide-loading p{ color: var(--ink-soft); font-weight: 600; margin: 0; }
+@keyframes slide-loading-spin{ to { transform: rotate(360deg); } }
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  left: 0;
+  transition: transform .6s cubic-bezier(.65,0,.35,1), opacity .6s cubic-bezier(.65,0,.35,1);
+}
+.sign-in-container{ z-index: 2; }
+.recover-container{ opacity: 0; z-index: 1; }
+
+.slide-auth.right-panel-active .sign-in-container{ transform: translateX(100%); opacity: 0; z-index: 1; }
+.slide-auth.right-panel-active .recover-container{ transform: translateX(100%); opacity: 1; z-index: 5; }
+
+.slide-form{
+  background: var(--surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; width: 100%; padding: 0 2.75rem; text-align: center;
+}
+.slide-form input{
+  width: 100%; border: 1px solid var(--border); border-radius: 10px;
+  background: #fdfcff; padding: .8rem 1rem; font-size: .95rem; margin: .35rem 0;
+}
+.slide-form input:focus{
+  outline: none; border-color: var(--pr-light); box-shadow: 0 0 0 .2rem rgba(158,31,99,.15);
+}
+.slide-form h2{ margin: .3rem 0 .15rem; font-size: 1.35rem; }
+.slide-form-sub{ color: var(--ink-soft); font-size: .85rem; margin: 0 0 .7rem; line-height: 1.4; }
+.slide-form .btn{ width: 100%; margin-top: .6rem; min-height: 46px; }
+.slide-form-link{ font-size: .8rem; margin-top: 1.1rem; color: var(--ink-soft); }
+.slide-mobile-link{
+  display: none; border: none; background: none; padding: 0;
+  color: var(--pr); font-size: .85rem; font-weight: 600; margin-top: .9rem; cursor: pointer;
+}
+.slide-form-logo{
+  width: 54px; height: 54px; border-radius: 15px;
+  background: var(--gradient-brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; margin-bottom: .5rem;
+}
+.slide-form-logo-ok{ background: var(--ok); }
+.slide-form-logo-ghost{ background: rgba(255,255,255,.16); }
+
+/* ── Overlay que se desliza ── */
+.overlay-container{
+  position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
+  overflow: hidden; z-index: 100;
+  transition: transform .6s cubic-bezier(.65,0,.35,1);
+}
+.slide-auth.right-panel-active .overlay-container{ transform: translateX(-100%); }
+
+.overlay{
   background: var(--gradient-brand);
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 3rem; color: #fff; position: relative; overflow: hidden;
+  color: #fff;
+  position: relative;
+  left: -100%;
+  height: 100%; width: 200%;
+  transform: translateX(0);
+  transition: transform .6s cubic-bezier(.65,0,.35,1);
 }
-.auth-split-brand::before, .auth-split-brand::after {
-  content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.08);
+.slide-auth.right-panel-active .overlay{ transform: translateX(50%); }
+
+.overlay-panel{
+  position: absolute; top: 0; height: 100%; width: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 2.75rem; text-align: center;
+  transition: transform .6s cubic-bezier(.65,0,.35,1);
 }
-.auth-split-brand::before { width: 380px; height: 380px; top: -140px; left: -140px; }
-.auth-split-brand::after { width: 280px; height: 280px; bottom: -110px; right: -90px; }
-.auth-split-form {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  background: var(--bg); padding: 2rem;
-}
-@media (max-width: 900px) {
-  .auth-split-brand { display: none; }
+.overlay-left{ left: 0; transform: translateX(-20%); }
+.slide-auth.right-panel-active .overlay-left{ transform: translateX(0); }
+.overlay-right{ right: 0; transform: translateX(0); }
+.slide-auth.right-panel-active .overlay-right{ transform: translateX(20%); }
+
+.overlay-panel h2{ color: #fff; margin: .3rem 0 .6rem; }
+.overlay-panel p{ opacity: .92; font-size: .88rem; margin: 0 0 1.3rem; line-height: 1.5; }
+.btn-outline-light{ border: 1.5px solid #fff; color: #fff; background: transparent; }
+.btn-outline-light:hover{ background: #fff; color: var(--pr); }
+
+/* ── Móvil: la animación de deslizamiento en 2 mitades no cabe cómoda por
+   debajo de este ancho, así que el panel decorativo se oculta y el cambio
+   entre formularios pasa a ser un simple enlace de texto (mismo JS). ── */
+@media (max-width: 760px) {
+  .slide-auth{ min-height: auto; border-radius: var(--radius); }
+  .overlay-container{ display: none; }
+  .form-container{ position: relative; width: 100%; transform: none !important; opacity: 1 !important; z-index: 1 !important; }
+  .recover-container{ display: none; }
+  .slide-auth.right-panel-active .sign-in-container{ display: none; }
+  .slide-auth.right-panel-active .recover-container{ display: block; }
+  .slide-form{ height: auto; padding: 2.25rem 1.5rem; }
+  .slide-mobile-link{ display: inline-block; }
 }
 
 /* ---- Aviso para activar notificaciones de escritorio ---- */

@@ -1,20 +1,8 @@
-  /* ═══ Datos de ejemplo — Sistema de Gestión Integral ═══ */
+  /* kicker/titulo/desc/kpis/areas ya los renderiza Sistema_Integral.php
+     con datos reales desde $pdo (ver PortalController.php) — acá solo
+     queda lo que todavía no tiene tabla real (docs/responsables/software,
+     ver plan). */
   const MODULO = {
-    kicker: 'Sistema de Gestión Integral',
-    titulo: 'Procesos, riesgos y mejoramiento',
-    desc: 'Mapa de procesos, caracterizaciones, procedimientos, auditorías, riesgos y planes de mejoramiento bajo ISO 9001.',
-    kpis: [
-      { label: 'Procesos', valor: '9' },
-      { label: 'Procedimientos', valor: '87' },
-      { label: 'Riesgos activos', valor: '31' },
-      { label: 'Hallazgos abiertos', valor: '6' }
-    ],
-    areas: [
-      { label: 'Mapa de procesos', meta: 'Estratégicos · Misionales · Apoyo · Evaluación' },
-      { label: 'Caracterizaciones', meta: '9 procesos con entradas y salidas' },
-      { label: 'Auditorías internas', meta: 'Ciclo 2026 · 4 auditorías' },
-      { label: 'Riesgos y oportunidades', meta: 'Matriz institucional' }
-    ],
     docs: [
       { nombre: 'Mapa de Procesos Institucional', tipo: 'Caracterización', version: 'V3.0', fecha: '21 jul 2026' },
       { nombre: 'Procedimiento de Control Documental', tipo: 'Procedimiento', version: 'V2.2', fecha: '10 jul 2026' },
@@ -28,22 +16,9 @@
     software: ['Suite ISO', 'Mesa de ayuda', 'Power BI · Riesgos']
   };
 
-  document.getElementById('moduloKicker').textContent = MODULO.kicker;
-  document.getElementById('moduloTitulo').textContent = MODULO.titulo;
-  document.getElementById('moduloDesc').textContent = MODULO.desc;
-
-  document.getElementById('moduloKpis').innerHTML = MODULO.kpis.map(k => `
-    <div class="modulo-kpi"><div class="label">${k.label}</div><div class="valor">${k.valor}</div></div>`).join('');
-
-  document.getElementById('moduloAreas').innerHTML = MODULO.areas.map(a => `
-    <div class="area-item">
-      <span class="ic"><i class="bi bi-folder2"></i></span>
-      <span style="flex:1">
-        <span class="label">${a.label}</span>
-        <span class="meta">${a.meta}</span>
-      </span>
-      <span class="arrow">→</span>
-    </div>`).join('');
+  document.querySelectorAll('.modulo-kpi .spark[data-valor]').forEach(el => {
+    window.sparkline(el, window.tendenciaSintetica(el.dataset.valor));
+  });
 
   document.getElementById('moduloDocs').innerHTML = MODULO.docs.map(d => `
     <tr>

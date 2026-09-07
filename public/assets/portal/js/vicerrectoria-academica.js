@@ -1,21 +1,8 @@
-  /* ═══ Datos de ejemplo — Vicerrectoría Académica ═══ */
+  /* kicker/titulo/desc/kpis/areas ya los renderiza Vicerrectoria.php con
+     datos reales desde $pdo (ver PortalController.php) — acá solo queda
+     lo que todavía no tiene tabla real (docs/responsables/software, ver
+     plan). */
   const MODULO = {
-    kicker: 'Vicerrectoría Académica',
-    titulo: 'Gestión Académica',
-    desc: 'Programas, decanaturas, registro y control académico, reglamentos, consejos y planeación académica.',
-    kpis: [
-      { label: 'Estudiantes', valor: '8.742' },
-      { label: 'Programas', valor: '11' },
-      { label: 'Docentes', valor: '412' },
-      { label: 'Retención', valor: '89,4%' }
-    ],
-    areas: [
-      { label: 'Decanatura de Tecnologías y Transformación Digital', meta: '3 programas · 2.410 estudiantes' },
-      { label: 'Decanatura de Ciencias Administrativas, Contables y Financieras', meta: '4 programas · 3.180 estudiantes' },
-      { label: 'Decanatura de Infraestructura, Desarrollo y Sostenibilidad', meta: '2 programas · 1.520 estudiantes' },
-      { label: 'Decanatura del Centro de Idiomas e Internacionalización', meta: 'Cursos · Movilidad' },
-      { label: 'Registro y Control Académico', meta: 'Matrícula · Certificaciones' }
-    ],
     docs: [
       { nombre: 'Reglamento Estudiantil', tipo: 'Reglamento', version: 'V5.0', fecha: '20 jul 2026' },
       { nombre: 'Calendario Académico 2026-II', tipo: 'Cronograma', version: 'V1.1', fecha: '01 jul 2026' },
@@ -29,22 +16,9 @@
     software: ['Software Académico', 'Campus Virtual', 'Biblioteca digital']
   };
 
-  document.getElementById('moduloKicker').textContent = MODULO.kicker;
-  document.getElementById('moduloTitulo').textContent = MODULO.titulo;
-  document.getElementById('moduloDesc').textContent = MODULO.desc;
-
-  document.getElementById('moduloKpis').innerHTML = MODULO.kpis.map(k => `
-    <div class="modulo-kpi"><div class="label">${k.label}</div><div class="valor">${k.valor}</div></div>`).join('');
-
-  document.getElementById('moduloAreas').innerHTML = MODULO.areas.map(a => `
-    <div class="area-item">
-      <span class="ic"><i class="bi bi-folder2"></i></span>
-      <span style="flex:1">
-        <span class="label">${a.label}</span>
-        <span class="meta">${a.meta}</span>
-      </span>
-      <span class="arrow">→</span>
-    </div>`).join('');
+  document.querySelectorAll('.modulo-kpi .spark[data-valor]').forEach(el => {
+    window.sparkline(el, window.tendenciaSintetica(el.dataset.valor));
+  });
 
   document.getElementById('moduloDocs').innerHTML = MODULO.docs.map(d => `
     <tr>

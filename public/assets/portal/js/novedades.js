@@ -1,20 +1,8 @@
-  /* ═══ Datos de ejemplo — Novedades ═══ */
+  /* kicker/titulo/desc/kpis/areas ya los renderiza Novedades.php con
+     datos reales desde $pdo (ver PortalController.php) — acá solo queda
+     lo que todavía no tiene tabla real (docs/responsables/software, ver
+     plan). */
   const MODULO = {
-    kicker: 'Comunicaciones Institucionales',
-    titulo: 'Novedades',
-    desc: 'Noticias, comunicados, circulares, eventos, reconocimientos y alertas institucionales.',
-    kpis: [
-      { label: 'Publicaciones mes', valor: '34' },
-      { label: 'Circulares 2026', valor: '61' },
-      { label: 'Eventos próximos', valor: '9' },
-      { label: 'Lectura promedio', valor: '78%' }
-    ],
-    areas: [
-      { label: 'Noticias', meta: 'Actualidad institucional' },
-      { label: 'Comunicados y circulares', meta: 'Rectoría · Secretaría General' },
-      { label: 'Eventos', meta: 'Agenda institucional' },
-      { label: 'Reconocimientos', meta: 'Talento que suma' }
-    ],
     docs: [
       { nombre: 'Circular 061 · Cierre académico 2026-II', tipo: 'Circular', version: 'V1.0', fecha: '29 jul 2026' },
       { nombre: 'Comunicado Rectoría · Acreditación', tipo: 'Comunicado', version: 'V1.0', fecha: '24 jul 2026' },
@@ -26,22 +14,9 @@
     software: ['Correo institucional', 'Google Workspace']
   };
 
-  document.getElementById('moduloKicker').textContent = MODULO.kicker;
-  document.getElementById('moduloTitulo').textContent = MODULO.titulo;
-  document.getElementById('moduloDesc').textContent = MODULO.desc;
-
-  document.getElementById('moduloKpis').innerHTML = MODULO.kpis.map(k => `
-    <div class="modulo-kpi"><div class="label">${k.label}</div><div class="valor">${k.valor}</div></div>`).join('');
-
-  document.getElementById('moduloAreas').innerHTML = MODULO.areas.map(a => `
-    <div class="area-item">
-      <span class="ic"><i class="bi bi-folder2"></i></span>
-      <span style="flex:1">
-        <span class="label">${a.label}</span>
-        <span class="meta">${a.meta}</span>
-      </span>
-      <span class="arrow">→</span>
-    </div>`).join('');
+  document.querySelectorAll('.modulo-kpi .spark[data-valor]').forEach(el => {
+    window.sparkline(el, window.tendenciaSintetica(el.dataset.valor));
+  });
 
   document.getElementById('moduloDocs').innerHTML = MODULO.docs.map(d => `
     <tr>

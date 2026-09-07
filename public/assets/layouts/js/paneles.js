@@ -78,13 +78,42 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Botón ☰ del navbar: colapsa el sidebar (la función vive en sidebar.js)
+  // Botón ☰ del navbar: en escritorio colapsa el sidebar a íconos; en
+  // pantallas angostas (sidebar ya es un panel deslizante, ver paneles.css)
+  // lo abre/cierra en su lugar. Ambas funciones viven en sidebar.js.
   const btnToggleNav = document.getElementById('btnToggleNav');
   if (btnToggleNav) {
     btnToggleNav.addEventListener('click', function () {
-      if (typeof window.toggleSidebarCollapse === 'function') {
+      const esMobile = window.matchMedia('(max-width: 880px)').matches;
+      if (esMobile && typeof window.toggleSidebarMobile === 'function') {
+        window.toggleSidebarMobile();
+      } else if (typeof window.toggleSidebarCollapse === 'function') {
         window.toggleSidebarCollapse();
       }
+    });
+  }
+
+  // Confirmación antes de cerrar sesión (SweetAlert2, cargado en
+  // portal-footer.php). El aviso de "sesión cerrada" ya lo muestra
+  // login.php al volver, vía el ?salida=1 que agrega AuthController.
+  const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+  if (btnCerrarSesion) {
+    btnCerrarSesion.addEventListener('click', function (e) {
+      if (typeof SwalBrand === 'undefined') return; // sin SweetAlert2, deja el enlace normal
+      e.preventDefault();
+      SwalBrand.fire({
+        icon: 'question',
+        title: '¿Cerrar sesión?',
+        text: 'Tendrás que volver a ingresar tu correo y contraseña.',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cerrar sesión',
+        confirmButtonColor: '#d63859', // --color-danger: es la única acción destructiva real del Portal
+        cancelButtonText: 'Cancelar'
+      }).then(function (resultado) {
+        if (resultado.isConfirmed) {
+          window.location.href = btnCerrarSesion.href;
+        }
+      });
     });
   }
 });
@@ -104,6 +133,39 @@ document.addEventListener('DOMContentLoaded', function () {
     const colapsado = sidebar.classList.toggle('collapsed');
     try { localStorage.setItem('sidebarCollapsed', colapsado ? '1' : '0'); } catch (e) {}
   };
+
+  // Panel deslizante en pantallas angostas (<=880px): no se guarda
+  // preferencia, cada carga de página empieza cerrado.
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  window.toggleSidebarMobile = function () {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.toggle('open');
+  };
+  function cerrarSidebarMobile() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.classList.remove('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('open');
+  }
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', cerrarSidebarMobile);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrarSidebarMobile();
+  });
+
+  // Submenús de dirección (ej. "Gestión Institucional" → "Mejoras"): el
+  // atributo data-bs-toggle="collapse" es solo semántico acá — este
+  // proyecto no carga el JS de Bootstrap, así que el toggle real es este.
+  document.querySelectorAll('.sidebar-group > [data-bs-toggle="collapse"]').forEach(function (trigger) {
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      const panel = document.getElementById(trigger.getAttribute('aria-controls'));
+      if (!panel) return;
+      const abierto = panel.classList.toggle('show');
+      trigger.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    });
+  });
 
   // Tooltip con el nombre del ítem al pasar el mouse, cuando el sidebar está
   // contraído. Va con position:fixed y se posiciona aquí por JS porque un

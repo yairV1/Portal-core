@@ -19,6 +19,62 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#9E1F63">
+<script>
+  // Si el navegador restaura esta página desde su caché de "atrás/adelante"
+  // (bfcache) — por ejemplo, al volver con el botón "atrás" justo después
+  // de cerrar sesión — la vuelve a pedir al servidor en vez de mostrarla
+  // tal cual quedó pintada. El Cache-Control: no-store de public/index.php
+  // ya evita que la guarde en la mayoría de los casos, pero esto cubre el
+  // resto: sin esto, alcanza a verse un instante como si la sesión
+  // siguiera activa antes de que la redirección real se complete.
+  window.addEventListener('pageshow', function (evento) {
+    if (evento.persisted) window.location.reload();
+  });
+</script>
+<script>
+  // sparkline(el, valores, opts): mini gráfica de línea en SVG, sin
+  // librería (todo el proyecto evita dependencias de gráficas). Se define
+  // acá arriba —no en paneles.js, que carga al final del body— porque el
+  // script propio de cada página (que la llama) corre antes que ese.
+  window.sparkline = function (el, valores, opts) {
+    if (!el || !valores || valores.length < 2) return;
+    opts = opts || {};
+    var w = opts.width || 64, h = opts.height || 24;
+    var color = opts.color || 'var(--color-accent)';
+    var min = Math.min.apply(null, valores), max = Math.max.apply(null, valores);
+    var rango = (max - min) || 1;
+    var paso = w / (valores.length - 1);
+    var puntos = valores.map(function (v, i) {
+      var x = i * paso;
+      var y = h - ((v - min) / rango) * h;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    // opts.fill (opcional): además de la línea, rellena el área debajo
+    // con el mismo color a baja opacidad — para KPIs donde la tendencia
+    // merece más presencia visual que una línea sola.
+    var area = '';
+    if (opts.fill) {
+      area = '<polygon points="0,' + h + ' ' + puntos + ' ' + w + ',' + h + '" fill="' + color + '" opacity=".14"/>';
+    }
+    el.innerHTML =
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none">' +
+        area +
+        '<polyline points="' + puntos + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  };
+
+  // tendenciaSintetica(valorTexto): arma 6 puntos crecientes que terminan
+  // en el valor mostrado, para dibujar un sparkline sin inventar un
+  // histórico "real" en datos de ejemplo — la usan las páginas de módulo.
+  window.tendenciaSintetica = function (valorTexto) {
+    var n = parseFloat(String(valorTexto).replace(/\./g, '').replace(',', '.')) || 0;
+    var base = n * 0.82;
+    var paso = (n - base) / 5;
+    var puntos = [];
+    for (var i = 0; i < 6; i++) puntos.push(base + paso * i);
+    return puntos;
+  };
+</script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
 
@@ -26,8 +82,12 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<!-- Bootstrap Icons: la usan los <i class="bi bi-..."> que arman por JS
+     casi todas las vistas del Portal (accesos rápidos, KPIs, etc.) —
+     Font Awesome de arriba es solo para el topbar/sidebar estáticos. -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/layouts/css/paneles.css">
+<link rel="stylesheet" href="<?= v('/assets/layouts/css/paneles.css') ?>">
 </head>
 <body>
 <script>
@@ -57,8 +117,8 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   <div class="brand" onclick="location.reload()">
     <div class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
     <span>
-      <span class="brand-name" style="display:block">PORTAL CORE</span>
-      <span class="brand-sub" style="display:block">Coreducación</span>
+      <span class="brand-name">PORTAL CORE</span>
+      <span class="brand-sub">Coreducación</span>
     </span>
   </div>
 
@@ -75,8 +135,8 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     <div class="profile" id="btnProfile">
       <span class="avatar"><?= e($inicial) ?></span>
       <span>
-        <span class="profile-name" style="display:block"><?= e($nombre) ?></span>
-        <span class="profile-role" style="display:block"><?= e($cargo) ?></span>
+        <span class="profile-name"><?= e($nombre) ?></span>
+        <span class="profile-role"><?= e($cargo) ?></span>
       </span>
       <i class="fa-solid fa-chevron-down profile-chevron"></i>
     </div>
