@@ -11,38 +11,34 @@
 }
 .cal-hoy:hover{ background:var(--color-accent-100) }
 
-.cal-nuevo{
-  border:1px solid var(--color-divider); border-radius:var(--radius-md);
-  margin-bottom:16px; overflow:hidden;
-  /* topbar (64px) + barra de ruta (44px) son sticky — ver paneles.css
-     .app-shell — así que al saltar acá con #calNuevo (clic en un día del
-     grid) el navegador lo deja pegado arriba, tapado por esos 108px fijos.
-     scroll-margin-top le dice al navegador que deje ese espacio libre. */
-  scroll-margin-top: 120px;
+/* Popover flotante de "nuevo evento" — posición (top/left) la calcula
+   calendario.js según la celda que se haya clicado; acá solo la
+   apariencia. Requiere JS (igual que el sidebar colapsable o el
+   asistente) — sin JS, un admin no puede crear eventos desde acá. */
+.cal-popover{
+  position:fixed; z-index:100; width:260px;
+  background:var(--color-bg); border:1px solid var(--color-accent); border-radius:var(--radius-md);
+  box-shadow:var(--shadow-hover);
 }
-.cal-nuevo[open]{ border-color:var(--color-accent); box-shadow:0 0 0 1px var(--color-accent-200) }
-.cal-nuevo summary{
-  display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer;
-  list-style:none; font-size:12.5px; font-weight:700; color:var(--color-accent);
+.cal-pop-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; border-bottom:1px solid var(--color-divider); font-size:12.5px; font-weight:700;
 }
-.cal-nuevo summary::-webkit-details-marker{ display:none }
-.cal-nuevo summary:hover{ background:var(--color-surface) }
-.cal-form{
-  display:flex; flex-wrap:wrap; gap:8px; padding:0 14px 14px;
-  border-top:1px solid var(--color-divider); padding-top:12px;
+.cal-pop-close{
+  border:none; background:none; cursor:pointer; opacity:.6; font-size:12px; padding:2px; color:inherit;
 }
-.cal-form input[type="text"],
-.cal-form input[type="date"]{
-  border:1px solid var(--color-divider); border-radius:var(--radius-sm);
+.cal-pop-close:hover{ opacity:1 }
+.cal-pop-form{ display:flex; flex-direction:column; gap:8px; padding:12px 14px }
+.cal-pop-form input[type="text"],
+.cal-pop-form input[type="date"]{
+  width:100%; box-sizing:border-box; border:1px solid var(--color-divider); border-radius:var(--radius-sm);
   padding:7px 10px; font-size:12.5px; background:var(--color-bg); color:var(--color-text);
 }
-.cal-form input[name="titulo"]{ flex:1 1 220px }
-.cal-form input[name="hora_lugar"]{ flex:1 1 220px }
-.cal-form button{
-  border:none; border-radius:var(--radius-sm); padding:7px 16px; font-size:12.5px; font-weight:700;
+.cal-pop-form button{
+  border:none; border-radius:var(--radius-sm); padding:8px 16px; font-size:12.5px; font-weight:700;
   background:var(--color-accent); color:#fff; cursor:pointer;
 }
-.cal-form button:hover{ opacity:.9 }
+.cal-pop-form button:hover{ opacity:.9 }
 
 .cal-grid{
   display:grid; grid-template-columns:repeat(7, 1fr); gap:1px;
@@ -55,13 +51,14 @@
 }
 .cal-celda{
   background:var(--color-bg); min-height:96px; padding:8px; display:flex; flex-direction:column; gap:4px;
-  color:inherit; text-decoration:none; /* la celda puede ser <a> (admin) o <div> (resto) */
+  color:inherit; text-decoration:none; /* la celda puede ser <button> (admin) o <div> (resto) */
 }
 .cal-celda.cal-vacia{ background:var(--color-surface) }
 .cal-celda.cal-hoy{ background:var(--color-accent-100) }
-a.cal-celda{ cursor:pointer }
-a.cal-celda:hover{ background:var(--color-surface); box-shadow:inset 0 0 0 1px var(--color-accent-200) }
-a.cal-celda.cal-hoy:hover{ background:var(--color-accent-200) }
+/* reset de <button>: sin esto hereda borde/fuente/alineación de botón del navegador */
+button.cal-celda{ width:100%; border:none; margin:0; font:inherit; text-align:left; cursor:pointer; }
+button.cal-celda:hover{ background:var(--color-surface); box-shadow:inset 0 0 0 1px var(--color-accent-200) }
+button.cal-celda.cal-hoy:hover{ background:var(--color-accent-200) }
 .cal-num{ font-size:12px; font-weight:700; opacity:.7 }
 .cal-celda.cal-hoy .cal-num{ color:var(--color-accent-700); opacity:1 }
 .cal-evento{

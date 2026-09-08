@@ -13,17 +13,20 @@
 <?php $esAdmin = ($_SESSION['usuario_rol'] ?? '') === 'admin'; ?>
 
 <?php if ($esAdmin): ?>
-<details class="cal-nuevo" id="calNuevo"<?= $calDiaNuevo ? ' open' : '' ?>>
-  <summary><i class="bi bi-plus-lg"></i> Nuevo evento</summary>
-  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-form">
+<div class="cal-popover" id="calPopover" hidden>
+  <div class="cal-pop-head">
+    <strong>Nuevo evento</strong>
+    <button type="button" class="cal-pop-close" id="calPopClose" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-pop-form">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="text" name="titulo" placeholder="Título del evento" maxlength="200" required>
-    <input type="date" name="fecha" value="<?= e($calFechaNueva) ?>" required>
+    <input type="date" name="fecha" id="calPopFecha" required>
     <input type="text" name="hora_lugar" placeholder="Hora y lugar (ej. 10:00 · Sala de juntas)" maxlength="100">
     <button type="submit"><i class="bi bi-check-lg"></i> Crear</button>
   </form>
-</details>
+</div>
 <?php endif; ?>
 
 <div class="cal-grid">
@@ -35,9 +38,9 @@
     <?php
       $celdaClase = 'cal-celda' . ($dia === null ? ' cal-vacia' : '') . (($dia !== null && $dia === $calHoy) ? ' cal-hoy' : '');
       $celdaClicable = $esAdmin && $dia !== null;
-      $tag = $celdaClicable ? 'a' : 'div';
+      $tag = $celdaClicable ? 'button' : 'div';
     ?>
-    <<?= $tag ?> class="<?= $celdaClase ?>"<?php if ($celdaClicable): ?> href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesActual) ?>&nuevo=<?= $dia ?>#calNuevo" title="Agregar evento el <?= $dia ?>"<?php endif; ?>>
+    <<?= $tag ?> class="<?= $celdaClase ?>"<?php if ($celdaClicable): ?> type="button" data-dia="<?= $dia ?>" title="Agregar evento el <?= $dia ?>"<?php endif; ?>>
       <?php if ($dia !== null): ?>
         <span class="cal-num"><?= $dia ?></span>
         <?php foreach ($eventosPorDia[$dia] ?? [] as $ev): ?>
@@ -66,4 +69,5 @@ usort($todosLosEventosDelMes, fn($a, $b) => strcmp($a['fecha'], $b['fecha']));
     </span>
   </div>
 <?php endforeach; endif; ?>
+<?php if ($esAdmin): ?><script src="<?= BASE_URL ?>/assets/portal/js/calendario.js"></script><?php endif; ?>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

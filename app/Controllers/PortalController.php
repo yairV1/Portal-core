@@ -214,18 +214,6 @@ if ($uri === '/calendario') {
     }
     $calSemanas = array_chunk($celdas, 7);
     $calHoy = ((new DateTime('today'))->format('Y-m') === $calMesActual) ? (int) (new DateTime('today'))->format('j') : null;
-
-    // Clic en el "+" de un día → reabre la página con ese día ya cargado en
-    // el formulario (?nuevo=15), sin JS: el <details> se abre con el
-    // atributo "open" y el <input type="date"> trae el value puesto.
-    $calDiaNuevo = null;
-    if (isset($_GET['nuevo']) && ctype_digit((string) $_GET['nuevo'])) {
-        $dia = (int) $_GET['nuevo'];
-        if ($dia >= 1 && $dia <= $diasEnMes) {
-            $calDiaNuevo = $dia;
-        }
-    }
-    $calFechaNueva = $calMesActual . '-' . str_pad((string) ($calDiaNuevo ?? 1), 2, '0', STR_PAD_LEFT);
 }
 
 // ── Mapa del portal ──
