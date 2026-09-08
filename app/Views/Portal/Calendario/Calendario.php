@@ -10,14 +10,16 @@
   <a class="cal-hoy" href="<?= BASE_URL ?>/calendario">Hoy</a>
 </div>
 
-<?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
-<details class="cal-nuevo">
+<?php $esAdmin = ($_SESSION['usuario_rol'] ?? '') === 'admin'; ?>
+
+<?php if ($esAdmin): ?>
+<details class="cal-nuevo" id="calNuevo"<?= $calDiaNuevo ? ' open' : '' ?>>
   <summary><i class="bi bi-plus-lg"></i> Nuevo evento</summary>
   <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-form">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="text" name="titulo" placeholder="Título del evento" maxlength="200" required>
-    <input type="date" name="fecha" required>
+    <input type="date" name="fecha" value="<?= e($calFechaNueva) ?>" required>
     <input type="text" name="hora_lugar" placeholder="Hora y lugar (ej. 10:00 · Sala de juntas)" maxlength="100">
     <button type="submit"><i class="bi bi-check-lg"></i> Crear</button>
   </form>
@@ -32,7 +34,14 @@
   <?php foreach ($calSemanas as $semana): foreach ($semana as $dia): ?>
     <div class="cal-celda<?= $dia === null ? ' cal-vacia' : '' ?><?= ($dia !== null && $dia === $calHoy) ? ' cal-hoy' : '' ?>">
       <?php if ($dia !== null): ?>
-        <span class="cal-num"><?= $dia ?></span>
+        <span class="cal-num-fila">
+          <span class="cal-num"><?= $dia ?></span>
+          <?php if ($esAdmin): ?>
+            <a class="cal-add" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesActual) ?>&nuevo=<?= $dia ?>#calNuevo" title="Agregar evento el <?= $dia ?>">
+              <i class="bi bi-plus-lg"></i>
+            </a>
+          <?php endif; ?>
+        </span>
         <?php foreach ($eventosPorDia[$dia] ?? [] as $ev): ?>
           <span class="cal-evento" title="<?= e($ev['titulo'] . ' · ' . $ev['hora_lugar']) ?>"><?= e($ev['titulo']) ?></span>
         <?php endforeach; ?>

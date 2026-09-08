@@ -52,8 +52,21 @@
 }
 .cal-celda.cal-vacia{ background:var(--color-surface) }
 .cal-celda.cal-hoy{ background:var(--color-accent-100) }
+.cal-celda:hover{ background:var(--color-surface) }
+.cal-celda.cal-hoy:hover{ background:var(--color-accent-200) }
+.cal-num-fila{ display:flex; align-items:center; justify-content:space-between }
 .cal-num{ font-size:12px; font-weight:700; opacity:.7 }
 .cal-celda.cal-hoy .cal-num{ color:var(--color-accent-700); opacity:1 }
+.cal-add{
+  width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:var(--color-accent); background:var(--color-accent-100);
+  opacity:0; transition:opacity .12s ease;
+}
+.cal-celda:hover .cal-add{ opacity:1 }
+.cal-add:hover{ background:var(--color-accent-200) }
+@media (hover: none){
+  .cal-add{ opacity:1 } /* en táctil no hay hover — se deja siempre visible */
+}
 .cal-evento{
   font-size:10.5px; font-weight:700; color:var(--color-accent-800); background:var(--color-accent-200);
   border-radius:6px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
