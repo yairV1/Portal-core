@@ -29,8 +29,7 @@ $modulos = [
 $modulo = $modulos[$uri] ?? null;
 
 if (!$modulo) {
-    http_response_code(404);
-    echo '<h1>404 — Página no encontrada</h1><p><a href="' . BASE_URL . '/">Volver al inicio</a></p>';
+    mostrar_error(404);
     exit;
 }
 
