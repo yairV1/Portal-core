@@ -1,0 +1,7 @@
+/config/local.php
+
+# Documentos subidos (ver DocumentoController.php) — contenido de usuarios,
+# no código; se queda fuera de public/ a propósito (no debe ser accesible
+# por URL directa, ver el comentario en DocumentoController.php).
+/storage/documentos/*
+!/storage/documentos/.gitkeep

@@ -4,7 +4,15 @@
 // ══════════════════════════════════════════════════════════
 
 define('ROOT_PATH', dirname(__DIR__));
-define('BASE_URL', '/Portal-core/public');
+
+// BASE_URL depende de cómo sirvas el proyecto EN TU MÁQUINA (vhost en la
+// raíz vs. acceso por subcarpeta) — por eso no vive acá, sino en
+// config/local.php, que está en .gitignore: cada máquina tiene el suyo y
+// ningún pull/merge lo vuelve a pisar (ver docs/entorno-local.md). Si no
+// existe ese archivo todavía, se asume '' (vhost en la raíz — la config
+// recomendada y documentada).
+$baseUrlLocal = @include ROOT_PATH . '/config/local.php';
+define('BASE_URL', is_string($baseUrlLocal) ? $baseUrlLocal : '');
 
 // Cuánto tiempo puede estar una sesión inactiva antes de cerrarse sola
 // (ver el bloque de inactividad más abajo).

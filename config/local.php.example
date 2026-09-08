@@ -1,0 +1,9 @@
+<?php
+// Copia este archivo a config/local.php (queda en .gitignore — nunca se
+// sube ni se pisa entre ramas o máquinas) y ajusta el valor a tu entorno.
+//
+// Si tu vhost/Apache sirve el proyecto en la raíz (ver docs/entorno-local.md
+// — es la config recomendada, ej. http://portal-core.local/login), deja ''.
+// Si en cambio accedes por una subcarpeta (ej. http://localhost/Portal-core/public),
+// pon esa ruta acá.
+return '';
