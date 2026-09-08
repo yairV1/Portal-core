@@ -1,4 +1,22 @@
-<?php $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
+<?php
+/** Variables que llegan ya resueltas desde HomeController.php (vía
+ * require, mismo scope) — el análisis estático no rastrea esa ruta
+ * dinámica, así que se declaran acá solo para que no marque falso
+ * positivo de "undefined variable"; no cambia nada en runtime.
+ * @var string $nombre
+ * @var array  $pendientes
+ * @var int    $docsEnRevision
+ * @var string $pdiValor
+ * @var string $pdiSufijo
+ * @var string $pdiDesc
+ * @var array  $kpis
+ * @var array  $accesos
+ * @var array  $docsRecientes
+ * @var array  $noticias
+ * @var array  $eventos
+ * @var array  $cumpleanos
+ */
+$titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/inicio.css') ?>">
 
 <?php $COLOR_ESTADO = ['success' => 'var(--color-success)', 'warning' => 'var(--color-warning)', 'accent' => 'var(--color-accent)']; ?>

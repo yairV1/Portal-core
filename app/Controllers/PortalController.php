@@ -24,6 +24,8 @@ $modulos = [
     '/normatividad'               => ['titulo' => 'Normatividad',                'vista' => 'Normatividad/Normatividad.php'],
     '/novedades'                  => ['titulo' => 'Novedades',                   'vista' => 'Novedades/Novedades.php',                       'slug' => 'novedades'],
     '/aplicaciones'               => ['titulo' => 'Aplicaciones',                'vista' => 'Aplicaciones/Aplicaciones.php'],
+    '/directorio'                 => ['titulo' => 'Directorio',                  'vista' => 'Directorio/Directorio.php'],
+    '/calendario'                 => ['titulo' => 'Calendario',                  'vista' => 'Calendario/Calendario.php'],
 ];
 
 $modulo = $modulos[$uri] ?? null;
@@ -63,14 +65,16 @@ if (!empty($modulo['slug'])) {
         $moduloAreas = $stmt->fetchAll();
 
         $meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-        $stmt = $pdo->prepare('SELECT nombre, tipo, version, fecha FROM direccion_documentos WHERE direccion_id = :id ORDER BY orden');
+        $stmt = $pdo->prepare('SELECT id, nombre, tipo, version, archivo, fecha FROM direccion_documentos WHERE direccion_id = :id ORDER BY orden');
         $stmt->execute([':id' => $direccion['id']]);
         foreach ($stmt->fetchAll() as $d) {
             $fecha = new DateTime($d['fecha']);
             $moduloDocumentos[] = [
+                'id'      => $d['id'],
                 'nombre'  => $d['nombre'],
                 'tipo'    => $d['tipo'],
                 'version' => $d['version'],
+                'archivo' => $d['archivo'],
                 'fecha'   => $fecha->format('d') . ' ' . $meses[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
             ];
         }
@@ -147,6 +151,71 @@ if ($uri === '/talento-humano') {
     $thCompetencias = $pdo->query('SELECT label, pct FROM competencias ORDER BY orden')->fetchAll();
 }
 
+// ── Directorio (fase 4) ──
+// Mismos cargos reales que ya usa Talento Humano (ver
+// database/migrations/009_directorio.sql) — agrupados por nivel jerárquico
+// para la vista. "nombre" queda NULL en los cargos donde no hay una
+// persona real registrada todavía (ver comentario de la migración).
+if ($uri === '/directorio') {
+    $directorioPorNivel = [];
+    foreach ($pdo->query('SELECT nombre, cargo, direccion, nivel, codigo FROM cargos ORDER BY orden')->fetchAll() as $c) {
+        // Iniciales para el círculo de cada tarjeta — mismo criterio que ya
+        // usa HomeController.php para cumpleaños. Sin nombre real, se usan
+        // las iniciales del cargo para no dejar el círculo vacío.
+        $base = $c['nombre'] ?: $c['cargo'];
+        $partes = preg_split('/\s+/', trim($base));
+        $c['ini'] = strtoupper(mb_substr($partes[0], 0, 1) . mb_substr(end($partes), 0, 1));
+        $directorioPorNivel[$c['nivel']][] = $c;
+    }
+}
+
+// ── Calendario (fase 4) ──
+// Reusa "eventos" (ver eventos.php en Inicio) — no hay tabla nueva. El mes
+// visible viene de ?mes=YYYY-MM (navegación con recarga completa, este
+// portal no es una SPA — ver sidebar.php); sin ese parámetro o si viene
+// mal formado, se usa el mes actual.
+if ($uri === '/calendario') {
+    $MESES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    $DIAS_SEMANA = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+    $mesParam = $_GET['mes'] ?? '';
+    $primerDia = preg_match('/^\d{4}-\d{2}$/', $mesParam)
+        ? DateTime::createFromFormat('Y-m-d', $mesParam . '-01')
+        : false;
+    if (!$primerDia) {
+        $primerDia = new DateTime('first day of this month');
+    }
+
+    $calMesActual = $primerDia->format('Y-m');
+    $calMesAnterior = (clone $primerDia)->modify('-1 month')->format('Y-m');
+    $calMesSiguiente = (clone $primerDia)->modify('+1 month')->format('Y-m');
+    $calTituloMes = $MESES_LARGO[(int) $primerDia->format('n') - 1] . ' ' . $primerDia->format('Y');
+
+    $eventosPorDia = [];
+    $stmt = $pdo->prepare("SELECT id, titulo, hora_lugar, fecha FROM eventos WHERE fecha >= :inicio AND fecha <= :fin ORDER BY fecha");
+    $stmt->execute([
+        ':inicio' => $primerDia->format('Y-m-01'),
+        ':fin'    => $primerDia->format('Y-m-t'),
+    ]);
+    foreach ($stmt->fetchAll() as $ev) {
+        $eventosPorDia[(int) (new DateTime($ev['fecha']))->format('j')][] = $ev;
+    }
+
+    // Grid de semanas: relleno con celdas vacías antes del día 1 (lunes=1)
+    // y después del último día, para que las semanas siempre den 7 celdas.
+    $diasEnMes = (int) $primerDia->format('t');
+    $primerDiaSemanaISO = (int) $primerDia->format('N'); // 1=lunes … 7=domingo
+    $celdas = array_fill(0, $primerDiaSemanaISO - 1, null);
+    for ($d = 1; $d <= $diasEnMes; $d++) {
+        $celdas[] = $d;
+    }
+    while (count($celdas) % 7 !== 0) {
+        $celdas[] = null;
+    }
+    $calSemanas = array_chunk($celdas, 7);
+    $calHoy = ((new DateTime('today'))->format('Y-m') === $calMesActual) ? (int) (new DateTime('today'))->format('j') : null;
+}
+
 // ── Mapa del portal ──
 if ($uri === '/mapa-portal') {
     $sitemapModulos = [];
@@ -164,7 +233,7 @@ if ($uri === '/mapa-portal') {
 // nivel de dirección.
 if ($uri === '/gestion-documental') {
     $archivosPorCarpeta = [];
-    foreach ($pdo->query('SELECT carpeta_id, nombre, tipo, version, estado, responsable, fecha FROM archivos_documentales ORDER BY fecha DESC')->fetchAll() as $a) {
+    foreach ($pdo->query('SELECT id, carpeta_id, nombre, tipo, version, estado, responsable, archivo, fecha FROM archivos_documentales ORDER BY fecha DESC')->fetchAll() as $a) {
         $archivosPorCarpeta[$a['carpeta_id']][] = $a;
     }
 
