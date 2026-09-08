@@ -32,21 +32,19 @@
   <?php endforeach; ?>
 
   <?php foreach ($calSemanas as $semana): foreach ($semana as $dia): ?>
-    <div class="cal-celda<?= $dia === null ? ' cal-vacia' : '' ?><?= ($dia !== null && $dia === $calHoy) ? ' cal-hoy' : '' ?>">
+    <?php
+      $celdaClase = 'cal-celda' . ($dia === null ? ' cal-vacia' : '') . (($dia !== null && $dia === $calHoy) ? ' cal-hoy' : '');
+      $celdaClicable = $esAdmin && $dia !== null;
+      $tag = $celdaClicable ? 'a' : 'div';
+    ?>
+    <<?= $tag ?> class="<?= $celdaClase ?>"<?php if ($celdaClicable): ?> href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesActual) ?>&nuevo=<?= $dia ?>#calNuevo" title="Agregar evento el <?= $dia ?>"<?php endif; ?>>
       <?php if ($dia !== null): ?>
-        <span class="cal-num-fila">
-          <span class="cal-num"><?= $dia ?></span>
-          <?php if ($esAdmin): ?>
-            <a class="cal-add" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesActual) ?>&nuevo=<?= $dia ?>#calNuevo" title="Agregar evento el <?= $dia ?>">
-              <i class="bi bi-plus-lg"></i>
-            </a>
-          <?php endif; ?>
-        </span>
+        <span class="cal-num"><?= $dia ?></span>
         <?php foreach ($eventosPorDia[$dia] ?? [] as $ev): ?>
           <span class="cal-evento" title="<?= e($ev['titulo'] . ' · ' . $ev['hora_lugar']) ?>"><?= e($ev['titulo']) ?></span>
         <?php endforeach; ?>
       <?php endif; ?>
-    </div>
+    </<?= $tag ?>>
   <?php endforeach; endforeach; ?>
 </div>
 
