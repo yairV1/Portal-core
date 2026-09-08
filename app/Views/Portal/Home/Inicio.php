@@ -1,5 +1,5 @@
 <?php $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/inicio.css">
+<link rel="stylesheet" href="<?= v('/assets/portal/css/inicio.css') ?>">
 
 <?php $COLOR_ESTADO = ['success' => 'var(--color-success)', 'warning' => 'var(--color-warning)', 'accent' => 'var(--color-accent)']; ?>
 
