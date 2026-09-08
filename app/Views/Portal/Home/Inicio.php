@@ -20,7 +20,7 @@
         y <?= $docsEnRevision ?> documento<?= $docsEnRevision === 1 ? '' : 's' ?> en revisión.
       <?php else: ?>
         y ningún documento en revisión.
-      <?php endif; ?>
+      <?php endif; ?> 
       El semestre 2026-II sigue su curso.
     </p>
     <div class="hero-status">

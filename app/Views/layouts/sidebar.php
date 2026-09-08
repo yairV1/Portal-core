@@ -32,6 +32,9 @@ function sb_slug(string $texto): string
 }
 
 $areasPorSlug = [];
+$navSecciones = [];
+$navItemsPorSeccion = [];
+$navHijosPorPadre = [];
 if (isset($pdo)) {
     $filas = $pdo->query('
         SELECT d.slug, a.label
@@ -41,6 +44,22 @@ if (isset($pdo)) {
     ')->fetchAll();
     foreach ($filas as $f) {
         $areasPorSlug[$f['slug']][] = $f['label'];
+    }
+
+    // Menú del sidebar: nav_secciones agrupa, nav_items son los ítems (con
+    // parent_id para anidar sub-ítems propios del menú — hoy ninguno lo usa,
+    // pero la estructura ya lo soporta). Aparte de eso, cada ítem que
+    // coincide con el slug de una dirección real suma como submenú sus
+    // áreas ($areasPorSlug, ver arriba) — mismo mecanismo de siempre, nada
+    // nuevo inventado.
+    $navSecciones = $pdo->query('SELECT id, label, mostrar_titulo FROM nav_secciones ORDER BY orden')->fetchAll();
+    $navItems = $pdo->query('SELECT id, seccion_id, parent_id, slug, ruta, label, icono FROM nav_items ORDER BY orden')->fetchAll();
+    foreach ($navItems as $it) {
+        if ($it['parent_id'] === null) {
+            $navItemsPorSeccion[$it['seccion_id']][] = $it;
+        } else {
+            $navHijosPorPadre[$it['parent_id']][] = $it;
+        }
     }
 }
 ?>
@@ -86,89 +105,64 @@ if (isset($pdo)) {
 
   <div class="sidebar-scroll">
 
-    <!-- ── Principal ── -->
-    <div class="sidebar-nav">
-      <a href="<?= BASE_URL ?>/" class="sidebar-item<?= sb_activo('/', $rutaActual) ?>">
-        <i class="fa-solid fa-house"></i><span class="label">Inicio</span>
-      </a>
-      <a href="<?= BASE_URL ?>/tableros" class="sidebar-item<?= sb_activo('/tableros', $rutaActual) ?>">
-        <i class="fa-solid fa-chart-line"></i><span class="label">Tableros Estratégicos</span>
-      </a>
-      <a href="<?= BASE_URL ?>/mapa-portal" class="sidebar-item<?= sb_activo('/mapa-portal', $rutaActual) ?>">
-        <i class="fa-solid fa-map"></i><span class="label">Mapa del portal</span>
-      </a>
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- ── Direcciones (equivalente a "Shared" del mockup) ── -->
-    <div class="sidebar-nav">
-
-      <?php
-      // Un grupo por dirección, con sus áreas reales como submenú (misma
-      // fuente que "Áreas del módulo" de cada página — $areasPorSlug, ver
-      // arriba). Cada sub-ítem baja hasta esa área en la propia página
-      // (#ancla), nada de rutas nuevas inventadas. Talento Humano no tiene
-      // fila en direccion_areas (su contenido vive en pestañas, no en
-      // áreas) — se deja como enlace simple, sin submenú de mentira.
-      $direcciones = [
-        ['ruta' => '/gestion-institucional',     'icono' => 'fa-building-columns', 'label' => 'Gestión Institucional',       'slug' => 'institucional'],
-        ['ruta' => '/sgi',                       'icono' => 'fa-folder-tree',      'label' => 'Sistema de Gestión Integral', 'slug' => 'sgi'],
-        ['ruta' => '/vicerrectoria-academica',   'icono' => 'fa-graduation-cap',   'label' => 'Vicerrectoría Académica',     'slug' => 'academica'],
-        ['ruta' => '/administrativa-financiera', 'icono' => 'fa-sack-dollar',      'label' => 'Administrativa y Financiera', 'slug' => 'financiera'],
-        ['ruta' => '/investigacion-innovacion',  'icono' => 'fa-lightbulb',        'label' => 'Investigación e Innovación',  'slug' => 'investigacion'],
-      ];
-      foreach ($direcciones as $i => $d):
-        $items = $areasPorSlug[$d['slug']] ?? [];
-        $subrutas = array_map(fn($label) => $d['ruta'] . '#' . sb_slug($label), $items);
-        $activo = sb_grupo_activo($d['ruta'], $subrutas, $rutaActual);
-        $idSub = 'submenu' . $i;
-      ?>
-      <div class="sidebar-group">
-        <a href="#<?= $idSub ?>" class="sidebar-item<?= $activo ? ' active' : '' ?>"
-          data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
-          <i class="fa-solid <?= e($d['icono']) ?>"></i><span class="label"><?= e($d['label']) ?></span>
-          <?php if ($items): ?><i class="fa-solid fa-chevron-down chevron"></i><?php endif; ?>
-        </a>
-        <?php if ($items): ?>
-        <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
-          <div class="collapse-inner">
-            <?php foreach ($items as $label): ?>
-              <a href="<?= BASE_URL . e($d['ruta']) ?>#<?= e(sb_slug($label)) ?>" class="sidebar-subitem"><?= e($label) ?></a>
-            <?php endforeach; ?>
-          </div>
-        </div>
-        <?php endif; ?>
+    <?php foreach ($navSecciones as $si => $seccion): ?>
+      <?php if ($si > 0): ?><div class="sidebar-divider"></div><?php endif; ?>
+      <?php if ($seccion['mostrar_titulo']): ?>
+      <div class="sidebar-section-head">
+        <span class="sidebar-section-title"><?= e($seccion['label']) ?></span>
       </div>
-      <?php endforeach; ?>
-
-      <a href="<?= BASE_URL ?>/talento-humano" class="sidebar-item<?= sb_activo('/talento-humano', $rutaActual) ?>">
-        <i class="fa-solid fa-users"></i><span class="label">Talento Humano</span>
-      </a>
-
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- ── Recursos ── -->
-    <div class="sidebar-section-head">
-      <span class="sidebar-section-title">Recursos</span>
-    </div>
-    <div class="sidebar-nav">
-      <a href="<?= BASE_URL ?>/gestion-documental" class="sidebar-item<?= sb_activo('/gestion-documental', $rutaActual) ?>">
-        <i class="fa-solid fa-folder-open"></i><span class="label">Gestión Documental</span>
-      </a>
-      <a href="<?= BASE_URL ?>/normatividad" class="sidebar-item<?= sb_activo('/normatividad', $rutaActual) ?>">
-        <i class="fa-solid fa-scale-balanced"></i><span class="label">Normatividad</span>
-      </a>
-      <a href="<?= BASE_URL ?>/novedades" class="sidebar-item<?= sb_activo('/novedades', $rutaActual) ?>">
-        <i class="fa-solid fa-newspaper"></i><span class="label">Novedades</span>
-      </a>
-      <a href="<?= BASE_URL ?>/aplicaciones" class="sidebar-item<?= sb_activo('/aplicaciones', $rutaActual) ?>">
-        <i class="fa-solid fa-grip"></i><span class="label">Aplicaciones</span>
-      </a>
-    </div>
+      <?php endif; ?>
+      <div class="sidebar-nav">
+        <?php foreach ($navItemsPorSeccion[$seccion['id']] ?? [] as $item): ?>
+          <?php
+          // Sub-ítems de este ítem: primero los propios del menú (nav_items
+          // con parent_id = este ítem — hoy ninguno los usa, pero ya queda
+          // servido si se agrega uno), y si el ítem es una dirección real,
+          // además sus áreas reales como anclas dentro de la misma página
+          // (misma fuente que "Áreas del módulo" — $areasPorSlug, ver
+          // arriba). Talento Humano no tiene fila en direccion_areas (su
+          // contenido vive en pestañas, no en áreas) — queda como enlace
+          // simple, sin submenú de mentira.
+          $hijos = $navHijosPorPadre[$item['id']] ?? [];
+          $areas = $areasPorSlug[$item['slug']] ?? [];
+          $subItems = [];
+          $subrutas = [];
+          foreach ($hijos as $h) {
+            $subItems[] = ['label' => $h['label'], 'href' => BASE_URL . ($h['ruta'] ?: '#')];
+            if ($h['ruta']) $subrutas[] = $h['ruta'];
+          }
+          foreach ($areas as $label) {
+            $subItems[] = ['label' => $label, 'href' => BASE_URL . $item['ruta'] . '#' . sb_slug($label)];
+            $subrutas[] = $item['ruta'] . '#' . sb_slug($label);
+          }
+          $ruta = $item['ruta'] ?: '#';
+          $activo = $subItems ? sb_grupo_activo($ruta, $subrutas, $rutaActual) : (bool) sb_activo($ruta, $rutaActual);
+          $idSub = 'submenu' . $item['id'];
+          ?>
+          <?php if ($subItems): ?>
+          <div class="sidebar-group">
+            <a href="#<?= $idSub ?>" class="sidebar-item<?= $activo ? ' active' : '' ?>"
+              data-bs-toggle="collapse" role="button"
+              aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
+              <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
+              <i class="fa-solid fa-chevron-down chevron"></i>
+            </a>
+            <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
+              <div class="collapse-inner">
+                <?php foreach ($subItems as $s): ?>
+                  <a href="<?= e($s['href']) ?>" class="sidebar-subitem"><?= e($s['label']) ?></a>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          </div>
+          <?php else: ?>
+          <a href="<?= BASE_URL . e($ruta) ?>" class="sidebar-item<?= sb_activo($ruta, $rutaActual) ?>">
+            <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
+          </a>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </div>
+    <?php endforeach; ?>
 
   </div>
 

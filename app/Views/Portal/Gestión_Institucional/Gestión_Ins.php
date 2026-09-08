@@ -39,7 +39,18 @@
           <div class="section-head" style="margin-top:40px"><h4>Documentación destacada</h4></div>
           <table class="table">
             <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Actualizado</th></tr></thead>
-            <tbody id="moduloDocs"></tbody>
+            <tbody>
+              <?php if (!$moduloDocumentos): ?>
+                <tr><td colspan="4" class="text-muted">Sin documentos por ahora.</td></tr>
+              <?php else: foreach ($moduloDocumentos as $d): ?>
+                <tr>
+                  <td><strong><?= e($d['nombre']) ?></strong></td>
+                  <td style="opacity:.7"><?= e($d['tipo']) ?></td>
+                  <td><span class="tag"><?= e($d['version']) ?></span></td>
+                  <td style="opacity:.7"><?= e($d['fecha']) ?></td>
+                </tr>
+              <?php endforeach; endif; ?>
+            </tbody>
           </table>
         </div>
 

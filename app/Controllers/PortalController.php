@@ -38,9 +38,10 @@ $titulo = $modulo['titulo'];
 
 // ── Módulo genérico de dirección (6 rutas comparten esta única consulta,
 //    parametrizada por slug — ver database/migrations/002_kpis_e_iconos.sql
-//    y las tablas direcciones/direccion_kpis/direccion_areas). Documentos,
-//    responsables y software todavía no tienen tabla real (ver plan) y
-//    siguen viniendo del MODULO.docs/responsables/software de cada *.js. ──
+//    y las tablas direcciones/direccion_kpis/direccion_areas/
+//    direccion_documentos (ver 007_direccion_documentos.sql)). Responsables
+//    y software todavía no tienen tabla real (ver plan) y siguen viniendo
+//    del MODULO.responsables/software de cada *.js. ──
 if (!empty($modulo['slug'])) {
     $stmt = $pdo->prepare('SELECT id, kicker, titulo, descripcion FROM direcciones WHERE slug = :slug');
     $stmt->execute([':slug' => $modulo['slug']]);
@@ -52,6 +53,7 @@ if (!empty($modulo['slug'])) {
 
     $moduloKpis = [];
     $moduloAreas = [];
+    $moduloDocumentos = [];
     if ($direccion) {
         $stmt = $pdo->prepare('SELECT label, valor FROM direccion_kpis WHERE direccion_id = :id ORDER BY orden');
         $stmt->execute([':id' => $direccion['id']]);
@@ -60,6 +62,50 @@ if (!empty($modulo['slug'])) {
         $stmt = $pdo->prepare('SELECT label, meta FROM direccion_areas WHERE direccion_id = :id ORDER BY orden');
         $stmt->execute([':id' => $direccion['id']]);
         $moduloAreas = $stmt->fetchAll();
+
+        $meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        $stmt = $pdo->prepare('SELECT nombre, tipo, version, fecha FROM direccion_documentos WHERE direccion_id = :id ORDER BY orden');
+        $stmt->execute([':id' => $direccion['id']]);
+        foreach ($stmt->fetchAll() as $d) {
+            $fecha = new DateTime($d['fecha']);
+            $moduloDocumentos[] = [
+                'nombre'  => $d['nombre'],
+                'tipo'    => $d['tipo'],
+                'version' => $d['version'],
+                'fecha'   => $fecha->format('d') . ' ' . $meses[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
+            ];
+        }
+    }
+}
+
+// ── Novedades ──
+// "Noticias" y "Eventos" ya eran datos reales (tablas noticias/eventos,
+// usadas hasta ahora solo en el dashboard de Inicio — ver HomeController.php)
+// pero el módulo Novedades nunca las mostraba; novedades.js solo traía
+// docs/responsables/software quemados como los otros 5 módulos genéricos,
+// nada de noticias ni eventos. Se agregan acá con el mismo formato de
+// fecha que ya usa Inicio, para que se vea igual en ambos lados.
+if ($uri === '/novedades') {
+    $mesesNovedades = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+    $moduloNoticias = [];
+    foreach ($pdo->query('SELECT categoria, titulo, fecha FROM noticias ORDER BY fecha DESC')->fetchAll() as $r) {
+        $fecha = new DateTime($r['fecha']);
+        $moduloNoticias[] = [
+            'categoria' => $r['categoria'],
+            'titulo'    => $r['titulo'],
+            'fecha'     => $fecha->format('d') . ' ' . $mesesNovedades[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
+        ];
+    }
+
+    $moduloEventos = [];
+    foreach ($pdo->query('SELECT titulo, fecha, hora_lugar FROM eventos ORDER BY fecha')->fetchAll() as $r) {
+        $fecha = new DateTime($r['fecha']);
+        $moduloEventos[] = [
+            'titulo'     => $r['titulo'],
+            'fecha'      => $fecha->format('d') . ' ' . $mesesNovedades[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
+            'hora_lugar' => $r['hora_lugar'],
+        ];
     }
 }
 
@@ -76,6 +122,30 @@ if ($uri === '/tableros') {
 
     $tableroEjecucion = $pdo->query('SELECT label, pct FROM ejecucion_presupuestal ORDER BY orden')->fetchAll();
     $tableroAlertas = $pdo->query('SELECT texto FROM alertas_indicador ORDER BY orden')->fetchAll();
+}
+
+// ── Talento Humano ──
+// Organigrama/cargos/competencias vienen de tablas reales (ver
+// database/migrations/006_talento_humano.sql); se pasan a talento-humano.js
+// como constantes ya resueltas (mismo mecanismo que portal-footer.php usa
+// para window.BASE_URL) porque esa vista cambia de pestaña sin recargar la
+// página, así que el JS necesita los datos en memoria, no otra petición.
+// Comités, KPIs, desempeño y bienestar de esa misma pestaña siguen
+// quemados en el JS — no tienen tabla propia todavía.
+if ($uri === '/talento-humano') {
+    $thOrganigrama = [];
+    foreach ($pdo->query('SELECT id, label FROM organigrama_niveles ORDER BY orden')->fetchAll() as $nivel) {
+        $stmt = $pdo->prepare('SELECT label, meta, destacado FROM organigrama_cajas WHERE nivel_id = :id ORDER BY orden');
+        $stmt->execute([':id' => $nivel['id']]);
+        $cajas = array_map(function ($c) {
+            $c['destacado'] = (bool) $c['destacado'];
+            return $c;
+        }, $stmt->fetchAll());
+        $thOrganigrama[] = ['nivel' => $nivel['label'], 'cajas' => $cajas];
+    }
+
+    $thCargos = $pdo->query('SELECT cargo, direccion, nivel, codigo FROM cargos ORDER BY orden')->fetchAll();
+    $thCompetencias = $pdo->query('SELECT label, pct FROM competencias ORDER BY orden')->fetchAll();
 }
 
 // ── Mapa del portal ──

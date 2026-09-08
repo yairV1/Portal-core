@@ -11,17 +11,31 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
 
     <!-- ── Iniciar sesión ── -->
     <div class="form-container sign-in-container">
-      <form method="POST" action="<?= BASE_URL ?>/login" class="slide-form" id="formLogin">
-        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
+      <form method="POST" action="<?= BASE_URL ?>/login" class="slide-form" id="formLogin" novalidate>
+        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></div>
         <h2>Iniciar sesión</h2>
         <p class="slide-form-sub">Portal CORE — COREDUCACIÓN</p>
 
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-        <input type="email" name="correo" required autofocus placeholder="Correo institucional">
-        <input type="password" name="password" required placeholder="Contraseña">
-        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Ingresar</button>
+
+        <input type="email" name="correo" id="loginCorreo" required autofocus placeholder="Correo institucional" aria-describedby="errCorreo">
+        <span class="field-error" id="errCorreo" role="alert" hidden></span>
+
+        <div class="input-with-action">
+          <input type="password" name="password" id="loginPassword" required placeholder="Contraseña" aria-describedby="errPassword">
+          <button type="button" class="input-toggle-visibility" id="btnTogglePass" aria-label="Mostrar contraseña">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+        <span class="field-error" id="errPassword" role="alert" hidden></span>
 
         <button type="button" class="slide-mobile-link" id="btnIrRecuperarMobile">¿Olvidaste tu contraseña?</button>
+
+        <button type="submit" class="btn btn-primary" id="btnLoginSubmit">
+          <span class="btn-label"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Ingresar</span>
+          <span class="btn-loading" hidden><span class="btn-spinner" aria-hidden="true"></span> Ingresando…</span>
+        </button>
+
         <a href="<?= BASE_URL ?>/horario" class="slide-form-link">Consultar mi horario sin iniciar sesión</a>
       </form>
     </div>
@@ -29,7 +43,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
     <!-- ── Recuperar contraseña ── -->
     <div class="form-container recover-container">
       <form class="slide-form" id="formRecuperar">
-        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
+        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></div>
         <h2>Recuperar contraseña</h2>
         <p class="slide-form-sub">Ingresa tu correo institucional. Por seguridad no hay restablecimiento automático: un administrador te contactará para verificar tu identidad.</p>
         <input type="email" id="recuperarCorreo" required placeholder="Correo institucional">
@@ -111,6 +125,65 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
       });
     }
 
+    // Mostrar/ocultar contraseña — botón real (no solo ícono decorativo),
+    // con aria-label que refleja la acción disponible, no el estado actual.
+    var loginPassword = document.getElementById('loginPassword');
+    var btnTogglePass = document.getElementById('btnTogglePass');
+    if (loginPassword && btnTogglePass) {
+      btnTogglePass.addEventListener('click', function () {
+        var oculta = loginPassword.type === 'password';
+        loginPassword.type = oculta ? 'text' : 'password';
+        btnTogglePass.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        btnTogglePass.querySelector('i').className = oculta ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+      });
+    }
+
+    // Validación inline del login: en vez de dejar que el navegador muestre
+    // su bocadillo nativo (o un alert genérico), el error aparece debajo del
+    // campo que falló. El form usa novalidate para desactivar la validación
+    // nativa y tomar el control acá.
+    var loginCorreo = document.getElementById('loginCorreo');
+    var errCorreo = document.getElementById('errCorreo');
+    var errPassword = document.getElementById('errPassword');
+
+    function mostrarErrorCampo(input, errEl, mensaje) {
+      input.classList.add('field-invalid');
+      input.setAttribute('aria-invalid', 'true');
+      errEl.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> ' + mensaje;
+      errEl.hidden = false;
+    }
+    function limpiarErrorCampo(input, errEl) {
+      input.classList.remove('field-invalid');
+      input.removeAttribute('aria-invalid');
+      errEl.hidden = true;
+    }
+    if (loginCorreo && errCorreo) {
+      loginCorreo.addEventListener('input', function () { limpiarErrorCampo(loginCorreo, errCorreo); });
+    }
+    if (loginPassword && errPassword) {
+      loginPassword.addEventListener('input', function () { limpiarErrorCampo(loginPassword, errPassword); });
+    }
+
+    function validarLogin() {
+      var valido = true;
+      if (!loginCorreo.value.trim()) {
+        mostrarErrorCampo(loginCorreo, errCorreo, 'Ingresa tu correo institucional.');
+        valido = false;
+      } else if (!loginCorreo.checkValidity()) {
+        mostrarErrorCampo(loginCorreo, errCorreo, 'Ese correo no parece válido.');
+        valido = false;
+      } else {
+        limpiarErrorCampo(loginCorreo, errCorreo);
+      }
+      if (!loginPassword.value) {
+        mostrarErrorCampo(loginPassword, errPassword, 'Ingresa tu contraseña.');
+        valido = false;
+      } else {
+        limpiarErrorCampo(loginPassword, errPassword);
+      }
+      return valido;
+    }
+
     // Overlay de carga al enviar el login. En local (o cualquier conexión
     // rápida) el servidor responde casi al instante y el spinner apenas
     // alcanza a verse, así que acá SÍ se frena el envío un momento
@@ -121,9 +194,20 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
     if (formLogin && slideLoading) {
       formLogin.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (!validarLogin()) {
+          var primerInvalido = formLogin.querySelector('.field-invalid');
+          if (primerInvalido) primerInvalido.focus();
+          return;
+        }
+        var btn = document.getElementById('btnLoginSubmit');
+        if (btn) {
+          btn.disabled = true;
+          var label = btn.querySelector('.btn-label');
+          var loading = btn.querySelector('.btn-loading');
+          if (label) label.hidden = true;
+          if (loading) loading.hidden = false;
+        }
         slideLoading.hidden = false;
-        var btn = formLogin.querySelector('button[type="submit"]');
-        if (btn) btn.disabled = true;
         setTimeout(function () { formLogin.submit(); }, 800);
       });
     }

@@ -14,7 +14,7 @@
   });
 </script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Control de Salones AC</title>
-<link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.png">
 
 <!-- PWA: permite instalar el sistema en el celular (Agregar a inicio) -->
 <link rel="manifest" href="<?= BASE_URL ?>/manifest.json">

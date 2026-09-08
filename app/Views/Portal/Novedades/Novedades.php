@@ -45,6 +45,32 @@
 
         <div style="display:flex;flex-direction:column;gap:28px">
           <div class="side-box">
+            <div class="side-box-title">Últimas noticias</div>
+            <?php if (!$moduloNoticias): ?>
+              <p class="text-muted">Sin noticias por ahora.</p>
+            <?php else: foreach ($moduloNoticias as $n): ?>
+              <div class="responsable">
+                <span style="flex:1">
+                  <span class="nombre"><?= e($n['titulo']) ?></span>
+                  <span class="cargo"><?= e($n['categoria']) ?> · <?= e($n['fecha']) ?></span>
+                </span>
+              </div>
+            <?php endforeach; endif; ?>
+          </div>
+          <div class="side-box">
+            <div class="side-box-title">Próximos eventos</div>
+            <?php if (!$moduloEventos): ?>
+              <p class="text-muted">Sin eventos programados.</p>
+            <?php else: foreach ($moduloEventos as $ev): ?>
+              <div class="responsable">
+                <span style="flex:1">
+                  <span class="nombre"><?= e($ev['titulo']) ?></span>
+                  <span class="cargo"><?= e($ev['fecha']) ?> · <?= e($ev['hora_lugar']) ?></span>
+                </span>
+              </div>
+            <?php endforeach; endif; ?>
+          </div>
+          <div class="side-box">
             <div class="side-box-title">Responsables</div>
             <div id="moduloResponsables"></div>
           </div>

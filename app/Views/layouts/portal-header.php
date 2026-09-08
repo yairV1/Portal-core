@@ -77,7 +77,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   };
 </script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
-<link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.jpg">
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,7 +116,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   </button>
 
   <div class="brand" onclick="location.reload()">
-    <div class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
+    <div class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></div>
     <span>
       <span class="brand-name">PORTAL CORE</span>
       <span class="brand-sub">Coreducación</span>
