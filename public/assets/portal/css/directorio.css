@@ -1,0 +1,34 @@
+.dir-lista{ display:flex; flex-direction:column; gap:10px; margin-bottom:24px }
+
+.dir-card{
+  border:1px solid var(--color-divider); border-radius:var(--radius-lg);
+  background:var(--color-bg); overflow:hidden;
+}
+.dir-card summary{
+  display:flex; align-items:center; gap:14px; padding:14px 18px; cursor:pointer;
+  list-style:none;
+}
+.dir-card summary::-webkit-details-marker{ display:none }
+.dir-card summary:hover{ background:var(--color-surface) }
+
+.dir-ini{
+  width:38px; height:38px; flex:0 0 auto; border-radius:50%;
+  background:var(--color-accent-200); color:var(--color-accent-800);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;
+}
+.dir-nombre{ display:block; font-weight:800; font-size:14px }
+.dir-cargo{ display:block; font-size:12px; opacity:.65 }
+
+.dir-chevron{ font-size:13px; opacity:.5; transition:transform .16s ease }
+.dir-card[open] .dir-chevron{ transform:rotate(180deg) }
+
+.dir-detalle{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;
+  padding:0 18px 16px 70px; border-top:1px solid var(--color-divider); padding-top:14px;
+}
+.dir-detalle .k{ display:block; font-size:10px; letter-spacing:.1em; text-transform:uppercase; opacity:.5; margin-bottom:3px }
+.dir-detalle .v{ display:block; font-size:13px; font-weight:700 }
+
+@media (max-width: 640px){
+  .dir-detalle{ grid-template-columns:1fr; padding-left:18px }
+}

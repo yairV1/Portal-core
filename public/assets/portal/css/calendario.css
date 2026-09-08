@@ -1,0 +1,75 @@
+.cal-toolbar{ display:flex; align-items:center; gap:14px; margin:20px 0 16px }
+.cal-titulo{ margin:0; flex:1; text-transform:capitalize }
+.cal-nav{
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--color-divider); border-radius:var(--radius-sm); color:var(--color-text);
+}
+.cal-nav:hover{ background:var(--color-surface) }
+.cal-hoy{
+  font-size:12px; font-weight:700; color:var(--color-accent); border:1px solid var(--color-accent);
+  border-radius:var(--radius-sm); padding:6px 12px;
+}
+.cal-hoy:hover{ background:var(--color-accent-100) }
+
+.cal-nuevo{
+  border:1px solid var(--color-divider); border-radius:var(--radius-md);
+  margin-bottom:16px; overflow:hidden;
+}
+.cal-nuevo summary{
+  display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer;
+  list-style:none; font-size:12.5px; font-weight:700; color:var(--color-accent);
+}
+.cal-nuevo summary::-webkit-details-marker{ display:none }
+.cal-nuevo summary:hover{ background:var(--color-surface) }
+.cal-form{
+  display:flex; flex-wrap:wrap; gap:8px; padding:0 14px 14px;
+  border-top:1px solid var(--color-divider); padding-top:12px;
+}
+.cal-form input[type="text"],
+.cal-form input[type="date"]{
+  border:1px solid var(--color-divider); border-radius:var(--radius-sm);
+  padding:7px 10px; font-size:12.5px; background:var(--color-bg); color:var(--color-text);
+}
+.cal-form input[name="titulo"]{ flex:1 1 220px }
+.cal-form input[name="hora_lugar"]{ flex:1 1 220px }
+.cal-form button{
+  border:none; border-radius:var(--radius-sm); padding:7px 16px; font-size:12.5px; font-weight:700;
+  background:var(--color-accent); color:#fff; cursor:pointer;
+}
+.cal-form button:hover{ opacity:.9 }
+
+.cal-grid{
+  display:grid; grid-template-columns:repeat(7, 1fr); gap:1px;
+  background:var(--color-divider); border:1px solid var(--color-divider);
+  border-radius:var(--radius-lg); overflow:hidden;
+}
+.cal-encabezado{
+  background:var(--color-surface); padding:10px 0; text-align:center;
+  font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; opacity:.6;
+}
+.cal-celda{
+  background:var(--color-bg); min-height:96px; padding:8px; display:flex; flex-direction:column; gap:4px;
+}
+.cal-celda.cal-vacia{ background:var(--color-surface) }
+.cal-celda.cal-hoy{ background:var(--color-accent-100) }
+.cal-num{ font-size:12px; font-weight:700; opacity:.7 }
+.cal-celda.cal-hoy .cal-num{ color:var(--color-accent-700); opacity:1 }
+.cal-evento{
+  font-size:10.5px; font-weight:700; color:var(--color-accent-800); background:var(--color-accent-200);
+  border-radius:6px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+@media (max-width: 720px){
+  .cal-celda{ min-height:60px; padding:5px }
+  .cal-evento{ font-size:9px }
+}
+
+/* Lista "Eventos de <mes>" — mismo componente que ya usa Inicio (ver
+   inicio.css .evento), repetido acá porque cada página carga su propio
+   css (mismo criterio que el resto del portal). */
+.evento{ display:flex; gap:16px; padding:13px 0; border-bottom:1px solid var(--color-divider) }
+.evento:last-child{ border-bottom:none; padding-bottom:0 }
+.evento .fecha{ width:46px; flex:0 0 auto; text-align:center; background:var(--color-accent-100); border-radius:var(--radius-sm); padding:5px 0 }
+.evento .dia{ font-weight:800; font-size:19px; line-height:1; color:var(--color-accent-700) }
+.evento .t{ font-weight:800; font-size:13px }
+.evento .h{ font-size:11.5px; opacity:.6 }
