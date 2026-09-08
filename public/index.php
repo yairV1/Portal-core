@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════════════════════
 
 define('ROOT_PATH', dirname(__DIR__));
-define('BASE_URL', ''); // si el proyecto vive en una subcarpeta (ej. /portal-core), ponla aquí
+define('BASE_URL', '/Portal-core/public');
 
 // Cuánto tiempo puede estar una sesión inactiva antes de cerrarse sola
 // (ver el bloque de inactividad más abajo).
@@ -58,6 +58,19 @@ function e(?string $texto): string {
     return htmlspecialchars($texto ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function mostrar_error(int $codigo): void {
+    $errores = [
+        400 => ['Solicitud incorrecta', 'No pudimos entender la solicitud', 'Revisa los datos enviados e inténtalo nuevamente.', BASE_URL . '/login', 'Ir al inicio de sesión'],
+        401 => ['Acceso no autorizado', 'Necesitas iniciar sesión', 'Tu sesión no está activa o ya venció. Inicia sesión para continuar.', BASE_URL . '/login', 'Iniciar sesión'],
+        403 => ['Acceso restringido', 'No tienes permiso para ver esta página', 'Si crees que es un error, solicita acceso al administrador del portal.', BASE_URL . '/', 'Volver al portal'],
+        404 => ['Página no encontrada', 'Esta ruta no existe', 'La dirección puede haber cambiado o estar escrita de forma incorrecta.', BASE_URL . '/login', 'Volver al inicio de sesión'],
+        500 => ['Error del servidor', 'Algo no salió como esperábamos', 'El sistema encontró un problema interno. Inténtalo de nuevo en unos momentos.', BASE_URL . '/login', 'Volver al inicio de sesión'],
+    ];
+    [$etiqueta, $titulo, $mensaje, $enlace, $textoEnlace] = $errores[$codigo] ?? $errores[500];
+    http_response_code($codigo);
+    require ROOT_PATH . '/app/Views/Errors/' . $codigo . '.php';
+}
+
 // v(): agrega "?v=<fecha de modificación>" a una ruta de asset (css/js).
 // Las páginas PHP ya tienen Cache-Control: no-store, pero los .css/.js
 // estáticos no — el navegador los cachea con sus propias reglas, así que
@@ -100,6 +113,5 @@ if (BASE_URL !== '' && strpos($uri, BASE_URL) === 0) {
 if (isset($rutas[$uri])) {
     require ROOT_PATH . '/app/Controllers/' . $rutas[$uri];
 } else {
-    http_response_code(404);
-    echo '<h1>404 — Página no encontrada</h1><p><a href="' . BASE_URL . '/login">Volver al login</a></p>';
+    mostrar_error(404);
 }
