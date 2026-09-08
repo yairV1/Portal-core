@@ -10,6 +10,7 @@
 $nombre  = $_SESSION['usuario_nombre'] ?? 'Invitado';
 $correo  = $_SESSION['usuario_correo'] ?? '';
 $cargo   = $_SESSION['usuario_cargo'] ?? '';
+$foto    = $_SESSION['usuario_foto'] ?? '';
 $partes  = explode(' ', trim($nombre));
 $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '', 0, 1));
 ?>
@@ -133,7 +134,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       <i class="fa-regular fa-bell"></i><span class="bell-dot"></span>
     </button>
     <div class="profile" id="btnProfile">
-      <span class="avatar"><?= e($inicial) ?></span>
+      <span class="avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
       <span>
         <span class="profile-name"><?= e($nombre) ?></span>
         <span class="profile-role"><?= e($cargo) ?></span>
@@ -149,46 +150,78 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     <i class="fa-solid fa-xmark"></i>
   </button>
 
-  <div class="profile-drawer-avatar"><?= e($inicial) ?></div>
-  <h3 class="profile-drawer-name"><?= e($nombre) ?></h3>
-  <p class="profile-drawer-desc">
-    <?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN. Acceso a los tableros de Rectoría, aprobación documental y firma de actos administrativos.
-  </p>
+  <!-- ── Vista (por defecto) ── -->
+  <div id="perfilVista">
+    <div class="profile-drawer-avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></div>
 
-  <div class="profile-drawer-actions">
-    <button class="btn btn-primary"><i class="fa-solid fa-download"></i> Descargar</button>
-    <button class="btn"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
+    <div class="profile-drawer-name-row">
+      <h3 class="profile-drawer-name"><?= e($nombre) ?></h3>
+      <button type="button" class="profile-drawer-editar" id="btnEditarPerfil" title="Editar perfil">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+    </div>
+    <p class="profile-drawer-desc">
+      <?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN. Acceso a los tableros de Rectoría, aprobación documental y firma de actos administrativos.
+    </p>
+
+    <div class="profile-drawer-actions">
+      <button class="btn btn-primary"><i class="fa-solid fa-download"></i> Descargar</button>
+      <button class="btn"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
+    </div>
+
+    <!-- Datos de ejemplo (Dependencia, Extensión, Perfil de acceso, Sede) —
+         todavía no existen esos campos en la base de datos; Cargo, Correo
+         y Foto ya son reales, vienen de la sesión. -->
+    <div class="profile-drawer-fields">
+      <div class="profile-drawer-field">
+        <span class="label">Cargo</span>
+        <span class="value"><?= e($cargo ?: '—') ?></span>
+      </div>
+      <div class="profile-drawer-field">
+        <span class="label">Dependencia</span>
+        <span class="value">Rectoría</span>
+      </div>
+      <div class="profile-drawer-field">
+        <span class="label">Correo</span>
+        <span class="value"><?= e($correo ?: '—') ?></span>
+      </div>
+      <div class="profile-drawer-field">
+        <span class="label">Extensión</span>
+        <span class="value">101</span>
+      </div>
+      <div class="profile-drawer-field">
+        <span class="label">Perfil de acceso</span>
+        <span class="value">Directivo · total</span>
+      </div>
+      <div class="profile-drawer-field">
+        <span class="label">Sede</span>
+        <span class="value">Honda, Tolima</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Datos de ejemplo (Dependencia, Extensión, Perfil de acceso, Sede) —
-       todavía no existen esos campos en la base de datos; Cargo y Correo
-       ya son reales, vienen de la sesión. -->
-  <div class="profile-drawer-fields">
-    <div class="profile-drawer-field">
-      <span class="label">Cargo</span>
-      <span class="value"><?= e($cargo ?: '—') ?></span>
+  <!-- ── Edición (lo básico: nombre, cargo, foto) — oculto hasta tocar el lápiz ── -->
+  <form id="perfilForm" class="profile-drawer-form" action="<?= BASE_URL ?>/perfil" method="post" enctype="multipart/form-data" hidden>
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+
+    <div class="profile-drawer-avatar profile-drawer-avatar-edit">
+      <span class="profile-drawer-avatar-img"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+      <label for="perfilFoto" class="profile-drawer-foto-btn" title="Cambiar foto"><i class="fa-solid fa-camera"></i></label>
+      <input type="file" id="perfilFoto" name="foto" accept="image/png,image/jpeg,image/webp">
     </div>
-    <div class="profile-drawer-field">
-      <span class="label">Dependencia</span>
-      <span class="value">Rectoría</span>
+
+    <label class="profile-drawer-label">Nombre
+      <input type="text" name="nombre" value="<?= e($nombre) ?>" required maxlength="100">
+    </label>
+    <label class="profile-drawer-label">Cargo
+      <input type="text" name="cargo" value="<?= e($cargo) ?>" maxlength="100">
+    </label>
+
+    <div class="profile-drawer-actions">
+      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      <button type="button" class="btn" id="btnCancelarPerfil">Cancelar</button>
     </div>
-    <div class="profile-drawer-field">
-      <span class="label">Correo</span>
-      <span class="value"><?= e($correo ?: '—') ?></span>
-    </div>
-    <div class="profile-drawer-field">
-      <span class="label">Extensión</span>
-      <span class="value">101</span>
-    </div>
-    <div class="profile-drawer-field">
-      <span class="label">Perfil de acceso</span>
-      <span class="value">Directivo · total</span>
-    </div>
-    <div class="profile-drawer-field">
-      <span class="label">Sede</span>
-      <span class="value">Honda, Tolima</span>
-    </div>
-  </div>
+  </form>
 </aside>
 
 <div class="breadcrumb-bar">

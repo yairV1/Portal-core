@@ -18,6 +18,31 @@ function sb_grupo_activo(string $rutaPadre, array $subrutas, string $rutaActual)
 }
 
 $rutaActual = $uri ?? '';
+
+// Áreas reales por dirección (mismas que ya se muestran en "Áreas del
+// módulo" de cada página — ver PortalController.php/direccion_areas),
+// para armar los submenús del sidebar sin inventar contenido nuevo. Un
+// slug helper simple para el ancla (#area-slug) — sin librería, es solo
+// para bajar a esa área dentro de la misma página.
+function sb_slug(string $texto): string
+{
+    $texto = strtolower($texto);
+    $texto = strtr($texto, ['á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u','ñ'=>'n']);
+    return trim(preg_replace('/[^a-z0-9]+/', '-', $texto), '-');
+}
+
+$areasPorSlug = [];
+if (isset($pdo)) {
+    $filas = $pdo->query('
+        SELECT d.slug, a.label
+        FROM direccion_areas a
+        JOIN direcciones d ON d.id = a.direccion_id
+        ORDER BY d.id, a.orden
+    ')->fetchAll();
+    foreach ($filas as $f) {
+        $areasPorSlug[$f['slug']][] = $f['label'];
+    }
+}
 ?>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 <aside class="sidebar" id="sidebar">
@@ -80,97 +105,46 @@ $rutaActual = $uri ?? '';
     <div class="sidebar-nav">
 
       <?php
-      $subGestion = ['/gestion-institucional/mejoras'];
-      $activoGestion = sb_grupo_activo('/gestion-institucional', $subGestion, $rutaActual);
+      // Un grupo por dirección, con sus áreas reales como submenú (misma
+      // fuente que "Áreas del módulo" de cada página — $areasPorSlug, ver
+      // arriba). Cada sub-ítem baja hasta esa área en la propia página
+      // (#ancla), nada de rutas nuevas inventadas. Talento Humano no tiene
+      // fila en direccion_areas (su contenido vive en pestañas, no en
+      // áreas) — se deja como enlace simple, sin submenú de mentira.
+      $direcciones = [
+        ['ruta' => '/gestion-institucional',     'icono' => 'fa-building-columns', 'label' => 'Gestión Institucional',       'slug' => 'institucional'],
+        ['ruta' => '/sgi',                       'icono' => 'fa-folder-tree',      'label' => 'Sistema de Gestión Integral', 'slug' => 'sgi'],
+        ['ruta' => '/vicerrectoria-academica',   'icono' => 'fa-graduation-cap',   'label' => 'Vicerrectoría Académica',     'slug' => 'academica'],
+        ['ruta' => '/administrativa-financiera', 'icono' => 'fa-sack-dollar',      'label' => 'Administrativa y Financiera', 'slug' => 'financiera'],
+        ['ruta' => '/investigacion-innovacion',  'icono' => 'fa-lightbulb',        'label' => 'Investigación e Innovación',  'slug' => 'investigacion'],
+      ];
+      foreach ($direcciones as $i => $d):
+        $items = $areasPorSlug[$d['slug']] ?? [];
+        $subrutas = array_map(fn($label) => $d['ruta'] . '#' . sb_slug($label), $items);
+        $activo = sb_grupo_activo($d['ruta'], $subrutas, $rutaActual);
+        $idSub = 'submenu' . $i;
       ?>
       <div class="sidebar-group">
-        <a href="#submenuGestion" class="sidebar-item<?= $activoGestion ? ' active' : '' ?>"
+        <a href="#<?= $idSub ?>" class="sidebar-item<?= $activo ? ' active' : '' ?>"
           data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activoGestion ? 'true' : 'false' ?>" aria-controls="submenuGestion">
-          <i class="fa-solid fa-building-columns"></i><span class="label">Gestión Institucional</span>
-          <i class="fa-solid fa-chevron-down chevron"></i>
+          aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
+          <i class="fa-solid <?= e($d['icono']) ?>"></i><span class="label"><?= e($d['label']) ?></span>
+          <?php if ($items): ?><i class="fa-solid fa-chevron-down chevron"></i><?php endif; ?>
         </a>
-        <div class="collapse<?= $activoGestion ? ' show' : '' ?>" id="submenuGestion">
-          <a href="<?= BASE_URL ?>/gestion-institucional/mejoras"
-            class="sidebar-subitem<?= sb_activo('/gestion-institucional/mejoras', $rutaActual) ?>">Mejoras</a>
+        <?php if ($items): ?>
+        <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
+          <div class="collapse-inner">
+            <?php foreach ($items as $label): ?>
+              <a href="<?= BASE_URL . e($d['ruta']) ?>#<?= e(sb_slug($label)) ?>" class="sidebar-subitem"><?= e($label) ?></a>
+            <?php endforeach; ?>
+          </div>
         </div>
+        <?php endif; ?>
       </div>
+      <?php endforeach; ?>
 
-      <?php
-      $subSGI = ['/sgi/mejoras'];
-      $activoSGI = sb_grupo_activo('/sgi', $subSGI, $rutaActual);
-      ?>
-      <div class="sidebar-group">
-        <a href="#submenuSGI" class="sidebar-item<?= $activoSGI ? ' active' : '' ?>"
-          data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activoSGI ? 'true' : 'false' ?>" aria-controls="submenuSGI">
-          <i class="fa-solid fa-folder-tree"></i><span class="label">Sistema de Gestión Integral</span>
-          <i class="fa-solid fa-chevron-down chevron"></i>
-        </a>
-        <div class="collapse<?= $activoSGI ? ' show' : '' ?>" id="submenuSGI">
-          <a href="<?= BASE_URL ?>/sgi/mejoras"
-            class="sidebar-subitem<?= sb_activo('/sgi/mejoras', $rutaActual) ?>">Mejoras</a>
-        </div>
-      </div>
-
-      <?php
-      $subVicerrectoria = ['/vicerrectoria-academica/mejoras'];
-      $activoVicerrectoria = sb_grupo_activo('/vicerrectoria-academica', $subVicerrectoria, $rutaActual);
-      ?>
-      <div class="sidebar-group">
-        <a href="#submenuVicerrectoria" class="sidebar-item<?= $activoVicerrectoria ? ' active' : '' ?>"
-          data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activoVicerrectoria ? 'true' : 'false' ?>" aria-controls="submenuVicerrectoria">
-          <i class="fa-solid fa-graduation-cap"></i><span class="label">Vicerrectoría Académica</span>
-          <i class="fa-solid fa-chevron-down chevron"></i>
-        </a>
-        <div class="collapse<?= $activoVicerrectoria ? ' show' : '' ?>" id="submenuVicerrectoria">
-          <a href="<?= BASE_URL ?>/vicerrectoria-academica/mejoras"
-            class="sidebar-subitem<?= sb_activo('/vicerrectoria-academica/mejoras', $rutaActual) ?>">Mejoras</a>
-        </div>
-      </div>
-
-      <?php
-      $subAdmin = ['/administrativa-financiera/mejoras'];
-      $activoAdmin = sb_grupo_activo('/administrativa-financiera', $subAdmin, $rutaActual);
-      ?>
-      <div class="sidebar-group">
-        <a href="#submenuAdmin" class="sidebar-item<?= $activoAdmin ? ' active' : '' ?>"
-          data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activoAdmin ? 'true' : 'false' ?>" aria-controls="submenuAdmin">
-          <i class="fa-solid fa-sack-dollar"></i><span class="label">Administrativa y Financiera</span>
-          <i class="fa-solid fa-chevron-down chevron"></i>
-        </a>
-        <div class="collapse<?= $activoAdmin ? ' show' : '' ?>" id="submenuAdmin">
-          <a href="<?= BASE_URL ?>/administrativa-financiera/mejoras"
-            class="sidebar-subitem<?= sb_activo('/administrativa-financiera/mejoras', $rutaActual) ?>">Mejoras</a>
-        </div>
-      </div>
-
-      <?php
-      $subTalento = ['/talento-humano/mejoras'];
-      $activoTalento = sb_grupo_activo('/talento-humano', $subTalento, $rutaActual);
-      ?>
-      <div class="sidebar-group">
-        <a href="#submenuTalento" class="sidebar-item<?= $activoTalento ? ' active' : '' ?>"
-          data-bs-toggle="collapse" role="button"
-          aria-expanded="<?= $activoTalento ? 'true' : 'false' ?>" aria-controls="submenuTalento">
-          <i class="fa-solid fa-users"></i><span class="label">Talento Humano</span>
-          <i class="fa-solid fa-chevron-down chevron"></i>
-        </a>
-        <div class="collapse<?= $activoTalento ? ' show' : '' ?>" id="submenuTalento">
-          <a href="<?= BASE_URL ?>/talento-humano/mejoras"
-            class="sidebar-subitem<?= sb_activo('/talento-humano/mejoras', $rutaActual) ?>">Mejoras</a>
-        </div>
-      </div>
-
-      <?php
-      $subInvestigacion = ['/investigacion-innovacion/mejoras'];
-      $activoInvestigacion = sb_grupo_activo('/investigacion-innovacion', $subInvestigacion, $rutaActual);
-      ?>
-
-      <a href="<?= BASE_URL ?>/investigacion-innovacion" class="sidebar-item<?= sb_activo('/investigacion-innovacion', $rutaActual) ?>">
-        <i class="fa-solid fa-lightbulb"></i><span class="label">Investigación e Innovación</span> 
+      <a href="<?= BASE_URL ?>/talento-humano" class="sidebar-item<?= sb_activo('/talento-humano', $rutaActual) ?>">
+        <i class="fa-solid fa-users"></i><span class="label">Talento Humano</span>
       </a>
 
     </div>

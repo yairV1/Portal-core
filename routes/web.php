@@ -8,6 +8,7 @@ return [
     '/login'  => 'AuthController.php',
     '/logout' => 'AuthController.php',
     '/'       => 'HomeController.php',
+    '/perfil' => 'PerfilController.php',
 
     // Módulos del Portal — todos los maneja PortalController.php
     '/tableros'                 => 'PortalController.php',

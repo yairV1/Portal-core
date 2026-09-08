@@ -63,6 +63,25 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['perfil'])): ?>
+<script>
+  // Aviso tras guardar el perfil (ver PerfilController.php, que agrega
+  // ?perfil=1|error|formato|tamano al volver a "/").
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['perfil']) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Perfil actualizado' },
+      'formato': { icon: 'error', title: 'La foto debe ser JPG, PNG o WEBP' },
+      'tamano': { icon: 'error', title: 'La foto pesa más de 2 MB' },
+      'error': { icon: 'error', title: 'No se pudo guardar el perfil' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
 </body>
