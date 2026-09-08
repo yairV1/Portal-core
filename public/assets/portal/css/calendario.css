@@ -14,7 +14,13 @@
 .cal-nuevo{
   border:1px solid var(--color-divider); border-radius:var(--radius-md);
   margin-bottom:16px; overflow:hidden;
+  /* topbar (64px) + barra de ruta (44px) son sticky — ver paneles.css
+     .app-shell — así que al saltar acá con #calNuevo (clic en un día del
+     grid) el navegador lo deja pegado arriba, tapado por esos 108px fijos.
+     scroll-margin-top le dice al navegador que deje ese espacio libre. */
+  scroll-margin-top: 120px;
 }
+.cal-nuevo[open]{ border-color:var(--color-accent); box-shadow:0 0 0 1px var(--color-accent-200) }
 .cal-nuevo summary{
   display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer;
   list-style:none; font-size:12.5px; font-weight:700; color:var(--color-accent);
