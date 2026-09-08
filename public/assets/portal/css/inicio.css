@@ -1,10 +1,47 @@
   /* Tokens de color/profundidad, .table y .tag ya viven en paneles.css
      (componente único) — acá solo lo específico de esta página. */
-  *{box-sizing:border-box}
-    h1,h2,h3,h4{font-weight:800;margin:0}
-  .kicker{display:inline-flex;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:var(--color-accent-700);background:var(--color-accent-100);padding:5px 12px;border-radius:999px;margin-bottom:10px}
-  .card{background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);overflow:hidden;transition:box-shadow .2s ease,transform .2s ease}
-  .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+* {
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
+}
+/* El color/grosor del scroll ya se define una sola vez, para todo el
+   portal, en paneles.css — acá solo queda scrollbar-gutter (evita que el
+   contenido salte al aparecer el scroll, propio de esta página). */
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 800;
+    margin: 0
+  }
+
+  .kicker {
+    display: inline-flex;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--color-accent-700);
+    background: var(--color-accent-100);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 10px
+  }
+
+  .card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: box-shadow .2s ease, transform .2s ease
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px)
+  }
 
   /* — hero editorial: bloque diagonal con el río de Honda/Tolima abstraído — */
   .hero{
@@ -34,36 +71,169 @@
      (evita un segundo elemento "elevado" compitiendo con el hero). Se
      sobreescribe solo por id para no tocar el componente compartido
      .kpis/.kpi de paneles.css que usan Tableros/SGI/Talento Humano. */
-  #kpis{ box-shadow:none; border:none; background:transparent; border-radius:0; margin-top:32px; gap:28px; overflow:visible }
-  #kpis .kpi{ border-right:none; border-bottom:2px solid var(--color-divider); padding:0 0 16px }
-  #kpis .kpi::before{ display:none }
-
-  /* — layout principal — */
-  .grid-main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:40px;padding-top:40px;align-items:start}
-  .section-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--color-divider);padding-bottom:10px;margin-bottom:20px}
-  .section-head .link{font-size:12px;cursor:pointer;color:var(--color-accent-700);font-weight:800}
-
-  .accesos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px 16px}
-  .acceso{display:block;position:relative;border-top:2px solid var(--color-divider);padding-top:12px;cursor:pointer;color:inherit;text-decoration:none;transition:border-color .15s ease}
-  .acceso:hover{border-color:var(--color-accent);color:inherit}
-  .acceso:focus-visible{outline:none;box-shadow:var(--shadow-focus);border-radius:var(--radius-sm)}
-  .acceso[aria-disabled="true"]{cursor:default;opacity:.55;pointer-events:none}
-  .acceso .ic{display:block;color:var(--color-accent);font-size:18px}
-  .acceso .label{display:block;font-weight:800;font-size:13px;line-height:1.25;margin-top:9px}
-  .acceso .meta{display:block;font-size:10.5px;opacity:.5;margin-top:4px}
-  .acceso-sugerido{border-top-color:#201e1d}
-  .acceso-badge{
-    position:absolute; top:-9px; left:0; font-size:9px; font-weight:800;
-    letter-spacing:.06em; text-transform:uppercase; background:var(--color-accent-2);
-    color:#fff; padding:3px 8px; border-radius:999px;
+  #kpis {
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    margin-top: 32px;
+    gap: 28px;
+    overflow: visible
   }
 
-  .noticias{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
-  .noticia-foto{height:130px;background:linear-gradient(135deg,var(--color-accent-100),var(--color-neutral-300));display:flex;align-items:flex-end;padding:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)}
-  .noticia-body{padding:16px 18px 18px}
-  .noticia-cat{display:inline-flex;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700);background:var(--color-accent-100);font-weight:800;padding:3px 10px;border-radius:999px}
-  .noticia-titulo{font-weight:800;font-size:16px;line-height:1.2;padding:8px 0}
-  .noticia-fecha{font-size:12px;opacity:.55}
+  #kpis .kpi {
+    border-right: none;
+    border-bottom: 2px solid var(--color-divider);
+    padding: 0 0 16px
+  }
+
+  #kpis .kpi::before {
+    display: none
+  }
+
+  /* — layout principal — */
+  .grid-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 40px;
+    padding-top: 40px;
+    align-items: start
+  }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--color-divider);
+    padding-bottom: 10px;
+    margin-bottom: 20px
+  }
+
+  .section-head .link {
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--color-accent-700);
+    font-weight: 800
+  }
+
+  .accesos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px 16px
+  }
+
+  .acceso {
+    display: block;
+    position: relative;
+    border-top: 2px solid var(--color-divider);
+    padding-top: 12px;
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color .15s ease
+  }
+
+  .acceso:hover {
+    border-color: var(--color-accent);
+    color: inherit
+  }
+
+  .acceso:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-sm)
+  }
+
+  .acceso[aria-disabled="true"] {
+    cursor: default;
+    opacity: .55;
+    pointer-events: none
+  }
+
+  .acceso .ic {
+    display: block;
+    color: var(--color-accent);
+    font-size: 18px
+  }
+
+  .acceso .label {
+    display: block;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1.25;
+    margin-top: 9px
+  }
+
+  .acceso .meta {
+    display: block;
+    font-size: 10.5px;
+    opacity: .5;
+    margin-top: 4px
+  }
+
+  .acceso-sugerido {
+    border-top-color: #201e1d
+  }
+
+  .acceso-badge {
+    position: absolute;
+    top: -9px;
+    left: 0;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: var(--color-accent-2);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  .noticias {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px
+  }
+
+  .noticia-foto {
+    height: 130px;
+    background: linear-gradient(135deg, var(--color-accent-100), var(--color-neutral-300));
+    display: flex;
+    align-items: flex-end;
+    padding: 10px;
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-neutral-700)
+  }
+
+  .noticia-body {
+    padding: 16px 18px 18px
+  }
+
+  .noticia-cat {
+    display: inline-flex;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+    background: var(--color-accent-100);
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px
+  }
+
+  .noticia-titulo {
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 1.2;
+    padding: 8px 0
+  }
+
+  .noticia-fecha {
+    font-size: 12px;
+    opacity: .55
+  }
 
   /* .tag-stamp ya vive en paneles.css (componente único — lo usan
      Inicio y Gestión Documental). */
@@ -71,32 +241,146 @@
   /* — columna lateral: sin caja, mismo patrón de .section-head que ya
      usan Accesos/Documentos en la columna principal — */
 
-  .pendiente{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--color-divider);align-items:flex-start}
-  .pendiente:last-child{border-bottom:none;padding-bottom:0}
-  .pendiente .dotp{width:8px;height:8px;margin-top:6px;flex:0 0 auto}
-  .pendiente .t{font-weight:800;font-size:13px}
-  .pendiente .m{font-size:11.5px;opacity:.6;padding-top:2px}
+  .pendiente {
+    display: flex;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--color-divider);
+    align-items: flex-start
+  }
 
-  .evento{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--color-divider)}
-  .evento:last-child{border-bottom:none;padding-bottom:0}
-  .evento .fecha{width:46px;flex:0 0 auto;text-align:center;background:var(--color-accent-100);border-radius:var(--radius-sm);padding:5px 0}
-  .evento .dia{font-weight:800;font-size:19px;line-height:1;color:var(--color-accent-700)}
-  .evento .mes{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;color:var(--color-accent-700)}
-  .evento .t{font-weight:800;font-size:13px}
-  .evento .h{font-size:11.5px;opacity:.6}
+  .pendiente:last-child {
+    border-bottom: none;
+    padding-bottom: 0
+  }
 
-  .cumple{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--color-divider)}
-  .cumple:last-child{border-bottom:none;padding-bottom:0}
-  .cumple .ini{width:30px;height:30px;flex:0 0 auto;background:var(--color-accent-200);color:var(--color-accent-800);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;border-radius:50%}
-  .cumple .n{flex:1;font-size:13px;font-weight:800}
-  .cumple .f{font-size:11px;opacity:.6}
+  .pendiente .dotp {
+    width: 8px;
+    height: 8px;
+    margin-top: 6px;
+    flex: 0 0 auto
+  }
+
+  .pendiente .t {
+    font-weight: 800;
+    font-size: 13px
+  }
+
+  .pendiente .m {
+    font-size: 11.5px;
+    opacity: .6;
+    padding-top: 2px
+  }
+
+  .evento {
+    display: flex;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--color-divider)
+  }
+
+  .evento:last-child {
+    border-bottom: none;
+    padding-bottom: 0
+  }
+
+  .evento .fecha {
+    width: 46px;
+    flex: 0 0 auto;
+    text-align: center;
+    background: var(--color-accent-100);
+    border-radius: var(--radius-sm);
+    padding: 5px 0
+  }
+
+  .evento .dia {
+    font-weight: 800;
+    font-size: 19px;
+    line-height: 1;
+    color: var(--color-accent-700)
+  }
+
+  .evento .mes {
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .7;
+    color: var(--color-accent-700)
+  }
+
+  .evento .t {
+    font-weight: 800;
+    font-size: 13px
+  }
+
+  .evento .h {
+    font-size: 11.5px;
+    opacity: .6
+  }
+
+  .cumple {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--color-divider)
+  }
+
+  .cumple:last-child {
+    border-bottom: none;
+    padding-bottom: 0
+  }
+
+  .cumple .ini {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    background: var(--color-accent-200);
+    color: var(--color-accent-800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11px;
+    border-radius: 50%
+  }
+
+  .cumple .n {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 800
+  }
+
+  .cumple .f {
+    font-size: 11px;
+    opacity: .6
+  }
 
   /* — responsive: apila la columna lateral debajo en pantallas angostas — */
-  @media (max-width: 880px){
-    .hero{gap:20px; padding:32px 24px 36px}
-    .hero-main{max-width:100%}
-    .hero h1{font-size:28px}
-    .hero-pdi{text-align:left}
-    .hero-pdi-valor{font-size:60px}
-    .grid-main{grid-template-columns:1fr;gap:32px}
+  @media (max-width: 880px) {
+    .hero {
+      gap: 20px;
+      padding: 32px 24px 36px
+    }
+
+    .hero-main {
+      max-width: 100%
+    }
+
+    .hero h1 {
+      font-size: 28px
+    }
+
+    .hero-pdi {
+      text-align: left
+    }
+
+    .hero-pdi-valor {
+      font-size: 60px
+    }
+
+    .grid-main {
+      grid-template-columns: 1fr;
+      gap: 32px
+    }
   }

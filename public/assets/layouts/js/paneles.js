@@ -78,6 +78,45 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Editar perfil (lápiz en el panel): muestra el formulario en vez de
+  // los datos, y viceversa con "Cancelar" — sin recargar la página.
+  const perfilVista = document.getElementById('perfilVista');
+  const perfilForm = document.getElementById('perfilForm');
+  const btnEditarPerfil = document.getElementById('btnEditarPerfil');
+  const btnCancelarPerfil = document.getElementById('btnCancelarPerfil');
+  if (perfilVista && perfilForm && btnEditarPerfil) {
+    btnEditarPerfil.addEventListener('click', function () {
+      perfilVista.hidden = true;
+      perfilForm.hidden = false;
+    });
+    if (btnCancelarPerfil) {
+      btnCancelarPerfil.addEventListener('click', function () {
+        perfilForm.hidden = true;
+        perfilVista.hidden = false;
+      });
+    }
+  }
+
+  // Vista previa de la foto elegida, antes de guardar.
+  const perfilFotoInput = document.getElementById('perfilFoto');
+  if (perfilFotoInput) {
+    perfilFotoInput.addEventListener('change', function () {
+      const archivo = perfilFotoInput.files && perfilFotoInput.files[0];
+      if (!archivo) return;
+      const contenedor = document.querySelector('.profile-drawer-avatar-img');
+      if (!contenedor) return;
+      const lector = new FileReader();
+      lector.onload = function () {
+        contenedor.textContent = '';
+        const img = document.createElement('img');
+        img.src = lector.result;
+        img.alt = '';
+        contenedor.appendChild(img);
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
   // Botón ☰ del navbar: en escritorio colapsa el sidebar a íconos; en
   // pantallas angostas (sidebar ya es un panel deslizante, ver paneles.css)
   // lo abre/cierra en su lugar. Ambas funciones viven en sidebar.js.
@@ -179,6 +218,9 @@ document.addEventListener('DOMContentLoaded', function () {
     sidebar.querySelectorAll('.sidebar-item').forEach(function (item) {
       const label = item.querySelector('.label');
       if (!label) return;
+      // Los que abren un grupo muestran el flyout de abajo (ya trae su
+      // propio título con el nombre), no hace falta este tooltip simple.
+      if (item.closest('.sidebar-group')) return;
 
       item.addEventListener('mouseenter', function () {
         if (!sidebar.classList.contains('collapsed')) return;
@@ -193,5 +235,52 @@ document.addEventListener('DOMContentLoaded', function () {
         tip.classList.remove('visible');
       });
     });
+
+    // Flyout con las áreas reales de cada dirección cuando el sidebar está
+    // contraído: ahí el .collapse normal queda oculto (no hay ancho para
+    // las etiquetas), así que sin esto esas áreas serían inalcanzables sin
+    // expandir el panel primero. Mismo truco de position:fixed que el
+    // tooltip de arriba. Un pequeño retraso al ocultar (en vez de al
+    // instante) para que el mouse pueda cruzar del ícono al flyout sin que
+    // se cierre a mitad de camino.
+    const flyout = document.createElement('div');
+    flyout.className = 'sidebar-flyout';
+    document.body.appendChild(flyout);
+    let flyoutHideTimer = null;
+
+    function ocultarFlyoutConDelay() {
+      flyoutHideTimer = setTimeout(function () {
+        flyout.classList.remove('visible');
+      }, 150);
+    }
+
+    sidebar.querySelectorAll('.sidebar-group').forEach(function (grupo) {
+      const trigger = grupo.querySelector(':scope > .sidebar-item');
+      const panel = grupo.querySelector(':scope > .collapse');
+      if (!trigger || !panel) return;
+      const links = panel.querySelectorAll('.sidebar-subitem');
+      if (!links.length) return;
+      const tituloLabel = trigger.querySelector('.label');
+
+      trigger.addEventListener('mouseenter', function () {
+        if (!sidebar.classList.contains('collapsed')) return;
+        clearTimeout(flyoutHideTimer);
+        flyout.innerHTML = '';
+        if (tituloLabel) {
+          const titulo = document.createElement('div');
+          titulo.className = 'sidebar-flyout-title';
+          titulo.textContent = tituloLabel.textContent;
+          flyout.appendChild(titulo);
+        }
+        links.forEach(function (a) { flyout.appendChild(a.cloneNode(true)); });
+        const rect = trigger.getBoundingClientRect();
+        flyout.style.left = (rect.right + 10) + 'px';
+        flyout.style.top = (rect.top + rect.height / 2) + 'px';
+        flyout.classList.add('visible');
+      });
+      trigger.addEventListener('mouseleave', ocultarFlyoutConDelay);
+    });
+    flyout.addEventListener('mouseenter', function () { clearTimeout(flyoutHideTimer); });
+    flyout.addEventListener('mouseleave', ocultarFlyoutConDelay);
   }
 });

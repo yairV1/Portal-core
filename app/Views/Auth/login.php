@@ -12,7 +12,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
     <!-- ── Iniciar sesión ── -->
     <div class="form-container sign-in-container">
       <form method="POST" action="<?= BASE_URL ?>/login" class="slide-form" id="formLogin">
-        <div class="slide-form-logo"><i class="fa-solid fa-right-to-bracket"></i></div>
+        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
         <h2>Iniciar sesión</h2>
         <p class="slide-form-sub">Portal CORE — COREDUCACIÓN</p>
 
@@ -29,7 +29,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
     <!-- ── Recuperar contraseña ── -->
     <div class="form-container recover-container">
       <form class="slide-form" id="formRecuperar">
-        <div class="slide-form-logo"><i class="fa-solid fa-key"></i></div>
+        <div class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.jpg" alt="Portal CORE"></div>
         <h2>Recuperar contraseña</h2>
         <p class="slide-form-sub">Ingresa tu correo institucional. Por seguridad no hay restablecimiento automático: un administrador te contactará para verificar tu identidad.</p>
         <input type="email" id="recuperarCorreo" required placeholder="Correo institucional">

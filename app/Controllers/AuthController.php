@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $correo   = trim(strtolower($_POST['correo'] ?? ''));
         $password = $_POST['password'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT id, nombre, correo, password_hash, cargo, rol FROM usuarios WHERE correo = :correo");
+        $stmt = $pdo->prepare("SELECT id, nombre, correo, password_hash, cargo, rol, foto FROM usuarios WHERE correo = :correo");
         $stmt->execute([':correo' => $correo]);
         $usuario = $stmt->fetch();
 
@@ -74,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_correo']   = $usuario['correo'];
             $_SESSION['usuario_cargo']    = $usuario['cargo'];
             $_SESSION['usuario_rol']      = $usuario['rol'];
+            $_SESSION['usuario_foto']     = $usuario['foto'];
             $_SESSION['ultima_actividad'] = time();
 
             // El ?bienvenida=1 le dice a portal-footer.php que muestre el

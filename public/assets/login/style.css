@@ -38,8 +38,10 @@
 /* ---- Base ---- */
 * { scrollbar-width: thin; scrollbar-color: var(--pr-light) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--pr-light); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pr-light); border-radius: 999px; transition: background .15s ease; }
+::-webkit-scrollbar-thumb:hover { background: var(--pr); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 html { scroll-behavior: smooth; }
 
@@ -666,6 +668,8 @@ a:hover { color: var(--pr-dark); }
 }
 .slide-form-logo-ok{ background: var(--ok); }
 .slide-form-logo-ghost{ background: rgba(255,255,255,.16); }
+.slide-form-logo-brand{ width: 64px; height: 64px; background: none; }
+.slide-form-logo-brand img{ width: 100%; height: 100%; object-fit: contain; display: block; }
 
 /* ── Overlay que se desliza ── */
 .overlay-container{
