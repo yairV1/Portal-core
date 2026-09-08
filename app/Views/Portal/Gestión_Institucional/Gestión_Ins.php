@@ -31,7 +31,6 @@
                   <span class="label"><?= e($a['label']) ?></span>
                   <span class="meta"><?= e($a['meta']) ?></span>
                 </span>
-                <span class="arrow">→</span>
               </div>
             <?php endforeach; endif; ?>
           </div>
