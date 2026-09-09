@@ -1,20 +1,36 @@
 <?php
 /**
  * Landing pública "Formulario de contratación" — acceso SIEMPRE por
- * token (nunca listado). $yaCompletado/$reciente/$errorEnvio y
+ * token (nunca listado). $yaCompletado/$expirado/$reciente/$errorEnvio y
  * $TIPOS_DOCUMENTO/$CAMPOS_TEXTO vienen de ContratacionController.php.
  * $csrf/BASE_URL/e()/v() ya vienen listos desde public/index.php.
+ *
+ * El formulario se ve en 3 pasos (barra de progreso + GSAP para la
+ * transición), pero sigue siendo un solo <form> con un solo POST al
+ * final — los pasos ocultos igual mandan sus campos, ContratacionController.php
+ * no cambia por esto.
  */
-
-// Documentos agrupados solo para que el formulario se lea más ordenado
-// — el guardado real no distingue grupos, son la misma lista de siempre.
-$gruposDocumentos = [
-    'Hojas de vida'          => ['hv_coreducacion', 'hv_normal'],
-    'Identificación y tributario' => ['doc_cedula', 'tarjeta_profesional', 'rut'],
-    'Seguridad social'       => ['cert_seguridad_social', 'cert_pension', 'cert_arl', 'cert_cuenta_bancaria'],
-    'Antecedentes'           => ['cert_procuraduria', 'cert_policia', 'cert_contraloria', 'cert_rnmc', 'ruaf'],
-    'Académico y laboral'    => ['diploma_posgrado', 'cert_laboral'],
-    'Salud y otros'          => ['carne_vacunas', 'otros'],
+$pasosForm = [
+    1 => [
+        'titulo' => 'Datos personales',
+        'grupos' => null, // paso especial: los 14 campos de texto, no documentos
+    ],
+    2 => [
+        'titulo' => 'Documentos de identificación',
+        'grupos' => [
+            'Hojas de vida'                => ['hv_coreducacion', 'hv_normal'],
+            'Identificación y tributario'  => ['doc_cedula', 'tarjeta_profesional', 'rut'],
+        ],
+    ],
+    3 => [
+        'titulo' => 'Certificados y seguridad social',
+        'grupos' => [
+            'Seguridad social'    => ['cert_seguridad_social', 'cert_pension', 'cert_arl', 'cert_cuenta_bancaria'],
+            'Antecedentes'        => ['cert_procuraduria', 'cert_policia', 'cert_contraloria', 'cert_rnmc', 'ruaf'],
+            'Académico y laboral' => ['diploma_posgrado', 'cert_laboral'],
+            'Salud y otros'       => ['carne_vacunas', 'otros'],
+        ],
+    ],
 ];
 ?>
 <!DOCTYPE html>
@@ -79,8 +95,17 @@ $gruposDocumentos = [
   <div class="ct-aviso ct-aviso-info">
     <i class="bi bi-info-circle-fill"></i>
     <div>
-      <strong>Este enlace ya fue utilizado.</strong>
-      <p>Si necesitas corregir algo de tu información, comunícate directamente con Gestión Humana.</p>
+      <strong>Esta postulación ya fue enviada.</strong>
+      <p>Este enlace ya se usó. Si necesitas corregir algo de tu información, comunícate directamente con Gestión Humana.</p>
+    </div>
+  </div>
+
+<?php elseif ($expirado): ?>
+  <div class="ct-aviso ct-aviso-info">
+    <i class="bi bi-clock-history"></i>
+    <div>
+      <strong>Este enlace ya expiró.</strong>
+      <p>Solicita uno nuevo a Gestión Humana para continuar con tu proceso de contratación.</p>
     </div>
   </div>
 
@@ -100,47 +125,70 @@ $gruposDocumentos = [
     </div>
   <?php endif; ?>
 
-  <form action="<?= BASE_URL ?>/contratacion/enviar" method="post" enctype="multipart/form-data" class="ct-form" novalidate>
+  <!-- Barra de progreso del formulario (interna, no confundir con las 4
+       etapas del proceso de arriba) — calendario.js-style: nada de esto
+       toca el backend, solo muestra/oculta pasos del mismo <form>. -->
+  <div class="ct-progreso">
+    <div class="ct-progreso-texto">Paso <span id="ctPasoActual">1</span> de <?= count($pasosForm) ?>: <span id="ctPasoTitulo"><?= e($pasosForm[1]['titulo']) ?></span></div>
+    <div class="ct-progreso-barra"><div class="ct-progreso-fill" id="ctProgresoFill"></div></div>
+  </div>
+
+  <form action="<?= BASE_URL ?>/contratacion/enviar" method="post" enctype="multipart/form-data" class="ct-form" id="ctForm" novalidate>
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="token" value="<?= e($token) ?>">
 
-    <h2 class="ct-seccion-titulo">Datos personales</h2>
-    <div class="ct-grid">
-      <input type="text" name="nombre" placeholder="Nombre completo" required>
-      <input type="text" name="cedula" placeholder="Cédula" required>
-      <input type="tel" name="celular" placeholder="Celular" required>
-      <input type="email" name="email" placeholder="Correo" required>
-      <input type="text" name="estado_civil" placeholder="Estado civil" required>
-      <input type="text" name="direccion" placeholder="Dirección de residencia" required>
-      <input type="text" name="profesion" placeholder="Profesión" required>
-      <input type="text" name="ciudad" placeholder="Ciudad" required>
-      <input type="text" name="cuenta_bancaria" placeholder="Cuenta bancaria (CTA)" required>
-      <input type="text" name="nivel_academico" placeholder="Nivel académico" required>
-      <input type="text" name="eps" placeholder="EPS (Salud)" required>
-      <input type="text" name="fondo_pension" placeholder="Fondo de pensión" required>
-      <input type="text" name="arl" placeholder="ARL" required>
-      <input type="text" name="fondo_cesantias" placeholder="Fondo de cesantías" required>
-    </div>
+    <?php foreach ($pasosForm as $numPaso => $paso): ?>
+      <div class="ct-step" data-paso="<?= $numPaso ?>" <?= $numPaso !== 1 ? 'hidden' : '' ?>>
 
-    <?php foreach ($gruposDocumentos as $grupoTitulo => $claves): ?>
-      <h2 class="ct-seccion-titulo"><?= e($grupoTitulo) ?></h2>
-      <div class="ct-grid ct-grid-docs">
-        <?php foreach ($claves as $clave): $info = $TIPOS_DOCUMENTO[$clave]; ?>
-          <label class="ct-file">
-            <span><?= e($info['label']) ?><?= $info['requerido'] ? '' : ' (opcional)' ?></span>
-            <input type="file" name="<?= e($clave) ?>" accept=".pdf,.jpg,.jpeg,.png,.webp" <?= $info['requerido'] ? 'required' : '' ?>>
-          </label>
-        <?php endforeach; ?>
+        <?php if ($paso['grupos'] === null): ?>
+          <h2 class="ct-seccion-titulo">Datos personales</h2>
+          <div class="ct-grid">
+            <input type="text" name="nombre" placeholder="Nombre completo" required>
+            <input type="text" name="cedula" placeholder="Cédula" required>
+            <input type="tel" name="celular" placeholder="Celular" required>
+            <input type="email" name="email" placeholder="Correo" required>
+            <input type="text" name="estado_civil" placeholder="Estado civil" required>
+            <input type="text" name="direccion" placeholder="Dirección de residencia" required>
+            <input type="text" name="profesion" placeholder="Profesión" required>
+            <input type="text" name="ciudad" placeholder="Ciudad" required>
+            <input type="text" name="cuenta_bancaria" placeholder="Cuenta bancaria (CTA)" required>
+            <input type="text" name="nivel_academico" placeholder="Nivel académico" required>
+            <input type="text" name="eps" placeholder="EPS (Salud)" required>
+            <input type="text" name="fondo_pension" placeholder="Fondo de pensión" required>
+            <input type="text" name="arl" placeholder="ARL" required>
+            <input type="text" name="fondo_cesantias" placeholder="Fondo de cesantías" required>
+          </div>
+        <?php else: ?>
+          <?php foreach ($paso['grupos'] as $grupoTitulo => $claves): ?>
+            <h2 class="ct-seccion-titulo"><?= e($grupoTitulo) ?></h2>
+            <div class="ct-grid ct-grid-docs">
+              <?php foreach ($claves as $clave): $info = $TIPOS_DOCUMENTO[$clave]; ?>
+                <label class="ct-file">
+                  <span><?= e($info['label']) ?><?= $info['requerido'] ? '' : ' (opcional)' ?></span>
+                  <input type="file" name="<?= e($clave) ?>" accept=".pdf,.jpg,.jpeg,.png,.webp" <?= $info['requerido'] ? 'required' : '' ?>>
+                </label>
+              <?php endforeach; ?>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
+
       </div>
     <?php endforeach; ?>
 
-    <button type="submit" class="btn-pill btn-pill-dark">Enviar información</button>
+    <div class="ct-nav">
+      <button type="button" class="btn-pill btn-pill-outline-dark" id="ctBtnAnterior" hidden>Anterior</button>
+      <button type="button" class="btn-pill btn-pill-dark" id="ctBtnSiguiente">Siguiente</button>
+      <button type="submit" class="btn-pill btn-pill-dark" id="ctBtnEnviar" hidden>Enviar información</button>
+    </div>
   </form>
 
 <?php endif; ?>
 
 </div>
 <div style="height:70px"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>window.CT_TOTAL_PASOS = <?= count($pasosForm) ?>;</script>
+<script>window.CT_TITULOS_PASOS = <?= json_encode(array_column($pasosForm, 'titulo'), JSON_UNESCAPED_UNICODE) ?>;</script>
 <script src="<?= v('/assets/web/js/contratacion.js') ?>"></script>
 </body>
 </html>

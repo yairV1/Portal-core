@@ -53,4 +53,21 @@
   border:1px dashed var(--line); border-radius:8px; padding:9px; font-size:.78rem; background:var(--paper);
 }
 
-.ct-form > button{ margin-top:20px; }
+/* ---------------- Barra de progreso (pasos del formulario) ---------------- */
+.ct-progreso{ margin-top:30px; }
+.ct-progreso-texto{ font-size:.82rem; font-weight:600; color:var(--text-soft); margin-bottom:8px; }
+.ct-progreso-texto span{ color:var(--magenta-dark); }
+.ct-progreso-barra{ height:6px; border-radius:6px; background:var(--paper-2); overflow:hidden; }
+.ct-progreso-fill{
+  height:100%; width:33.33%; border-radius:6px;
+  background:linear-gradient(90deg, var(--magenta), var(--orange));
+  transition:width .35s ease;
+}
+
+/* ---------------- Pasos del formulario ---------------- */
+.ct-step{ min-height:0; }
+.ct-nav{ display:flex; gap:10px; margin-top:24px; }
+.ct-nav #ctBtnSiguiente,
+.ct-nav #ctBtnEnviar{ margin-left:auto; } /* empuja el botón principal a la derecha, con o sin "Anterior" visible */
+.btn-pill-outline-dark{ border-color:var(--line); color:var(--ink); background:transparent; }
+.btn-pill-outline-dark:hover{ background:var(--paper-2); }

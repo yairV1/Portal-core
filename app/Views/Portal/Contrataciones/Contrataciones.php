@@ -28,6 +28,10 @@
       <option value="<?= (int) $p['id'] ?>"><?= e($p['nombre']) ?></option>
     <?php endforeach; ?>
   </select>
+  <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; opacity:.8">
+    Vigencia (días, mínimo 15)
+    <input type="number" name="dias_vigencia" value="15" min="15" style="width:70px; padding:9px 10px; border-radius:8px; border:1px solid var(--color-divider)">
+  </label>
   <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer">
     <i class="bi bi-plus-lg"></i> Generar enlace
   </button>
@@ -39,11 +43,13 @@
 <?php else: foreach ($contrataciones as $c): ?>
   <div class="box-card" style="margin-bottom:16px; padding:18px">
     <?php if (!$c['usado']): ?>
+      <?php $expirado = strtotime($c['expira_en']) < time(); ?>
       <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
         <div>
-          <span class="tag tag-warning">Pendiente</span>
+          <span class="tag <?= $expirado ? 'tag-danger' : 'tag-warning' ?>"><?= $expirado ? 'Expirado' : 'Pendiente' ?></span>
           <strong style="margin-left:8px"><?= e($c['nombre_referencia'] ?: 'Sin referencia') ?></strong>
           <?php if ($c['postulacion_nombre']): ?><span class="text-muted"> · vinculado a <?= e($c['postulacion_nombre']) ?></span><?php endif; ?>
+          <span class="text-muted"> · vence <?= (new DateTime($c['expira_en']))->format('d/m/Y') ?></span>
         </div>
         <form action="<?= BASE_URL ?>/contrataciones/eliminar" method="post" onsubmit="return confirm('¿Eliminar este enlace sin usar?')">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">

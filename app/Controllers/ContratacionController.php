@@ -40,7 +40,7 @@ $carpetaContrataciones = ROOT_PATH . '/storage/contrataciones';
 // ---- /contratacion (pública, por token) ----
 if ($uri === '/contratacion') {
     $token = $_GET['token'] ?? '';
-    $stmt = $pdo->prepare('SELECT id, usado FROM contrataciones WHERE token = :token');
+    $stmt = $pdo->prepare('SELECT id, usado, expira_en FROM contrataciones WHERE token = :token');
     $stmt->execute([':token' => $token]);
     $fila = $stmt->fetch();
 
@@ -51,6 +51,9 @@ if ($uri === '/contratacion') {
     }
 
     $yaCompletado = (bool) $fila['usado'];
+    // Expirado solo importa si todavía no se completó — uno ya usado
+    // muestra "ya fue utilizado" sin importar si además venció.
+    $expirado = !$yaCompletado && strtotime($fila['expira_en']) < time();
     $reciente = isset($_GET['ok']);
     $errorEnvio = $_GET['error'] ?? null;
 
@@ -68,13 +71,15 @@ if ($uri === '/contratacion/enviar') {
         exit;
     }
 
-    $stmt = $pdo->prepare('SELECT id, usado FROM contrataciones WHERE token = :token');
+    $stmt = $pdo->prepare('SELECT id, usado, expira_en FROM contrataciones WHERE token = :token');
     $stmt->execute([':token' => $token]);
     $fila = $stmt->fetch();
 
-    // Token inválido o ya usado: no hay a dónde volver con ese token
-    // (evita reenvíos), manda a la home.
-    if (!$fila || $fila['usado']) {
+    // Token inválido, ya usado, o expirado: no hay a dónde volver con ese
+    // token (evita reenvíos), manda a la home. La verificación real de
+    // "usado" es la del UPDATE atómico más abajo — esta es solo para no
+    // hacer trabajo de más con un token que ya se sabe inválido.
+    if (!$fila || $fila['usado'] || strtotime($fila['expira_en']) < time()) {
         header('Location: ' . BASE_URL . '/');
         exit;
     }
@@ -134,10 +139,21 @@ if ($uri === '/contratacion/enviar') {
         $archivosValidos[$clave] = ['tmp' => $file['tmp_name'], 'ext' => $TIPOS_PERMITIDOS[$mime]];
     }
 
-    // Todo válido — se guarda. Primero los datos de la fila...
+    // Todo válido — se guarda. El "WHERE ... AND usado = 0" es lo que
+    // realmente evita el doble envío: si dos peticiones con el mismo
+    // token llegan casi al mismo tiempo (doble clic, reintento de red),
+    // solo una consigue poner usado=1 acá — la otra ve rowCount() = 0 y
+    // se corta antes de tocar archivos, sin depender solo del SELECT de
+    // arriba (que por sí solo no evita la carrera).
     $set = implode(', ', array_map(fn($c) => "$c = :$c", $CAMPOS_TEXTO));
-    $stmt = $pdo->prepare("UPDATE contrataciones SET {$set}, usado = 1, completado_en = NOW(), ip = :ip WHERE id = :id");
+    $stmt = $pdo->prepare("UPDATE contrataciones SET {$set}, usado = 1, completado_en = NOW(), ip = :ip WHERE id = :id AND usado = 0");
     $stmt->execute($datos + [':ip' => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0', ':id' => $contratacionId]);
+
+    if ($stmt->rowCount() === 0) {
+        // Otra petición con este mismo token ganó la carrera justo antes.
+        header('Location: ' . $volver);
+        exit;
+    }
 
     // ...luego los archivos (con el id ya confirmado, para nombrarlos).
     if (!is_dir($carpetaContrataciones)) {
@@ -176,8 +192,18 @@ if ($uri === '/contrataciones/generar') {
     $nombreReferencia = trim($_POST['nombre_referencia'] ?? '') ?: null;
     $postulacionId = (($_POST['postulacion_id'] ?? '') !== '') ? (int) $_POST['postulacion_id'] : null;
 
-    $stmt = $pdo->prepare('INSERT INTO contrataciones (token, nombre_referencia, postulacion_id) VALUES (:token, :ref, :pid)');
-    $stmt->execute([':token' => $token, ':ref' => $nombreReferencia, ':pid' => $postulacionId]);
+    // Vigencia mínima 15 días — nunca menos, sin importar qué mande el
+    // formulario (el "min" del HTML es solo una ayuda visual, esto es lo
+    // que de verdad lo garantiza).
+    $vigenciaMinimaDias = 15;
+    $diasVigencia = (int) ($_POST['dias_vigencia'] ?? $vigenciaMinimaDias);
+    if ($diasVigencia < $vigenciaMinimaDias) {
+        $diasVigencia = $vigenciaMinimaDias;
+    }
+    $expiraEn = (new DateTime())->modify('+' . $diasVigencia . ' days')->format('Y-m-d H:i:s');
+
+    $stmt = $pdo->prepare('INSERT INTO contrataciones (token, nombre_referencia, postulacion_id, expira_en) VALUES (:token, :ref, :pid, :expira)');
+    $stmt->execute([':token' => $token, ':ref' => $nombreReferencia, ':pid' => $postulacionId, ':expira' => $expiraEn]);
 
     header('Location: ' . BASE_URL . '/contrataciones?nuevoToken=' . $token);
     exit;
