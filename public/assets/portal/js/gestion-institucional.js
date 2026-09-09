@@ -1,14 +1,7 @@
-  /* kicker/titulo/desc/kpis/areas ya los renderiza Gestión_Ins.php con
-     datos reales desde $pdo (ver PortalController.php) — acá solo queda
-     lo que todavía no tiene tabla real (docs/responsables/software, ver
-     plan). */
+  /* kicker/titulo/desc/kpis/areas/docs ya los renderiza Gestión_Ins.php con
+     datos reales desde $pdo (ver PortalController.php) — acá solo queda lo
+     que todavía no tiene tabla real (responsables/software, ver plan). */
   const MODULO = {
-    docs: [
-      { nombre: 'Plan de Desarrollo Institucional 2025-2030', tipo: 'Plan', version: 'V2.0', fecha: '12 jun 2026' },
-      { nombre: 'Proyecto Educativo Institucional', tipo: 'Documento marco', version: 'V4.1', fecha: '30 abr 2026' },
-      { nombre: 'Mapa Estratégico Institucional', tipo: 'Presentación', version: 'V1.3', fecha: '18 may 2026' },
-      { nombre: 'Política de Gobierno Corporativo', tipo: 'Política', version: 'V1.0', fecha: '02 mar 2026' }
-    ],
     responsables: [
       { ini: 'LG', nombre: 'Laura Gómez', cargo: 'Directora de Planeación Estratégica' },
       { ini: 'AC', nombre: 'Andrés Castaño', cargo: 'Líder Sistema de Gestión Integral' },
@@ -20,14 +13,6 @@
   document.querySelectorAll('.modulo-kpi .spark[data-valor]').forEach(el => {
     window.sparkline(el, window.tendenciaSintetica(el.dataset.valor));
   });
-
-  document.getElementById('moduloDocs').innerHTML = MODULO.docs.map(d => `
-    <tr>
-      <td><strong>${d.nombre}</strong></td>
-      <td style="opacity:.7">${d.tipo}</td>
-      <td><span class="tag">${d.version}</span></td>
-      <td style="opacity:.7">${d.fecha}</td>
-    </tr>`).join('');
 
   document.getElementById('moduloResponsables').innerHTML = MODULO.responsables.map(r => `
     <div class="responsable">

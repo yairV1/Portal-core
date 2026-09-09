@@ -3,9 +3,11 @@
 //  app/Controllers/HomeController.php
 // ══════════════════════════════════════════════════════════
 
-// Exige sesión activa — si no hay usuario logueado, manda al login
+// Sin sesión: "/" es la landing pública (presentación del portal), no el
+// dashboard — antes mandaba directo a /login, pero ahora hay una página
+// de presentación real que mostrar primero (ver app/Views/Landing/Inicio.php).
 if (empty($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . '/login');
+    require ROOT_PATH . '/app/Views/Landing/Inicio.php';
     exit;
 }
 

@@ -18,7 +18,7 @@
     <?php foreach ($areasPorDireccion[$dir['id']] as $area): ?>
       <p class="text-muted" style="margin:18px 0 8px"><?= e($area['label']) ?></p>
       <table class="table" style="margin-bottom:24px">
-        <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Responsable</th><th>Actualizado</th></tr></thead>
+        <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Responsable</th><th>Actualizado</th><th>Archivo</th></tr></thead>
         <tbody>
           <?php foreach ($archivosPorCarpeta[$area['id']] as $arc): ?>
             <tr>
@@ -32,6 +32,26 @@
               </td>
               <td style="opacity:.7"><?= e($arc['responsable']) ?></td>
               <td style="opacity:.7"><?= $arc['fecha'] ? (new DateTime($arc['fecha']))->format('d/m/Y') : '' ?></td>
+              <td>
+                <?php if ($arc['archivo']): ?>
+                  <a class="tag tag-accent" href="<?= BASE_URL ?>/documentos/descargar?tipo=documental&id=<?= (int) $arc['id'] ?>">
+                    <i class="bi bi-download"></i> Descargar
+                  </a>
+                <?php elseif (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
+                  <form action="<?= BASE_URL ?>/documentos/subir" method="post" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+                    <input type="hidden" name="tipo" value="documental">
+                    <input type="hidden" name="volver" value="/gestion-documental">
+                    <input type="hidden" name="archivo_id" value="<?= (int) $arc['id'] ?>">
+                    <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required style="max-width:160px;font-size:11px">
+                    <button type="submit" class="tag tag-neutral" style="border:none;cursor:pointer">
+                      <i class="bi bi-upload"></i> Subir
+                    </button>
+                  </form>
+                <?php else: ?>
+                  <span class="text-muted">Sin archivo</span>
+                <?php endif; ?>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>

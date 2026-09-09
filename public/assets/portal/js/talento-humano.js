@@ -1,41 +1,13 @@
-  /* ═══ Datos de ejemplo ═══ */
-  const ORGANIGRAMA = [
-    { nivel: 'Gobierno', cajas: [
-      { label: 'Consejo de Fundadores', meta: 'Máxima instancia' },
-      { label: 'Consejo Directivo', meta: 'Dirección estratégica' },
-      { label: 'Revisoría Fiscal', meta: 'Externa' },
-      { label: 'Control Interno', meta: 'Evaluación independiente' }
-    ]},
-    { nivel: 'Dirección general', cajas: [
-      { label: 'Rectoría', meta: 'Martha Ruiz Delgado', destacado: true },
-      { label: 'Secretaría General', meta: 'Actos administrativos' },
-      { label: 'Jurídica', meta: 'Asesoría legal' }
-    ]},
-    { nivel: 'Direcciones', cajas: [
-      { label: 'Vicerrectoría Académica', meta: 'Camilo Naranjo' },
-      { label: 'Dirección de Planeación Estratégica y Gestión Humana', meta: 'Laura Gómez' },
-      { label: 'Dirección Administrativa, Contable y Financiera', meta: 'Jorge Bermúdez' },
-      { label: 'Dirección de Investigación, Proyectos e Innovación', meta: 'Ricardo Osorio' }
-    ]}
-  ];
-  const COMITES = ['Consejo Académico', 'Comité de Planeación', 'Comité Financiero y Administrativo', 'Comité de Investigación', 'Comité de Autoevaluación y Acreditación', 'Comité de Bienestar Institucional'];
+  /* ═══ Organigrama/cargos/competencias: datos reales, inyectados por
+     Tal_Humano.php (ver PortalController.php y
+     database/migrations/006_talento_humano.sql) ═══ */
+  const ORGANIGRAMA = ORGANIGRAMA_DB;
+  const CARGOS = CARGOS_DB;
+  const COMPETENCIAS = COMPETENCIAS_DB;
 
-  const CARGOS = [
-    { cargo: 'Rector', direccion: 'Rectoría', nivel: 'Directivo', codigo: '001' },
-    { cargo: 'Vicerrector Académico', direccion: 'Vicerrectoría Académica', nivel: 'Directivo', codigo: '004' },
-    { cargo: 'Director de Planeación Estratégica', direccion: 'Planeación y Gestión Humana', nivel: 'Directivo', codigo: '007' },
-    { cargo: 'Decano', direccion: 'Decanaturas', nivel: 'Directivo', codigo: '012' },
-    { cargo: 'Contador General', direccion: 'Administrativa y Financiera', nivel: 'Profesional', codigo: '021' },
-    { cargo: 'Líder del Sistema de Gestión Integral', direccion: 'Planeación y Gestión Humana', nivel: 'Profesional', codigo: '028' },
-    { cargo: 'Docente de tiempo completo', direccion: 'Decanaturas', nivel: 'Docente', codigo: '052' }
-  ];
-  const COMPETENCIAS = [
-    { label: 'Orientación al servicio', pct: 88 },
-    { label: 'Trabajo en equipo', pct: 84 },
-    { label: 'Pensamiento analítico', pct: 76 },
-    { label: 'Competencia digital', pct: 71 },
-    { label: 'Liderazgo institucional', pct: 69 }
-  ];
+  /* ═══ Datos de ejemplo — sin tabla propia todavía (ver auditoría de
+     datos quemados) ═══ */
+  const COMITES = ['Consejo Académico', 'Comité de Planeación', 'Comité Financiero y Administrativo', 'Comité de Investigación', 'Comité de Autoevaluación y Acreditación', 'Comité de Bienestar Institucional'];
 
   const KPIS_TALENTO = [
     { label: 'Colaboradores', valor: '594', estado: 'accent' },

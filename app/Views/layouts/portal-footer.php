@@ -82,6 +82,42 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['doc'])): ?>
+<script>
+  // Aviso tras subir un documento (ver DocumentoController.php, que agrega
+  // ?doc=1|error|formato|tamano al volver a gestion-documental).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['doc']) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Documento subido correctamente' },
+      'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
+      'tamano': { icon: 'error', title: 'El archivo pesa más de 20 MB' },
+      'error': { icon: 'error', title: 'No se pudo subir el documento' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['evento'])): ?>
+<script>
+  // Aviso tras crear un evento (ver EventoController.php, que agrega
+  // ?evento=1|error al volver a calendario).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['evento']) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Evento creado correctamente' },
+      'error': { icon: 'error', title: 'No se pudo crear el evento' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
 </body>

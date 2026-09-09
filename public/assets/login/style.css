@@ -33,6 +33,14 @@
   --shadow-md: 0 8px 24px rgba(43, 32, 56, 0.10);
   --shadow-lg: 0 16px 40px rgba(43, 32, 56, 0.16);
   --gradient-brand: linear-gradient(135deg, var(--pr) 0%, #b8215f 45%, var(--sec) 100%);
+
+  /* Variante sobria del degradado de marca: mismos tonos, más profundos/
+     apagados. Se usa en superficies grandes (fondo del login, panel
+     decorativo) donde el degradado a máxima saturación resulta "candy". El
+     --gradient-brand original se deja intacto para botones y acentos chicos. */
+  --gradient-brand-deep: linear-gradient(150deg, var(--pr-dark) 0%, var(--pr) 55%, var(--sec-dark) 100%);
+  --auth-bg-top: #f8f7fb;
+  --auth-bg-bottom: #ece9f2;
 }
 
 /* ---- Base ---- */
@@ -271,19 +279,21 @@ a:hover { color: var(--pr-dark); }
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: var(--gradient-brand);
+  background: linear-gradient(180deg, var(--auth-bg-top) 0%, var(--auth-bg-bottom) 100%);
   background-attachment: fixed;
   position: relative;
   overflow: hidden;
 }
+/* Glows de marca muy sutiles en vez del degradado a máxima saturación de
+   antes — dan un toque de color sin competir con la tarjeta. */
 .auth-shell::before, .auth-shell::after {
   content: "";
   position: absolute;
   border-radius: 50%;
-  background: rgba(255,255,255,.08);
+  filter: blur(10px);
 }
-.auth-shell::before { width: 340px; height: 340px; top: -120px; left: -120px; }
-.auth-shell::after { width: 260px; height: 260px; bottom: -100px; right: -80px; }
+.auth-shell::before { width: 480px; height: 480px; top: -160px; left: -160px; background: rgba(158,31,99,.07); }
+.auth-shell::after { width: 380px; height: 380px; bottom: -140px; right: -120px; background: rgba(244,130,31,.07); }
 
 /* Estados finales (uso finalizado, salón ocupado, 404) reutilizan .status-shell */
 .status-shell {
@@ -599,11 +609,11 @@ a:hover { color: var(--pr-dark); }
    no tiene registro público). */
 .slide-auth {
   position: relative;
-  width: 100%;
-  max-width: 840px;
-  min-height: 540px;
+  width: min(94vw, 1240px);
+  min-height: min(86vh, 760px);
   background: var(--surface);
-  border-radius: 22px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
@@ -643,23 +653,63 @@ a:hover { color: var(--pr-dark); }
 .slide-form{
   background: var(--surface);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 100%; width: 100%; padding: 0 2.75rem; text-align: center;
+  height: 100%; width: 100%; padding: 0 4.5rem; text-align: center;
 }
 .slide-form input{
-  width: 100%; border: 1px solid var(--border); border-radius: 10px;
-  background: #fdfcff; padding: .8rem 1rem; font-size: .95rem; margin: .35rem 0;
+  width: 100%; border: 1px solid var(--border); border-radius: 12px;
+  background: #fdfcff; padding: 1.05rem 1.2rem; font-size: 1.02rem; margin: .45rem 0;
+  color: var(--ink);
+  transition: border-color .18s ease, box-shadow .18s ease;
 }
+.slide-form input::placeholder{ color: var(--ink-soft); opacity: .75; }
 .slide-form input:focus{
   outline: none; border-color: var(--pr-light); box-shadow: 0 0 0 .2rem rgba(158,31,99,.15);
 }
-.slide-form h2{ margin: .3rem 0 .15rem; font-size: 1.35rem; }
-.slide-form-sub{ color: var(--ink-soft); font-size: .85rem; margin: 0 0 .7rem; line-height: 1.4; }
-.slide-form .btn{ width: 100%; margin-top: .6rem; min-height: 46px; }
-.slide-form-link{ font-size: .8rem; margin-top: 1.1rem; color: var(--ink-soft); }
+/* Estado de error inline (validación en JS) — mismo rojo institucional
+   (--danger) que ya usan las alertas del resto del sistema. */
+.slide-form input.field-invalid{ border-color: var(--danger); }
+.slide-form input.field-invalid:focus{ border-color: var(--danger); box-shadow: 0 0 0 .2rem rgba(214,56,89,.15); }
+.field-error{
+  align-items: center; justify-content: center; gap: .4rem;
+  width: 100%; margin: -.05rem 0 .35rem; padding: 0;
+  color: var(--danger); font-size: .82rem; font-weight: 500; text-align: left;
+}
+.field-error:not([hidden]){ display: flex; }
+
+/* Input de contraseña + botón de mostrar/ocultar */
+.input-with-action{ position: relative; width: 100%; }
+.input-with-action input{ padding-right: 2.9rem; margin: .45rem 0; }
+.input-toggle-visibility{
+  position: absolute; top: 50%; right: .4rem; transform: translateY(-50%);
+  width: 34px; height: 34px; border: none; background: transparent; border-radius: 8px;
+  color: var(--ink-soft); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background-color .15s ease, color .15s ease;
+}
+.input-toggle-visibility:hover{ background: var(--bg); color: var(--ink); }
+
+.slide-form h2{ margin: .55rem 0 .45rem; font-size: 1.85rem; }
+.slide-form-sub{ color: var(--ink-soft); font-size: .95rem; margin: 0 0 1.3rem; line-height: 1.4; }
+.slide-form .btn{ width: 100%; margin-top: .8rem; min-height: 54px; font-size: 1.05rem; }
+/* Acento apagado (--pr-dark) en vez del gris secundario: se lee como link
+   sin competir con el botón "Ingresar" (--pr a full color). 10.1:1 sobre
+   blanco. */
+.slide-form-link{ font-size: .85rem; margin-top: 1.4rem; color: var(--pr-dark); }
+.slide-form-link:hover{ color: var(--pr); text-decoration: underline; }
 .slide-mobile-link{
   display: none; border: none; background: none; padding: 0;
-  color: var(--pr); font-size: .85rem; font-weight: 600; margin-top: .9rem; cursor: pointer;
+  color: var(--pr); font-size: .88rem; font-weight: 600; margin-top: 1rem; cursor: pointer;
 }
+
+/* Estados del botón "Ingresar": label normal vs. "Ingresando…" + spinner,
+   alternados por JS mientras se espera la respuesta del servidor. */
+.btn-label:not([hidden]){ display: inline-flex; align-items: center; gap: .5rem; }
+.btn-loading:not([hidden]){ display: inline-flex; align-items: center; gap: .55rem; }
+.btn-spinner{
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+  border: 2.5px solid rgba(255,255,255,.45); border-top-color: #fff;
+  animation: slide-loading-spin .7s linear infinite;
+}
+
 .slide-form-logo{
   width: 54px; height: 54px; border-radius: 15px;
   background: var(--gradient-brand); color: #fff;
@@ -668,8 +718,17 @@ a:hover { color: var(--pr-dark); }
 }
 .slide-form-logo-ok{ background: var(--ok); }
 .slide-form-logo-ghost{ background: rgba(255,255,255,.16); }
-.slide-form-logo-brand{ width: 64px; height: 64px; background: none; }
-.slide-form-logo-brand img{ width: 100%; height: 100%; object-fit: contain; display: block; }
+.slide-form-logo-brand{ width: 168px; height: 126px; background: none; margin-bottom: .75rem; }
+.slide-form-logo-brand img{ width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: -webkit-optimize-contrast; }
+
+/* Foco visible consistente (no el outline azul por defecto del navegador)
+   para botones y links del login — los inputs ya tienen su propio anillo
+   arriba. */
+.slide-auth :is(button, a):focus-visible{
+  outline: 2px solid var(--pr-light);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
 
 /* ── Overlay que se desliza ── */
 .overlay-container{
@@ -680,7 +739,12 @@ a:hover { color: var(--pr-dark); }
 .slide-auth.right-panel-active .overlay-container{ transform: translateX(-100%); }
 
 .overlay{
-  background: var(--gradient-brand);
+  /* Scrim oscuro (24% negro) por encima del degradado: sin él, el extremo
+     más claro (ámbar) del gradient-brand-deep deja el texto blanco y los
+     íconos por debajo del mínimo WCAG AA (medido ~3.5:1). Con el scrim,
+     el peor punto del degradado sube a ~6:1 — el degradado de marca en sí
+     (--gradient-brand-deep) no se toca, solo se le suma esta capa. */
+  background-image: linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.24)), var(--gradient-brand-deep);
   color: #fff;
   position: relative;
   left: -100%;
@@ -702,9 +766,15 @@ a:hover { color: var(--pr-dark); }
 .slide-auth.right-panel-active .overlay-right{ transform: translateX(20%); }
 
 .overlay-panel h2{ color: #fff; margin: .3rem 0 .6rem; }
-.overlay-panel p{ opacity: .92; font-size: .88rem; margin: 0 0 1.3rem; line-height: 1.5; }
-.btn-outline-light{ border: 1.5px solid #fff; color: #fff; background: transparent; }
-.btn-outline-light:hover{ background: #fff; color: var(--pr); }
+.overlay-panel p{ color: #fff; opacity: 1; font-size: .88rem; margin: 0 0 1.3rem; line-height: 1.5; }
+
+/* Botones "Iniciar sesión" / "Recuperar contraseña" del panel decorativo:
+   antes eran contorno blanco transparente sobre el degradado — apenas se
+   distinguían. Ahora, mismo patrón que .btn-primary del panel blanco pero
+   invertido: relleno blanco sólido + texto en el color de marca con mejor
+   contraste sobre blanco (magenta --pr, 7.4:1, vs. naranja --sec, 2.6:1). */
+.btn-outline-light{ border: 1.5px solid #fff; background: #fff; color: var(--pr); }
+.btn-outline-light:hover{ background: var(--pr-dark); border-color: var(--pr-dark); color: #fff; }
 
 /* ── Móvil: la animación de deslizamiento en 2 mitades no cabe cómoda por
    debajo de este ancho, así que el panel decorativo se oculta y el cambio
@@ -718,6 +788,24 @@ a:hover { color: var(--pr-dark); }
   .slide-auth.right-panel-active .recover-container{ display: block; }
   .slide-form{ height: auto; padding: 2.25rem 1.5rem; }
   .slide-mobile-link{ display: inline-block; }
+
+  /* El panel de "recuperar contraseña" no se desliza en mobile (no hay
+     espacio para las dos mitades lado a lado): se apila debajo del login,
+     reemplazándolo con un fade + leve slide en vez de un corte seco. */
+  .sign-in-container, .recover-container{ animation: authPanelIn .35s ease; }
+}
+
+@keyframes authPanelIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sign-in-container, .recover-container,
+  .form-container, .overlay-container, .overlay, .overlay-panel {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* ---- Aviso para activar notificaciones de escritorio ---- */

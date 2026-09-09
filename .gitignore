@@ -1,0 +1,17 @@
+/config/local.php
+
+# Documentos subidos (ver DocumentoController.php) — contenido de usuarios,
+# no código; se queda fuera de public/ a propósito (no debe ser accesible
+# por URL directa, ver el comentario en DocumentoController.php).
+/storage/documentos/*
+!/storage/documentos/.gitkeep
+
+# Hojas de vida y fotos de postulantes (ver TrabajoController.php) — datos
+# personales de candidatos, no código.
+/storage/postulaciones/*
+!/storage/postulaciones/.gitkeep
+
+# Documentos del formulario de contratación (ver ContratacionController.php)
+# — cédula, RUT, certificados, etc. de candidatos, no código.
+/storage/contrataciones/*
+!/storage/contrataciones/.gitkeep
