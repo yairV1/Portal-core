@@ -8,6 +8,13 @@ return [
     '/login'  => 'AuthController.php',
     '/logout' => 'AuthController.php',
     '/'       => 'HomeController.php',
+
+    // Trabaja con nosotros — landing pública (sin sesión) + panel admin
+    '/trabaja-con-nosotros'           => 'TrabajoController.php',
+    '/trabaja-con-nosotros/postular'  => 'TrabajoController.php',
+    '/postulaciones'                  => 'TrabajoController.php',
+    '/postulaciones/descargar'        => 'TrabajoController.php',
+
     '/perfil' => 'PerfilController.php',
 
     // Módulos del Portal — todos los maneja PortalController.php

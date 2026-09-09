@@ -5,3 +5,8 @@
 # por URL directa, ver el comentario en DocumentoController.php).
 /storage/documentos/*
 !/storage/documentos/.gitkeep
+
+# Hojas de vida y fotos de postulantes (ver TrabajoController.php) — datos
+# personales de candidatos, no código.
+/storage/postulaciones/*
+!/storage/postulaciones/.gitkeep

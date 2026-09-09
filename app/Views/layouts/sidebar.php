@@ -52,9 +52,14 @@ if (isset($pdo)) {
     // coincide con el slug de una dirección real suma como submenú sus
     // áreas ($areasPorSlug, ver arriba) — mismo mecanismo de siempre, nada
     // nuevo inventado.
+    $esAdminSidebar = ($_SESSION['usuario_rol'] ?? '') === 'admin';
     $navSecciones = $pdo->query('SELECT id, label, mostrar_titulo FROM nav_secciones ORDER BY orden')->fetchAll();
-    $navItems = $pdo->query('SELECT id, seccion_id, parent_id, slug, ruta, label, icono FROM nav_items ORDER BY orden')->fetchAll();
+    $navItems = $pdo->query('SELECT id, seccion_id, parent_id, slug, ruta, label, icono, solo_admin FROM nav_items ORDER BY orden')->fetchAll();
     foreach ($navItems as $it) {
+        // Ítems solo_admin (ej. Postulaciones) no existen para el resto —
+        // todavía no hay módulo real de áreas y permisos, así que por ahora
+        // es un simple sí/no por rol.
+        if ($it['solo_admin'] && !$esAdminSidebar) continue;
         if ($it['parent_id'] === null) {
             $navItemsPorSeccion[$it['seccion_id']][] = $it;
         } else {
