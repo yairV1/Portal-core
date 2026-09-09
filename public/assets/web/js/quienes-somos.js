@@ -73,4 +73,20 @@
       el.style.transform = 'none';
     });
   }
+
+  // Segunda red de seguridad, sin importar si GSAP corrió o no: un
+  // .qs-reveal usa scrollTrigger (arranca en opacity:0 hasta que ese
+  // elemento cruza el 90% del viewport), así que si el usuario nunca
+  // baja hasta ahí, o el layout cambia de alto después de que
+  // ScrollTrigger ya calculó las posiciones (ej. las fuentes web de
+  // Google tardan en cargar y corren el texto), puede quedar invisible
+  // para siempre aunque GSAP sí haya cargado bien. No reemplaza la
+  // animación de arriba — solo garantiza que a los ~1.5s el contenido
+  // esté visible de todas formas, la haya disparado GSAP o no.
+  setTimeout(function () {
+    document.querySelectorAll('.qs-fade, .qs-reveal').forEach(function (el) {
+      el.style.opacity = 1;
+      el.style.transform = 'none';
+    });
+  }, 1500);
 })();

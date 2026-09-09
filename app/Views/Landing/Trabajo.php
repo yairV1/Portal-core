@@ -22,16 +22,10 @@
 <nav class="navbar">
   <div class="container nav-row">
     <a href="<?= BASE_URL ?>/" class="brand">
-      <svg width="26" height="21" viewBox="0 0 60 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs><linearGradient id="mg" x1="0" y1="0" x2="60" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F15A29"/><stop offset="1" stop-color="#9E1F63"/></linearGradient></defs>
-        <path d="M6 6 L30 20 L30 28 L6 42 Z" fill="url(#mg)"/>
-        <path d="M34 4 L58 18" stroke="url(#mg)" stroke-width="7" stroke-linecap="round"/>
-        <path d="M34 24 L58 24" stroke="url(#mg)" stroke-width="7" stroke-linecap="round"/>
-        <path d="M34 44 L58 30" stroke="url(#mg)" stroke-width="7" stroke-linecap="round"/>
-      </svg>
-      <strong>Portal Core</strong>
+      <img src="<?= BASE_URL ?>/uploads/logo/Core-logo-black-removebg-preview.png" alt="COREDUCACIÓN" class="brand-logo-full">
     </a>
     <nav class="links" aria-label="Navegación principal">
+      <a href="<?= BASE_URL ?>/">Inicio</a>
       <a href="#vacantes">Vacantes</a>
       <a href="#postular">Postularme</a>
     </nav>

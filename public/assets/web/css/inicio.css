@@ -18,6 +18,8 @@
   .navbar{ position:sticky; top:0; z-index:60; background:rgba(251,248,246,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:16px 0; }
   .nav-row{ display:flex; align-items:center; justify-content:space-between; }
   .brand{ display:flex; align-items:center; gap:9px; font-size:1rem; color:var(--ink); }
+  .brand img{ height:28px; width:auto; display:block; }
+  .brand-logo-full{ height:42px !important; }
   nav.links{ display:flex; align-items:center; gap:30px; }
   nav.links a{ font-size:.88rem; }
   nav.links a:hover{ color:var(--magenta-dark); }

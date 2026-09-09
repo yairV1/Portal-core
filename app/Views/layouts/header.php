@@ -13,7 +13,7 @@
     if (evento.persisted) window.location.reload();
   });
 </script>
-<title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Control de Salones AC</title>
+<title><?= isset($titulo) ? e($titulo) . ' — ' : '' ?>Portal Core | COREDUCACIÓN</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/logo-core.png">
 
 <!-- PWA: permite instalar el sistema en el celular (Agregar a inicio) -->
