@@ -10,3 +10,8 @@
 # personales de candidatos, no código.
 /storage/postulaciones/*
 !/storage/postulaciones/.gitkeep
+
+# Documentos del formulario de contratación (ver ContratacionController.php)
+# — cédula, RUT, certificados, etc. de candidatos, no código.
+/storage/contrataciones/*
+!/storage/contrataciones/.gitkeep

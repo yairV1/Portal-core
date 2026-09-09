@@ -15,6 +15,17 @@ return [
     '/postulaciones'                  => 'TrabajoController.php',
     '/postulaciones/descargar'        => 'TrabajoController.php',
 
+    // Quiénes somos — landing pública institucional (sin sesión)
+    '/quienes-somos' => 'QuienesSomosController.php',
+
+    // Contratación — acceso solo por enlace con token (sin sesión) + panel admin
+    '/contratacion'            => 'ContratacionController.php',
+    '/contratacion/enviar'     => 'ContratacionController.php',
+    '/contrataciones'          => 'ContratacionController.php',
+    '/contrataciones/generar'  => 'ContratacionController.php',
+    '/contrataciones/eliminar'=> 'ContratacionController.php',
+    '/contrataciones/descargar'=> 'ContratacionController.php',
+
     '/perfil' => 'PerfilController.php',
 
     // Módulos del Portal — todos los maneja PortalController.php

@@ -35,6 +35,8 @@
       <a href="#modulos">Módulos</a>
       <a href="#roles">Para tu rol</a>
       <a href="#pasos">Cómo empiezas</a>
+      <a href="<?= BASE_URL ?>/quienes-somos">Quiénes somos</a>
+      <a href="<?= BASE_URL ?>/trabaja-con-nosotros">Trabaja con nosotros</a>
     </nav>
     <a href="<?= BASE_URL ?>/login" class="btn-pill btn-pill-dark">Iniciar sesión</a>
   </div>
