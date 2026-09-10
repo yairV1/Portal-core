@@ -24,8 +24,12 @@ if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
     exit;
 }
 
-$nombre = trim($_POST['nombre'] ?? '');
-$cargo  = trim($_POST['cargo'] ?? '');
+$nombre        = trim($_POST['nombre'] ?? '');
+$cargo         = trim($_POST['cargo'] ?? '');
+$dependencia   = trim($_POST['dependencia'] ?? '');
+$extension     = trim($_POST['extension'] ?? '');
+$perfilAcceso  = trim($_POST['perfil_acceso'] ?? '');
+$sede          = trim($_POST['sede'] ?? '');
 
 if ($nombre === '') {
     header('Location: ' . BASE_URL . '/?perfil=error');
@@ -67,19 +71,33 @@ if (!empty($_FILES['foto']['tmp_name']) && $_FILES['foto']['error'] === UPLOAD_E
     $foto = '/uploads/perfiles/' . $archivo;
 }
 
+$campos = [
+    ':nombre'        => $nombre,
+    ':cargo'         => $cargo,
+    ':dependencia'   => $dependencia !== '' ? $dependencia : null,
+    ':extension'     => $extension !== '' ? $extension : null,
+    ':perfil_acceso' => $perfilAcceso !== '' ? $perfilAcceso : null,
+    ':sede'          => $sede !== '' ? $sede : null,
+    ':id'            => $_SESSION['usuario_id'],
+];
+
 if ($foto !== null) {
-    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo, foto = :foto WHERE id = :id');
-    $stmt->execute([':nombre' => $nombre, ':cargo' => $cargo, ':foto' => $foto, ':id' => $_SESSION['usuario_id']]);
+    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo, dependencia = :dependencia, extension = :extension, perfil_acceso = :perfil_acceso, sede = :sede, foto = :foto WHERE id = :id');
+    $stmt->execute($campos + [':foto' => $foto]);
     $_SESSION['usuario_foto'] = $foto;
 } else {
-    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo WHERE id = :id');
-    $stmt->execute([':nombre' => $nombre, ':cargo' => $cargo, ':id' => $_SESSION['usuario_id']]);
+    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo, dependencia = :dependencia, extension = :extension, perfil_acceso = :perfil_acceso, sede = :sede WHERE id = :id');
+    $stmt->execute($campos);
 }
 
-// Refresca la sesión ya mismo, para que el topbar muestre el cambio sin
-// pedir volver a iniciar sesión.
-$_SESSION['usuario_nombre'] = $nombre;
-$_SESSION['usuario_cargo']  = $cargo;
+// Refresca la sesión ya mismo, para que el topbar y el cajón de perfil
+// muestren el cambio sin pedir volver a iniciar sesión.
+$_SESSION['usuario_nombre']        = $nombre;
+$_SESSION['usuario_cargo']         = $cargo;
+$_SESSION['usuario_dependencia']   = $campos[':dependencia'];
+$_SESSION['usuario_extension']     = $campos[':extension'];
+$_SESSION['usuario_perfil_acceso'] = $campos[':perfil_acceso'];
+$_SESSION['usuario_sede']          = $campos[':sede'];
 
 header('Location: ' . BASE_URL . '/?perfil=1');
 exit;
