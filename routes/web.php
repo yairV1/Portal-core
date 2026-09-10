@@ -28,6 +28,10 @@ return [
 
     '/perfil' => 'PerfilController.php',
 
+    '/pendientes/crear'     => 'PendienteController.php',
+    '/pendientes/completar' => 'PendienteController.php',
+    '/pendientes/eliminar'  => 'PendienteController.php',
+
     // Módulos del Portal — todos los maneja PortalController.php
     '/tableros'                 => 'PortalController.php',
     '/mapa-portal'               => 'PortalController.php',

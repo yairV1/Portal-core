@@ -120,6 +120,24 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['pendiente'])): ?>
+<script>
+  // Aviso tras crear/eliminar un pendiente (ver PendienteController.php,
+  // que agrega ?pendiente=1|eliminado|error al volver a Inicio).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['pendiente'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Pendiente agregado' },
+      'eliminado': { icon: 'success', title: 'Pendiente eliminado' },
+      'error': { icon: 'error', title: 'No se pudo guardar el pendiente' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
 </body>

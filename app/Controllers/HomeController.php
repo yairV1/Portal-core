@@ -95,11 +95,28 @@ foreach ($stmt->fetchAll() as $r) {
     ];
 }
 
-// Mis pendientes
+// Mis pendientes — personal, no una lista global (ver migration
+// 020_pendientes_usuario.sql): cada usuario solo ve y borra los suyos.
+// Los que llevan más de un mes marcados como hechos se borran solos acá
+// mismo (sin cron: esta app no tiene ninguno, y este es el punto por el
+// que pasa cualquier usuario todos los días) — "liberar espacio" real,
+// no solo ocultarlos.
+$pdo->exec("DELETE FROM pendientes WHERE completado = 1 AND completado_en < DATE_SUB(NOW(), INTERVAL 1 MONTH)");
+
 $pendientes = [];
-$stmt = $pdo->query('SELECT titulo, meta, color FROM pendientes ORDER BY orden');
+// Los ya hechos se quedan abajo del todo (no desaparecen al tildarlos,
+// eso es lo que hace "eliminar") — dentro de cada grupo, el más reciente
+// primero.
+$stmt = $pdo->prepare('SELECT id, titulo, meta, color, completado FROM pendientes WHERE usuario_id = :usuario_id ORDER BY completado ASC, id DESC');
+$stmt->execute([':usuario_id' => $_SESSION['usuario_id']]);
 foreach ($stmt->fetchAll() as $r) {
-    $pendientes[] = ['titulo' => $r['titulo'], 'meta' => $r['meta'], 'color' => $r['color'] ?: '#9e1f63'];
+    $pendientes[] = [
+        'id' => $r['id'],
+        'titulo' => $r['titulo'],
+        'meta' => $r['meta'],
+        'color' => $r['color'] ?: '#9e1f63',
+        'completado' => (bool) $r['completado'],
+    ];
 }
 
 // Agenda de la semana
