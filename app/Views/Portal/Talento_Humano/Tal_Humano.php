@@ -9,9 +9,9 @@
   // Organigrama/cargos/competencias reales (ver PortalController.php y
   // database/migrations/006_talento_humano.sql) — se resuelven acá porque
   // esta vista cambia de pestaña sin recargar la página.
-  const ORGANIGRAMA_DB  = <?= json_encode($thOrganigrama, JSON_UNESCAPED_UNICODE) ?>;
-  const CARGOS_DB        = <?= json_encode($thCargos, JSON_UNESCAPED_UNICODE) ?>;
-  const COMPETENCIAS_DB = <?= json_encode($thCompetencias, JSON_UNESCAPED_UNICODE) ?>;
+  const ORGANIGRAMA_DB  = <?= json_encode($thOrganigrama, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  const CARGOS_DB        = <?= json_encode($thCargos, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  const COMPETENCIAS_DB = <?= json_encode($thCompetencias, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 </script>
 <script src="<?= BASE_URL ?>/assets/portal/js/talento-humano.js"></script>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

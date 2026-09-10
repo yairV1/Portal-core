@@ -1,0 +1,16 @@
+<?php
+// Copia este archivo a config/database.local.php (queda en .gitignore —
+// nunca se sube ni se pisa entre ramas o máquinas) y pon ahí las
+// credenciales reales de TU base de datos MySQL/MariaDB local.
+//
+// Antes vivían hardcodeadas en config/database.php, que sí viaja en git —
+// cualquiera con acceso al repo (o a su historial) tenía la contraseña.
+// Este archivo resuelve eso hacia adelante: config/database.php ahora solo
+// trae valores de relleno que no sirven para nada real, y lee las
+// credenciales de verdad desde acá.
+return [
+    'host' => 'localhost',
+    'name' => 'portal_core',
+    'user' => 'portal_user',
+    'pass' => 'cambia-esto-por-tu-contraseña-real', // la de portal_user en TU MySQL
+];

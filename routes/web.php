@@ -46,4 +46,7 @@ return [
     '/directorio'                => 'PortalController.php',
     '/calendario'                => 'PortalController.php',
     '/calendario/crear-evento'   => 'EventoController.php',
+    '/calendario/editar-evento'  => 'EventoController.php',
+    '/calendario/eliminar-evento'=> 'EventoController.php',
+    '/calendario/exportar'       => 'EventoController.php',
 ];

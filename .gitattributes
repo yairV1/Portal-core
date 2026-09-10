@@ -1,0 +1,31 @@
+# Fuerza LF en todo el código fuente, sin importar el core.autocrlf de cada
+# máquina (Windows suele traerlo en true por defecto; Linux, en false) —
+# sin esto, dos devs en distinto SO pueden terminar committeando el mismo
+# archivo con distinto final de línea, lo que ensucia cada diff/PR con
+# "cambió la línea completa" aunque el contenido real no cambió.
+* text=auto eol=lf
+
+*.php   text eol=lf
+*.js    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.htaccess text eol=lf
+*.sql   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.sh    text eol=lf
+
+# Binarios: nunca tocar finales de línea ni intentar diff de texto.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.doc   binary
+*.docx  binary
+*.xls   binary
+*.xlsx  binary
+*.ppt   binary
+*.pptx  binary

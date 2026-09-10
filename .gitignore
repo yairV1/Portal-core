@@ -1,4 +1,15 @@
 /config/local.php
+/config/database.local.php
+
+# Basura que genera cada sistema operativo al navegar carpetas — no es del
+# proyecto, y sin esto un dev en Windows o Mac puede subirla sin querer.
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.Spotlight-V100
 
 # Documentos subidos (ver DocumentoController.php) — contenido de usuarios,
 # no código; se queda fuera de public/ a propósito (no debe ser accesible
@@ -15,3 +26,6 @@
 # — cédula, RUT, certificados, etc. de candidatos, no código.
 /storage/contrataciones/*
 !/storage/contrataciones/.gitkeep
+
+
+docs

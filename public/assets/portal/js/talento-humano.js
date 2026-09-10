@@ -5,6 +5,12 @@
   const CARGOS = CARGOS_DB;
   const COMPETENCIAS = COMPETENCIAS_DB;
 
+  // Estos campos van directo a innerHTML más abajo — hoy solo se cargan por
+  // migración SQL, pero en cuanto exista un panel admin para editarlos (ver
+  // fase de áreas y permisos), un valor con HTML/JS adentro se ejecutaría
+  // para cualquiera que abra esta pestaña. Escapar ahora es gratis.
+  const escapeHtml = (valor) => String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   /* ═══ Datos de ejemplo — sin tabla propia todavía (ver auditoría de
      datos quemados) ═══ */
   const COMITES = ['Consejo Académico', 'Comité de Planeación', 'Comité Financiero y Administrativo', 'Comité de Investigación', 'Comité de Autoevaluación y Acreditación', 'Comité de Bienestar Institucional'];
@@ -54,19 +60,19 @@
       cont.innerHTML = `
         ${ORGANIGRAMA.map(n => `
           <div class="org-nivel">
-            <div class="org-nivel-label">${n.nivel}</div>
+            <div class="org-nivel-label">${escapeHtml(n.nivel)}</div>
             <div class="org-cajas">
               ${n.cajas.map(c => `
                 <div class="org-caja ${c.destacado?'destacado':''}">
-                  <div class="label">${c.label}</div>
-                  <div class="meta">${c.meta}</div>
+                  <div class="label">${escapeHtml(c.label)}</div>
+                  <div class="meta">${escapeHtml(c.meta)}</div>
                 </div>`).join('')}
             </div>
           </div>`).join('')}
         <div class="subsection">
           <h4 class="section-title">Consejos y comités</h4>
           <div class="chip-row">
-            ${COMITES.map(c => `<span class="tag-outline">${c}</span>`).join('')}
+            ${COMITES.map(c => `<span class="tag-outline">${escapeHtml(c)}</span>`).join('')}
           </div>
         </div>`;
 
@@ -78,10 +84,10 @@
             <tbody>
               ${CARGOS.map(c => `
                 <tr>
-                  <td><strong>${c.cargo}</strong></td>
-                  <td class="text-muted">${c.direccion}</td>
-                  <td><span class="tag tag-neutral">${c.nivel}</span></td>
-                  <td class="text-accent">MF-${c.codigo}</td>
+                  <td><strong>${escapeHtml(c.cargo)}</strong></td>
+                  <td class="text-muted">${escapeHtml(c.direccion)}</td>
+                  <td><span class="tag tag-neutral">${escapeHtml(c.nivel)}</span></td>
+                  <td class="text-accent">MF-${escapeHtml(c.codigo)}</td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -89,8 +95,8 @@
             <div class="side-box-title">Competencias institucionales</div>
             ${COMPETENCIAS.map(c => `
               <div class="comp-row">
-                <div class="comp-head"><span>${c.label}</span><strong>${c.pct}%</strong></div>
-                <div class="comp-bar"><div class="comp-bar-fill" style="width:${c.pct}%"></div></div>
+                <div class="comp-head"><span>${escapeHtml(c.label)}</span><strong>${Number(c.pct) || 0}%</strong></div>
+                <div class="comp-bar"><div class="comp-bar-fill" style="width:${Number(c.pct) || 0}%"></div></div>
               </div>`).join('')}
           </div>
         </div>`;

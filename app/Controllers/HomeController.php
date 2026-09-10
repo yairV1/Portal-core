@@ -104,7 +104,9 @@ foreach ($stmt->fetchAll() as $r) {
 
 // Agenda de la semana
 $eventos = [];
-$stmt = $pdo->query('SELECT titulo, fecha, hora_lugar FROM eventos ORDER BY fecha');
+$stmt = $pdo->prepare("SELECT titulo, fecha, hora_lugar FROM eventos
+    WHERE visibilidad = 'publico' OR usuario_id = :usuario_id ORDER BY fecha");
+$stmt->execute([':usuario_id' => $_SESSION['usuario_id']]);
 foreach ($stmt->fetchAll() as $r) {
     $fecha = new DateTime($r['fecha']);
     $eventos[] = [
