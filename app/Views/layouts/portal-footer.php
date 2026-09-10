@@ -22,11 +22,11 @@
   </form>
 </div>
 <script>
-  window.BASE_URL = <?= json_encode(BASE_URL) ?>;
-  window.usuarioNombre = <?= json_encode(!empty($nombre) && $nombre !== 'Invitado' ? explode(' ', trim($nombre))[0] : '') ?>;
+  window.BASE_URL = <?= json_encode(BASE_URL, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  window.usuarioNombre = <?= json_encode(!empty($nombre) && $nombre !== 'Invitado' ? explode(' ', trim($nombre))[0] : '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25" integrity="sha384-nLoOnA/BDh8A/jxqtckg4DumuCGOBYUnNJLZdQz/zfYNp3wcjGSoWTAzgko06G/2" crossorigin="anonymous"></script>
 <script>
   // Mismo tema institucional de SweetAlert2 que usa la pantalla de login
   // (ver footer.php) — acá hace falta para el diálogo de "cerrar sesión".
@@ -53,7 +53,7 @@
       position: 'top-end',
       icon: 'success',
       iconHtml: '<img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core" style="width:100%;height:100%;object-fit:cover;border-radius:50%">',
-      title: <?= json_encode('¡Bienvenido' . (!empty($nombre) && $nombre !== 'Invitado' ? ', ' . explode(' ', trim($nombre))[0] : '') . '!') ?>,
+      title: <?= json_encode('¡Bienvenido' . (!empty($nombre) && $nombre !== 'Invitado' ? ', ' . explode(' ', trim($nombre))[0] : '') . '!', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
       text: 'Core está lista para ayudarte a encontrar lo que necesites.',
       timer: 3200,
       timerProgressBar: true,
@@ -69,7 +69,7 @@
   // ?perfil=1|error|formato|tamano al volver a "/").
   window.addEventListener('DOMContentLoaded', function () {
     if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['perfil']) ?>;
+    var resultado = <?= json_encode($_GET['perfil'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     var textos = {
       '1': { icon: 'success', title: 'Perfil actualizado' },
       'formato': { icon: 'error', title: 'La foto debe ser JPG, PNG o WEBP' },
@@ -88,7 +88,7 @@
   // ?doc=1|error|formato|tamano al volver a gestion-documental).
   window.addEventListener('DOMContentLoaded', function () {
     if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['doc']) ?>;
+    var resultado = <?= json_encode($_GET['doc'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     var textos = {
       '1': { icon: 'success', title: 'Documento subido correctamente' },
       'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
@@ -107,10 +107,12 @@
   // ?evento=1|error al volver a calendario).
   window.addEventListener('DOMContentLoaded', function () {
     if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['evento']) ?>;
+    var resultado = <?= json_encode($_GET['evento'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     var textos = {
       '1': { icon: 'success', title: 'Evento creado correctamente' },
-      'error': { icon: 'error', title: 'No se pudo crear el evento' }
+      'editado': { icon: 'success', title: 'Evento actualizado correctamente' },
+      'eliminado': { icon: 'success', title: 'Evento eliminado' },
+      'error': { icon: 'error', title: 'No se pudo guardar el evento' }
     };
     var t = textos[resultado] || textos['error'];
     SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });

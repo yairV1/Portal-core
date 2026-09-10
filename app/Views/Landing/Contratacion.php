@@ -39,6 +39,7 @@ $pasosForm = [
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulario de contratación — Portal Core COREDUCACIÓN</title>
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/favicon-core.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -179,9 +180,9 @@ $pasosForm = [
 
 </div>
 <div style="height:70px"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 <script>window.CT_TOTAL_PASOS = <?= count($pasosForm) ?>;</script>
-<script>window.CT_TITULOS_PASOS = <?= json_encode(array_column($pasosForm, 'titulo'), JSON_UNESCAPED_UNICODE) ?>;</script>
+<script>window.CT_TITULOS_PASOS = <?= json_encode(array_column($pasosForm, 'titulo'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;</script>
 <script src="<?= v('/assets/web/js/contratacion.js') ?>"></script>
 </body>
 </html>

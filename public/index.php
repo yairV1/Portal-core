@@ -38,6 +38,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Headers de seguridad básicos — van acá (con header(), no en .htaccess)
+// para que apliquen sin importar si mod_headers está habilitado en Apache.
+header('X-Content-Type-Options: nosniff');       // no "adivinar" el tipo de un archivo distinto al declarado
+header('X-Frame-Options: SAMEORIGIN');            // nadie puede meter el portal en un <iframe> de otro sitio (clickjacking)
+header('Referrer-Policy: strict-origin-when-cross-origin'); // no filtra la URL completa (con tokens en query) a sitios externos
+
 // Evita que el navegador guarde en caché las páginas que pasan por acá
 // (dashboard, tableros, etc.). Sin esto, después de cerrar sesión el botón
 // "atrás" del navegador puede mostrar una copia en caché de una página

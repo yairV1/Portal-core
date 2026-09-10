@@ -1,3 +1,8 @@
+# Sin esto, cualquier carpeta sin un index (ej. /uploads/perfiles/) lista
+# todos sus archivos a quien entre por esa URL — no debería poder navegarse
+# el contenido de una carpeta, solo pedir un archivo puntual que ya conoces.
+Options -Indexes
+
 RewriteEngine On
 
 # Si el archivo o carpeta pedido existe de verdad (css, js, imágenes...), sírvelo tal cual

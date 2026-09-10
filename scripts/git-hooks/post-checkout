@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Se dispara solo después de `git checkout`/`git switch` (y del checkout
+# inicial de un `git clone`). Git le pasa 3 argumentos solo:
+#   $1 = ref anterior, $2 = ref nuevo, $3 = 1 si fue cambio de rama, 0 si
+#   fue un checkout de archivos sueltos (ej. `git checkout -- archivo.php`).
+# Solo nos interesa correr el chequeo en un cambio de rama real.
+prev_ref="$1"
+new_ref="$2"
+es_cambio_de_rama="$3"
+
+[[ "$es_cambio_de_rama" == "1" ]] || exit 0
+[[ "$prev_ref" != "$new_ref" ]] || exit 0
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$DIR/check.sh" "$prev_ref"

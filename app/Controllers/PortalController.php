@@ -102,7 +102,10 @@ if ($uri === '/novedades') {
     }
 
     $moduloEventos = [];
-    foreach ($pdo->query('SELECT titulo, fecha, hora_lugar FROM eventos ORDER BY fecha')->fetchAll() as $r) {
+    $stmtEventosNovedades = $pdo->prepare("SELECT titulo, fecha, hora_lugar FROM eventos
+        WHERE visibilidad = 'publico' OR usuario_id = :usuario_id ORDER BY fecha");
+    $stmtEventosNovedades->execute([':usuario_id' => $_SESSION['usuario_id']]);
+    foreach ($stmtEventosNovedades->fetchAll() as $r) {
         $fecha = new DateTime($r['fecha']);
         $moduloEventos[] = [
             'titulo'     => $r['titulo'],
@@ -192,10 +195,16 @@ if ($uri === '/calendario') {
     $calTituloMes = $MESES_LARGO[(int) $primerDia->format('n') - 1] . ' ' . $primerDia->format('Y');
 
     $eventosPorDia = [];
-    $stmt = $pdo->prepare("SELECT id, titulo, hora_lugar, fecha FROM eventos WHERE fecha >= :inicio AND fecha <= :fin ORDER BY fecha");
+    // Un evento privado solo lo ve quien lo creó — el resto ("publico",
+    // o filas viejas sin usuario_id) se ve igual que siempre.
+    $stmt = $pdo->prepare("SELECT id, usuario_id, titulo, hora_lugar, fecha, visibilidad FROM eventos
+        WHERE fecha >= :inicio AND fecha <= :fin
+        AND (visibilidad = 'publico' OR usuario_id = :usuario_id)
+        ORDER BY fecha");
     $stmt->execute([
-        ':inicio' => $primerDia->format('Y-m-01'),
-        ':fin'    => $primerDia->format('Y-m-t'),
+        ':inicio'     => $primerDia->format('Y-m-01'),
+        ':fin'        => $primerDia->format('Y-m-t'),
+        ':usuario_id' => $_SESSION['usuario_id'],
     ]);
     foreach ($stmt->fetchAll() as $ev) {
         $eventosPorDia[(int) (new DateTime($ev['fecha']))->format('j')][] = $ev;

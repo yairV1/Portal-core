@@ -222,7 +222,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
       SwalBrand.fire({
         icon: 'error',
         title: 'No se pudo iniciar sesión',
-        text: <?= json_encode($error) ?>
+        text: <?= json_encode($error, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>
       });
     <?php elseif (!empty($_GET['salida'])): ?>
       // toast: true → aviso pequeño en la esquina, sin fondo oscurecido ni

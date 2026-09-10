@@ -6,6 +6,20 @@
 Esta es la carpeta de trabajo real; nada de lo de abajo copia archivos,
 todo lee directo de aquí.
 
+## Config propia de esta máquina (no viaja en git)
+
+Dos archivos con datos de esta máquina puntual — gitignoreados a propósito,
+cada quien los crea una vez copiando el `.example`:
+
+- `config/local.php` ← `config/local.php.example` (BASE_URL, si el vhost no
+  sirve en la raíz).
+- `config/database.local.php` ← `config/database.local.php.example`
+  (credenciales reales de MySQL — antes vivían hardcodeadas en
+  `config/database.php`, que sí viaja en git; ver `docs/windows-linux.md`).
+
+Sin el segundo, `config/database.php` cae a una contraseña vacía y ninguna
+página que use `$pdo` va a conectar.
+
 ## Cómo se sirve
 
 - Apache 2.4.58 ya estaba instalado y corriendo, con `php_module` cargado (PHP 8.3.6).

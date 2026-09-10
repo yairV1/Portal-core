@@ -1,4 +1,17 @@
-.cal-toolbar{ display:flex; align-items:center; gap:14px; margin:20px 0 16px }
+/* ── Layout: grilla del mes + agenda del día ──
+   .box-card/.box-card--flat vienen de paneles.css — regla del sistema:
+   como máximo una caja con sombra por pantalla, por eso el mes lleva
+   sombra (.box-card) y la agenda no (.box-card--flat). */
+.cal-layout{
+  display:grid; grid-template-columns:1fr 300px; gap:var(--space-lg); align-items:start; margin-top:20px;
+}
+.cal-main{ padding:20px }
+
+@media (max-width: 900px){
+  .cal-layout{ grid-template-columns:1fr }
+}
+
+.cal-toolbar{ display:flex; align-items:center; gap:14px; margin:0 0 16px }
 .cal-titulo{ margin:0; flex:1; text-transform:capitalize }
 .cal-nav{
   width:32px; height:32px; display:flex; align-items:center; justify-content:center;
@@ -11,35 +24,6 @@
 }
 .cal-hoy:hover{ background:var(--color-accent-100) }
 
-/* Popover flotante de "nuevo evento" — posición (top/left) la calcula
-   calendario.js según la celda que se haya clicado; acá solo la
-   apariencia. Requiere JS (igual que el sidebar colapsable o el
-   asistente) — sin JS, un admin no puede crear eventos desde acá. */
-.cal-popover{
-  position:fixed; z-index:100; width:260px;
-  background:var(--color-bg); border:1px solid var(--color-accent); border-radius:var(--radius-md);
-  box-shadow:var(--shadow-hover);
-}
-.cal-pop-head{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 14px; border-bottom:1px solid var(--color-divider); font-size:12.5px; font-weight:700;
-}
-.cal-pop-close{
-  border:none; background:none; cursor:pointer; opacity:.6; font-size:12px; padding:2px; color:inherit;
-}
-.cal-pop-close:hover{ opacity:1 }
-.cal-pop-form{ display:flex; flex-direction:column; gap:8px; padding:12px 14px }
-.cal-pop-form input[type="text"],
-.cal-pop-form input[type="date"]{
-  width:100%; box-sizing:border-box; border:1px solid var(--color-divider); border-radius:var(--radius-sm);
-  padding:7px 10px; font-size:12.5px; background:var(--color-bg); color:var(--color-text);
-}
-.cal-pop-form button{
-  border:none; border-radius:var(--radius-sm); padding:8px 16px; font-size:12.5px; font-weight:700;
-  background:var(--color-accent); color:#fff; cursor:pointer;
-}
-.cal-pop-form button:hover{ opacity:.9 }
-
 .cal-grid{
   display:grid; grid-template-columns:repeat(7, 1fr); gap:1px;
   background:var(--color-divider); border:1px solid var(--color-divider);
@@ -51,7 +35,7 @@
 }
 .cal-celda{
   background:var(--color-bg); min-height:96px; padding:8px; display:flex; flex-direction:column; gap:4px;
-  color:inherit; text-decoration:none; /* la celda puede ser <button> (admin) o <div> (resto) */
+  color:inherit; text-decoration:none; transition:background .15s ease, box-shadow .15s ease;
 }
 .cal-celda.cal-vacia{ background:var(--color-surface) }
 .cal-celda.cal-hoy{ background:var(--color-accent-100) }
@@ -64,19 +48,100 @@ button.cal-celda.cal-hoy:hover{ background:var(--color-accent-200) }
 .cal-evento{
   font-size:10.5px; font-weight:700; color:var(--color-accent-800); background:var(--color-accent-200);
   border-radius:6px; padding:2px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  display:flex; align-items:center; gap:3px;
 }
+/* Evento privado: mismo tamaño, look "apagado" para distinguirlo del
+   público a simple vista (solo lo ve su dueño, no hace falta que resalte). */
+.cal-evento-privado{ background:var(--color-surface); color:var(--color-text); opacity:.75 }
 
 @media (max-width: 720px){
   .cal-celda{ min-height:60px; padding:5px }
   .cal-evento{ font-size:9px }
 }
 
-/* Lista "Eventos de <mes>" — mismo componente que ya usa Inicio (ver
-   inicio.css .evento), repetido acá porque cada página carga su propio
-   css (mismo criterio que el resto del portal). */
-.evento{ display:flex; gap:16px; padding:13px 0; border-bottom:1px solid var(--color-divider) }
-.evento:last-child{ border-bottom:none; padding-bottom:0 }
-.evento .fecha{ width:46px; flex:0 0 auto; text-align:center; background:var(--color-accent-100); border-radius:var(--radius-sm); padding:5px 0 }
-.evento .dia{ font-weight:800; font-size:19px; line-height:1; color:var(--color-accent-700) }
-.evento .t{ font-weight:800; font-size:13px }
-.evento .h{ font-size:11.5px; opacity:.6 }
+/* ── Agenda del día / del mes (columna derecha) ──
+   Dos pestañas sobre la misma tarjeta en vez de una lista aparte debajo
+   del calendario — "Este mes" ya viene renderizado desde PHP (mismos
+   datos que la grilla), calendario.js solo alterna cuál se ve.
+   calendario.js reescribe #calAgendaLista/#calAgendaFecha al hacer clic
+   en una celda; el HTML de acá es el estado inicial ("hoy"), sin JS. */
+.cal-agenda{ padding:20px; display:flex; flex-direction:column; gap:14px; position:sticky; top:20px }
+.cal-agenda-tabs{ width:100% }
+.cal-agenda-tabs .pill-tab{ flex:1 }
+.cal-agenda-panel{ display:flex; flex-direction:column; gap:10px }
+.cal-agenda-fecha{ font-size:var(--fs-small); font-weight:800; opacity:.7 }
+.cal-agenda-lista{ display:flex; flex-direction:column; min-height:40px }
+.cal-agenda-lista-scroll{ max-height:420px; overflow-y:auto }
+.cal-agenda-vacia{ margin:8px 0 }
+
+/* Fila de evento: contenedor no clicable (.agenda-item) con dos hermanos
+   adentro — la parte editable (.agenda-item-info, <button> o <div> según
+   permiso) y el enlace .ics — nunca un <a> anidado dentro de un <button>
+   (HTML inválido). Ver cal_render_evento_item() en Calendario.php. */
+.agenda-item{
+  display:flex; align-items:center; gap:6px; width:100%;
+  padding:10px 0 10px 10px; border-bottom:1px solid var(--color-divider);
+  border-left:3px solid var(--color-accent);
+}
+.agenda-item:last-child{ border-bottom:none; padding-bottom:0 }
+.agenda-item-privado{ border-left-color:var(--color-neutral-300) }
+
+.agenda-item-info{
+  flex:1; display:flex; align-items:center; gap:8px; min-width:0;
+  border:none; background:none; font:inherit; color:inherit; text-align:left;
+  padding:6px; margin:-6px; border-radius:var(--radius-sm);
+}
+button.agenda-item-info{ cursor:pointer; transition:background .15s ease }
+button.agenda-item-info:hover{ background:var(--color-surface) }
+.agenda-item-text{ flex:1; display:flex; flex-direction:column; gap:2px; min-width:0 }
+.agenda-item-t{ font-weight:800; font-size:13px }
+.agenda-item-h{ font-size:11.5px; opacity:.6 }
+.agenda-item-editar{ flex:0 0 auto; font-size:11px; opacity:.35 }
+button.agenda-item-info:hover .agenda-item-editar{ opacity:.9; color:var(--color-accent) }
+.cal-agenda-nuevo{ width:100% }
+
+/* ── Popover flotante de "nuevo evento" ──
+   Posición (top/left) la calcula calendario.js según la celda o el botón
+   "Nuevo evento" que lo haya abierto; acá solo la apariencia. Requiere JS
+   (igual que el sidebar colapsable o el asistente) — ver Calendario.php
+   ($puedeCrear controla si este bloque siquiera se imprime). */
+.cal-popover{
+  position:fixed; z-index:100; width:280px;
+  background:var(--color-bg); border:1px solid var(--color-divider); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-hover);
+  /* Red de seguridad para pantallas muy bajas (ej. celular en horizontal):
+     calendario.js ya intenta que quepa entero arriba o abajo de la celda,
+     pero si ni así entra, que se pueda hacer scroll adentro en vez de
+     dejar el botón "Crear" fuera de la pantalla sin forma de llegar. */
+  max-height:calc(100vh - 24px); overflow-y:auto;
+}
+.cal-pop-head{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:12px 16px; border-bottom:1px solid var(--color-divider); font-size:13px; font-weight:800;
+  color:var(--color-accent-700);
+}
+.cal-pop-head strong{ display:flex; align-items:center; gap:6px; color:inherit; font-weight:inherit }
+.cal-pop-close{
+  border:none; background:none; cursor:pointer; opacity:.6; font-size:12px; padding:2px; color:var(--color-text);
+}
+.cal-pop-close:hover{ opacity:1 }
+.cal-pop-form{ display:flex; flex-direction:column; gap:6px; padding:14px 16px }
+.cal-pop-label{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; opacity:.6; margin-top:6px }
+.cal-pop-label:first-child{ margin-top:0 }
+.cal-pop-form input[type="text"],
+.cal-pop-form input[type="date"]{
+  width:100%; box-sizing:border-box; border:1px solid var(--color-divider); border-radius:var(--radius-sm);
+  padding:8px 10px; font-size:12.5px; background:var(--color-bg); color:var(--color-text); font-family:inherit;
+}
+.cal-pop-form input[type="text"]:focus-visible,
+.cal-pop-form input[type="date"]:focus-visible{ outline:none; box-shadow:var(--shadow-focus); border-color:var(--color-accent); }
+.cal-pop-form .btn{ width:100%; margin-top:6px }
+.cal-pop-visibilidad{ width:100%; margin-top:2px }
+.cal-pop-visibilidad .pill-tab{ flex:1; display:flex; align-items:center; justify-content:center; gap:5px; padding:8px 10px; font-size:11.5px }
+.cal-pop-nota{ display:flex; align-items:center; gap:6px; margin:4px 0 0; font-size:11.5px; opacity:.6 }
+
+.evento-ics{
+  align-self:center; width:30px; height:30px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--color-divider); border-radius:var(--radius-sm); color:inherit; text-decoration:none;
+}
+.evento-ics:hover{ background:var(--color-surface); border-color:var(--color-accent) }
