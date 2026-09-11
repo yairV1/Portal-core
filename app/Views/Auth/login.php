@@ -3,78 +3,90 @@
 // (mismo patrón que $pdo/$uri en los demás controladores) — no están
 // "sin definir", el editor no puede rastrear el require que los trae.
 $titulo = 'Iniciar sesión';
+
+// La mascota "Core" es opcional: si el archivo (recorte transparente, sin
+// fondo propio) todavía no está en public/assets/login/img/, el panel se ve
+// bien igual con solo el fondo líquido — nunca un ícono de imagen rota.
+$mascotaSrc = null;
+foreach (['core-mascota.webp', 'core-mascota.png'] as $candidato) {
+    if (is_file(ROOT_PATH . '/public/assets/login/img/' . $candidato)) {
+        $mascotaSrc = '/assets/login/img/' . $candidato;
+        break;
+    }
+}
+
 require ROOT_PATH . '/app/Views/layouts/header.php';
 ?>
 
 <div class="auth-shell">
-  <div class="slide-auth" id="slideAuth">
+  <!-- ── Agua interactiva de fondo (toda la pantalla, detrás de la tarjeta):
+       canvas + JS vanilla, sin librerías 3D. Reacciona al mouse y también
+       ondula sola de a poco para que la pantalla nunca se vea "vacía" en
+       monitores grandes. Ver water-bg.js. ── -->
+  <canvas id="authWaterCanvas" class="auth-water-canvas" aria-hidden="true"></canvas>
 
-    <!-- ── Iniciar sesión ── -->
-    <div class="form-container sign-in-container">
-      <form method="POST" action="<?= BASE_URL ?>/login" class="slide-form" id="formLogin" novalidate>
-        <a href="<?= BASE_URL ?>/" class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></a>
-        <h2>Iniciar sesión</h2>
-        <p class="slide-form-sub">Portal CORE — COREDUCACIÓN</p>
+  <div class="core-auth-card" id="coreAuthCard">
+
+    <!-- ── Panel visual: cristal esmerilado que deja ver el agua de fondo,
+         con la mascota Core (si existe el archivo) y el texto superpuesto. ── -->
+    <div class="core-auth-visual" aria-hidden="true">
+      <div class="core-auth-visual-pattern"></div>
+      <?php if ($mascotaSrc): ?>
+        <img src="<?= BASE_URL . $mascotaSrc ?>" alt="" class="core-auth-mascot" decoding="async" fetchpriority="high">
+      <?php endif; ?>
+      <div class="core-auth-visual-copy">
+        <img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="" class="core-auth-visual-mark">
+        <span class="core-auth-kicker">PORTAL CORE</span>
+        <h2 class="core-auth-tagline">Tu ecosistema<br>educativo, en un solo lugar.</h2>
+        <p class="core-auth-visual-sub">Gestión académica, documental y administrativa de COREDUCACIÓN.</p>
+      </div>
+    </div>
+
+    <!-- ── Panel de formulario ── -->
+    <div class="core-auth-form-panel">
+      <form method="POST" action="<?= BASE_URL ?>/login" class="core-auth-form" id="formLogin" novalidate>
+        <a href="<?= BASE_URL ?>/" class="core-auth-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></a>
+        <h1>Iniciar sesión</h1>
+        <p class="core-auth-form-sub">Ingresa con tu correo institucional para continuar.</p>
 
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
-        <input type="email" name="correo" id="loginCorreo" required autofocus placeholder="Correo institucional" aria-describedby="errCorreo">
-        <span class="field-error" id="errCorreo" role="alert" hidden></span>
-
-        <div class="input-with-action">
-          <input type="password" name="password" id="loginPassword" required placeholder="Contraseña" aria-describedby="errPassword">
-          <button type="button" class="input-toggle-visibility" id="btnTogglePass" aria-label="Mostrar contraseña">
-            <i class="fa-solid fa-eye" aria-hidden="true"></i>
-          </button>
+        <div class="core-auth-field">
+          <label for="loginCorreo">Correo electrónico</label>
+          <input type="email" name="correo" id="loginCorreo" required autofocus autocomplete="username" placeholder="tu.correo@coreducacion.edu.co" aria-describedby="errCorreo">
+          <span class="field-error" id="errCorreo" role="alert" hidden></span>
         </div>
-        <span class="field-error" id="errPassword" role="alert" hidden></span>
 
-        <button type="button" class="slide-mobile-link" id="btnIrRecuperarMobile">¿Olvidaste tu contraseña?</button>
+        <div class="core-auth-field">
+          <label for="loginPassword">Contraseña</label>
+          <div class="input-with-action">
+            <input type="password" name="password" id="loginPassword" required autocomplete="current-password" placeholder="Tu contraseña" aria-describedby="errPassword">
+            <button type="button" class="input-toggle-visibility" id="btnTogglePass" aria-label="Mostrar contraseña">
+              <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+          <span class="field-error" id="errPassword" role="alert" hidden></span>
+        </div>
 
-        <button type="submit" class="btn btn-primary" id="btnLoginSubmit">
+        <button type="submit" class="btn btn-primary core-auth-submit" id="btnLoginSubmit">
           <span class="btn-label"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Ingresar</span>
           <span class="btn-loading" hidden><span class="btn-spinner" aria-hidden="true"></span> Ingresando…</span>
         </button>
 
-        <a href="<?= BASE_URL ?>/horario" class="slide-form-link">Consultar mi horario sin iniciar sesión</a>
+        <div class="core-auth-divider" role="separator"><span>o</span></div>
+
+        <button type="button" class="core-auth-google" id="btnGoogleLogin">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.36 0-4.36-1.6-5.08-3.74H.9v2.33A8.997 8.997 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.92 10.68A5.4 5.4 0 0 1 3.64 9c0-.58.1-1.15.28-1.68V4.99H.9A8.997 8.997 0 0 0 0 9c0 1.45.35 2.83.9 4.01l3.02-2.33z"/>
+            <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A8.997 8.997 0 0 0 .9 4.99l3.02 2.33C4.64 5.18 6.64 3.58 9 3.58z"/>
+          </svg>
+          <span>Continuar con Google</span>
+        </button>
+
+        <a href="<?= BASE_URL ?>/horario" class="core-auth-link">Consultar mi horario sin iniciar sesión</a>
       </form>
-    </div>
-
-    <!-- ── Recuperar contraseña ── -->
-    <div class="form-container recover-container">
-      <form class="slide-form" id="formRecuperar">
-        <a href="<?= BASE_URL ?>/" class="slide-form-logo slide-form-logo-brand"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></a>
-        <h2>Recuperar contraseña</h2>
-        <p class="slide-form-sub">Ingresa tu correo institucional. Por seguridad no hay restablecimiento automático: un administrador te contactará para verificar tu identidad.</p>
-        <input type="email" id="recuperarCorreo" required placeholder="Correo institucional">
-        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Enviar solicitud</button>
-        <button type="button" class="slide-mobile-link" id="btnIrLoginMobile">Volver a iniciar sesión</button>
-      </form>
-
-      <div class="slide-form" id="confirmRecuperar" hidden>
-        <div class="slide-form-logo slide-form-logo-ok"><i class="fa-solid fa-check"></i></div>
-        <h2>Solicitud recibida</h2>
-        <p class="slide-form-sub">Un administrador se pondrá en contacto contigo para restablecer tu acceso.</p>
-        <button type="button" class="btn btn-outline-primary" id="btnVolverLogin">Volver a iniciar sesión</button>
-      </div>
-    </div>
-
-    <!-- ── Panel deslizante ── -->
-    <div class="overlay-container">
-      <div class="overlay">
-        <div class="overlay-panel overlay-left">
-          <div class="slide-form-logo slide-form-logo-ghost"><i class="fa-solid fa-right-to-bracket"></i></div>
-          <h2>¿Ya la recuerdas?</h2>
-          <p>Vuelve a la pantalla de inicio de sesión con tu correo y contraseña institucional.</p>
-          <button type="button" class="btn btn-outline-light" id="btnIrLogin">Iniciar sesión</button>
-        </div>
-        <div class="overlay-panel overlay-right">
-          <div class="slide-form-logo slide-form-logo-ghost"><i class="fa-solid fa-key"></i></div>
-          <h2>¿Olvidaste tu contraseña?</h2>
-          <p>Por seguridad no hay recuperación automática: solicítala y un administrador la restablecerá contigo.</p>
-          <button type="button" class="btn btn-outline-light" id="btnIrRecuperar">Recuperar contraseña</button>
-        </div>
-      </div>
     </div>
 
     <!-- ── Overlay de carga tras enviar el login ── -->
@@ -86,45 +98,9 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
   </div>
 </div>
 
+<script src="<?= BASE_URL ?>/assets/login/water-bg.js" defer></script>
 <script>
   (function () {
-    var container = document.getElementById('slideAuth');
-    var formRecuperar = document.getElementById('formRecuperar');
-    var confirmRecuperar = document.getElementById('confirmRecuperar');
-
-    function mostrarRecuperar() { container.classList.add('right-panel-active'); }
-    function mostrarLogin() {
-      container.classList.remove('right-panel-active');
-      // Espera a que termine el deslizamiento antes de resetear el formulario
-      // de recuperación, para no ver el cambio de "confirmación" a "formulario"
-      // a medio camino de la animación.
-      setTimeout(function () {
-        formRecuperar.hidden = false;
-        confirmRecuperar.hidden = true;
-        formRecuperar.reset();
-      }, 650);
-    }
-
-    ['btnIrRecuperar', 'btnIrRecuperarMobile'].forEach(function (id) {
-      var btn = document.getElementById(id);
-      if (btn) btn.addEventListener('click', mostrarRecuperar);
-    });
-    ['btnIrLogin', 'btnIrLoginMobile', 'btnVolverLogin'].forEach(function (id) {
-      var btn = document.getElementById(id);
-      if (btn) btn.addEventListener('click', mostrarLogin);
-    });
-
-    // Sin backend de recuperación real (a propósito, ver docs/política de
-    // seguridad arriba): solo confirma que la solicitud "llegó" y remite a
-    // un administrador, tal como decía el aviso que reemplaza esta pantalla.
-    if (formRecuperar) {
-      formRecuperar.addEventListener('submit', function (e) {
-        e.preventDefault();
-        formRecuperar.hidden = true;
-        confirmRecuperar.hidden = false;
-      });
-    }
-
     // Mostrar/ocultar contraseña — botón real (no solo ícono decorativo),
     // con aria-label que refleja la acción disponible, no el estado actual.
     var loginPassword = document.getElementById('loginPassword');
@@ -209,6 +185,22 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
         }
         slideLoading.hidden = false;
         setTimeout(function () { formLogin.submit(); }, 800);
+      });
+    }
+
+    // Google todavía no tiene un backend de OAuth propio en este proyecto
+    // (no hay credenciales/cliente configurados) — en vez de simular un
+    // login falso, se avisa con el mismo patrón de aviso que ya usa el
+    // resto del sistema, para no dejar el botón sin respuesta.
+    var btnGoogleLogin = document.getElementById('btnGoogleLogin');
+    if (btnGoogleLogin) {
+      btnGoogleLogin.addEventListener('click', function () {
+        if (typeof SwalBrand === 'undefined') return;
+        SwalBrand.fire({
+          icon: 'info',
+          title: 'Muy pronto',
+          text: 'El inicio de sesión con Google institucional está en preparación. Por ahora, ingresa con tu correo y contraseña.'
+        });
       });
     }
   })();
