@@ -29,9 +29,26 @@
 La aplicación queda en `http://localhost:8080` y phpMyAdmin en
 `http://localhost:8081` (o en los puertos configurados en `.env`). MySQL
 ejecuta automáticamente las migraciones numeradas al crear por primera vez el
-volumen `db_data`. El repositorio contiene migraciones `001` a `028`, que se
+volumen `db_data`. El repositorio contiene migraciones `001` a `029`, que se
 ejecutan en orden sobre un esquema base compatible. Las migraciones `020` a
-`028` incluyen los avances más recientes del portal.
+`029` incluyen los avances más recientes del portal. La `029` guarda en MySQL
+el contenido institucional de la portada pública (módulos, roles, pasos,
+estadísticas y textos), para que ya no haya que editar la vista para
+actualizar esa información.
+
+Los scripts auxiliares de Apache nativo y los hooks Git específicos de Linux
+no forman parte del repositorio compartido: la carpeta `scripts/` está
+ignorada para evitar cambios de permisos (`100755`/`100644`) al trabajar
+desde Windows. El entorno recomendado para todos los sistemas operativos es
+Docker Compose. Si una máquina Linux necesita esos scripts, debe conservarlos
+localmente y no añadirlos con `git add`.
+
+En Windows también puede configurarse Git para no reportar cambios de bits de
+ejecución:
+
+```sh
+git config core.filemode false
+```
 
 ## Comandos del día a día
 

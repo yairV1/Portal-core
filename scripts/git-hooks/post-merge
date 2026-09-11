@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Se dispara solo después de `git pull` / `git merge` (git dispara
-# post-merge automáticamente, no hay que llamarlo a mano). Compara contra
-# ORIG_HEAD, que git deja apuntando al commit en el que estabas antes del
-# pull. Ver scripts/git-hooks/check.sh para el detalle de qué revisa.
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$DIR/check.sh" "ORIG_HEAD"

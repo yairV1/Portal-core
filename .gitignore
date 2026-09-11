@@ -35,3 +35,9 @@ $RECYCLE.BIN/
 
 docs/*
 !docs/docker.md
+
+# Herramientas opcionales específicas de Linux/Apache y hooks locales.
+# Cada desarrollador las conserva en su copia si las necesita; no forman
+# parte del flujo Docker compartido y no deben producir cambios de permisos
+# al trabajar desde Windows.
+/scripts/

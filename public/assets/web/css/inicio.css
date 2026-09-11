@@ -93,6 +93,10 @@
   @media (max-width: 620px){ .module-card{ flex:0 0 100%; } }
   .module-visual{ height:130px; position:relative; display:flex; align-items:center; justify-content:center; }
   .module-visual svg{ width:34px; height:34px; }
+  .module-visual i{ font-size:34px; color:#fff; }
+  .module-visual-activo{ background:linear-gradient(135deg,var(--magenta),var(--magenta-dark)); }
+  .module-visual-desarrollo{ background:linear-gradient(135deg,var(--orange),var(--orange-dark)); }
+  .module-visual-futuro{ background:linear-gradient(135deg,#9c8f95,#7C6A70); }
   .module-price-badge{ position:absolute; top:10px; left:10px; background:rgba(255,255,255,.92); font-size:.68rem; font-weight:600; padding:4px 10px; border-radius:20px; }
   .module-body{ padding:16px 18px 20px; }
   .module-body h3{ font-size:1rem; margin-bottom:4px; }
@@ -116,6 +120,9 @@
   .role-intro .btn-pill{ margin-top:20px; align-self:flex-start; }
   .role-card{ position:relative; border-radius:14px; overflow:hidden; min-height:230px; display:flex; align-items:flex-end; padding:20px; color:#fff; }
   .role-card::before{ content:''; position:absolute; inset:0; z-index:0; }
+  .role-card-magenta{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(158,31,99,.75)),linear-gradient(135deg,#9E1F63,#6E1747); }
+  .role-card-orange{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(241,90,41,.75)),linear-gradient(135deg,#F15A29,#C23F16); }
+  .role-card-dark{ background:linear-gradient(160deg,rgba(26,26,26,.2),rgba(26,26,26,.85)),linear-gradient(135deg,#3A2A32,#1A1A1A); }
   .role-card > *{ position:relative; z-index:1; }
   .role-card h3{ font-size:1.05rem; }
   .role-card p{ font-size:.8rem; color:rgba(255,255,255,.85); margin-top:6px; }

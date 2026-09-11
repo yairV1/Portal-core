@@ -1,0 +1,44 @@
+CREATE TABLE IF NOT EXISTS landing_secciones (
+    clave VARCHAR(50) PRIMARY KEY,
+    etiqueta VARCHAR(150) NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    descripcion TEXT NULL,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS landing_estadisticas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    valor VARCHAR(100) NOT NULL,
+    etiqueta VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    icono VARCHAR(50) NULL,
+    orden INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS landing_modulos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(150) NOT NULL,
+    meta VARCHAR(255) NOT NULL,
+    ubicacion VARCHAR(255) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    icono VARCHAR(50) NOT NULL,
+    tema VARCHAR(30) NOT NULL DEFAULT 'futuro',
+    orden INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS landing_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT NOT NULL,
+    icono VARCHAR(50) NOT NULL,
+    tema VARCHAR(30) NOT NULL DEFAULT 'magenta',
+    orden INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS landing_pasos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT NOT NULL,
+    icono VARCHAR(50) NOT NULL,
+    orden INT NOT NULL DEFAULT 0
+);
