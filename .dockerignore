@@ -1,0 +1,15 @@
+.git
+.gitignore
+.claude
+docs
+vendor
+node_modules
+storage/postulaciones/*
+storage/contrataciones/*
+storage/documentos/*
+public/uploads/*
+!storage/postulaciones/.gitkeep
+!storage/contrataciones/.gitkeep
+!storage/documentos/.gitkeep
+.env
+config/local.php

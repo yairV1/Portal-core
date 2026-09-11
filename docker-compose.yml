@@ -1,0 +1,59 @@
+# Base pensada para producción: el código va HORNEADO en la imagen (COPY . .
+# en el Dockerfile), nada de bind-mount del código fuente. Para desarrollo
+# local, súmale docker-compose.dev.yml (ver ese archivo y docs/docker.md):
+#
+#   Desarrollo:  docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#   Producción:  docker compose up -d
+
+services:
+  app:
+    build: .
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      # Datos reales de candidatos/usuarios — deben sobrevivir a un rebuild
+      # de la imagen, por eso van en volúmenes y no quedan solo "horneados".
+      - ./storage:/var/www/html/storage
+      - ./public/uploads:/var/www/html/public/uploads
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-portal_core}
+      DB_USER: ${DB_USER:-portal_user}
+      DB_PASS: ${DB_PASS:?Falta DB_PASS en tu .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-portal_core}
+      MYSQL_USER: ${DB_USER:-portal_user}
+      MYSQL_PASSWORD: ${DB_PASS:?Falta DB_PASS en tu .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:?Falta DB_ROOT_PASS en tu .env}
+    volumes:
+      - db_data:/var/lib/mysql
+      # Solo se ejecutan la PRIMERA vez que el volumen db_data está vacío
+      # (comportamiento estándar de la imagen mysql) — recrean el esquema
+      # completo migración por migración, en orden (001...017).
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    environment:
+      PMA_HOST: db
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  db_data:

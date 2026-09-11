@@ -1,5 +1,6 @@
 /config/local.php
 /config/database.local.php
+/.env
 
 # Basura que genera cada sistema operativo al navegar carpetas — no es del
 # proyecto, y sin esto un dev en Windows o Mac puede subirla sin querer.
@@ -27,5 +28,6 @@ $RECYCLE.BIN/
 /storage/contrataciones/*
 !/storage/contrataciones/.gitkeep
 
-
-docs
+# Mantén versionada la guía de Docker, pero ignora otros documentos locales.
+docs/*
+!docs/docker.md
