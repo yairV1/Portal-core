@@ -40,6 +40,36 @@ UPDATE cargos SET nombre = 'Andrés Castaño' WHERE codigo = '028';
 SET @sql = (
   SELECT IF(
     COUNT(*) = 0,
+    'ALTER TABLE archivos_documentales ADD COLUMN archivo VARCHAR(255) NULL AFTER responsable',
+    'SELECT 1'
+  )
+  FROM information_schema.columns
+  WHERE table_schema = DATABASE()
+    AND table_name = 'archivos_documentales'
+    AND column_name = 'archivo'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = (
+  SELECT IF(
+    COUNT(*) = 0,
+    'ALTER TABLE direccion_documentos ADD COLUMN archivo VARCHAR(255) NULL AFTER version',
+    'SELECT 1'
+  )
+  FROM information_schema.columns
+  WHERE table_schema = DATABASE()
+    AND table_name = 'direccion_documentos'
+    AND column_name = 'archivo'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = (
+  SELECT IF(
+    COUNT(*) = 0,
     'ALTER TABLE direccion_responsables ADD COLUMN foto VARCHAR(255) NULL AFTER cargo',
     'SELECT 1'
   )
