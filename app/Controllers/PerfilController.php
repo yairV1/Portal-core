@@ -1,8 +1,12 @@
 <?php
 // ══════════════════════════════════════════════════════════
 //  app/Controllers/PerfilController.php
-//  Edita nombre/cargo/foto del usuario en sesión — el formulario vive
-//  dentro del panel de perfil compartido (ver portal-header.php).
+//  Edita nombre/foto del usuario en sesión — el formulario vive dentro
+//  del panel de perfil compartido (ver portal-header.php).
+//  "cargo" NO es autoeditable a propósito (antes sí lo era, ver migration
+//  019/023): cualquiera podía ponerse a sí mismo un cargo falso tipo
+//  "Dueño" — solo se cambia a mano en la base de datos hasta que exista
+//  un panel de administración real (módulo de áreas y permisos).
 //  $pdo, $csrf, $uri, e() ya vienen listos desde public/index.php
 // ══════════════════════════════════════════════════════════
 
@@ -24,12 +28,7 @@ if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
     exit;
 }
 
-$nombre        = trim($_POST['nombre'] ?? '');
-$cargo         = trim($_POST['cargo'] ?? '');
-$dependencia   = trim($_POST['dependencia'] ?? '');
-$extension     = trim($_POST['extension'] ?? '');
-$perfilAcceso  = trim($_POST['perfil_acceso'] ?? '');
-$sede          = trim($_POST['sede'] ?? '');
+$nombre = trim($_POST['nombre'] ?? '');
 
 if ($nombre === '') {
     header('Location: ' . BASE_URL . '/?perfil=error');
@@ -71,33 +70,18 @@ if (!empty($_FILES['foto']['tmp_name']) && $_FILES['foto']['error'] === UPLOAD_E
     $foto = '/uploads/perfiles/' . $archivo;
 }
 
-$campos = [
-    ':nombre'        => $nombre,
-    ':cargo'         => $cargo,
-    ':dependencia'   => $dependencia !== '' ? $dependencia : null,
-    ':extension'     => $extension !== '' ? $extension : null,
-    ':perfil_acceso' => $perfilAcceso !== '' ? $perfilAcceso : null,
-    ':sede'          => $sede !== '' ? $sede : null,
-    ':id'            => $_SESSION['usuario_id'],
-];
-
 if ($foto !== null) {
-    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo, dependencia = :dependencia, extension = :extension, perfil_acceso = :perfil_acceso, sede = :sede, foto = :foto WHERE id = :id');
-    $stmt->execute($campos + [':foto' => $foto]);
+    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, foto = :foto WHERE id = :id');
+    $stmt->execute([':nombre' => $nombre, ':foto' => $foto, ':id' => $_SESSION['usuario_id']]);
     $_SESSION['usuario_foto'] = $foto;
 } else {
-    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, cargo = :cargo, dependencia = :dependencia, extension = :extension, perfil_acceso = :perfil_acceso, sede = :sede WHERE id = :id');
-    $stmt->execute($campos);
+    $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre WHERE id = :id');
+    $stmt->execute([':nombre' => $nombre, ':id' => $_SESSION['usuario_id']]);
 }
 
 // Refresca la sesión ya mismo, para que el topbar y el cajón de perfil
 // muestren el cambio sin pedir volver a iniciar sesión.
-$_SESSION['usuario_nombre']        = $nombre;
-$_SESSION['usuario_cargo']         = $cargo;
-$_SESSION['usuario_dependencia']   = $campos[':dependencia'];
-$_SESSION['usuario_extension']     = $campos[':extension'];
-$_SESSION['usuario_perfil_acceso'] = $campos[':perfil_acceso'];
-$_SESSION['usuario_sede']          = $campos[':sede'];
+$_SESSION['usuario_nombre'] = $nombre;
 
 header('Location: ' . BASE_URL . '/?perfil=1');
 exit;

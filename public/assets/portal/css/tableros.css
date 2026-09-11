@@ -22,3 +22,9 @@
   .alert-row{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--color-divider)}
   .alert-row .ic{color:var(--color-accent-2);flex:0 0 auto}
   .alert-row .texto{font-size:12.5px;flex:1}
+
+  /* .tile/.tile-grid ya viven en paneles.css; acá solo el contenido propio
+     (ícono + nombre) de las tarjetas de submódulo. */
+  .tile-submodulo{flex-direction:row;align-items:center;gap:12px}
+  .tile-submodulo i{font-size:20px;color:var(--color-accent)}
+  .tile-submodulo .label{font-weight:700;font-size:13.5px}

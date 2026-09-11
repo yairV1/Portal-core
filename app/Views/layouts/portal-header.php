@@ -11,10 +11,9 @@ $nombre  = $_SESSION['usuario_nombre'] ?? 'Invitado';
 $correo  = $_SESSION['usuario_correo'] ?? '';
 $cargo   = $_SESSION['usuario_cargo'] ?? '';
 $foto    = $_SESSION['usuario_foto'] ?? '';
-$dependencia  = $_SESSION['usuario_dependencia'] ?? '';
-$extension    = $_SESSION['usuario_extension'] ?? '';
-$perfilAcceso = $_SESSION['usuario_perfil_acceso'] ?? '';
-$sede         = $_SESSION['usuario_sede'] ?? '';
+// Sede única y real de COREDUCACIÓN (ver la landing pública) — no una
+// columna por usuario, es el mismo dato fijo para todos.
+$sede    = 'Honda, Tolima';
 $partes  = explode(' ', trim($nombre));
 $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '', 0, 1));
 ?>
@@ -165,7 +164,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       </button>
     </div>
     <p class="profile-drawer-desc">
-      <?= e($cargo ?: 'Usuario') ?><?= $dependencia ? ' · ' . e($dependencia) : '' ?> · COREDUCACIÓN.
+      <?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN.
     </p>
 
     <div class="profile-drawer-actions">
@@ -173,38 +172,31 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       <button class="btn"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
     </div>
 
-    <!-- Todos reales, columnas de "usuarios" (ver migration
-         019_usuarios_perfil_extendido.sql) — "—" si el usuario todavía no
-         los tiene cargados, nunca un valor inventado. -->
+    <!-- Cargo y Sede son de solo lectura acá a propósito: Cargo lo pone
+         quien administre la base de datos (si fuera autoeditable,
+         cualquiera podría ponerse a sí mismo un cargo falso), y Sede es
+         un dato fijo real de la institución (ver arriba), no una columna
+         por usuario. Dependencia/Extensión/Perfil de acceso se quitaron
+         del todo (ver migration 023_usuarios_perfil_revertir.sql): sin
+         un panel de admin real que las llene, quedaban vacías siempre. -->
     <div class="profile-drawer-fields">
       <div class="profile-drawer-field">
         <span class="label">Cargo</span>
         <span class="value"><?= e($cargo ?: '—') ?></span>
       </div>
       <div class="profile-drawer-field">
-        <span class="label">Dependencia</span>
-        <span class="value"><?= e($dependencia ?: '—') ?></span>
-      </div>
-      <div class="profile-drawer-field">
         <span class="label">Correo</span>
         <span class="value"><?= e($correo ?: '—') ?></span>
       </div>
       <div class="profile-drawer-field">
-        <span class="label">Extensión</span>
-        <span class="value"><?= e($extension ?: '—') ?></span>
-      </div>
-      <div class="profile-drawer-field">
-        <span class="label">Perfil de acceso</span>
-        <span class="value"><?= e($perfilAcceso ?: '—') ?></span>
-      </div>
-      <div class="profile-drawer-field">
         <span class="label">Sede</span>
-        <span class="value"><?= e($sede ?: '—') ?></span>
+        <span class="value"><?= e($sede) ?></span>
       </div>
     </div>
   </div>
 
-  <!-- ── Edición — oculto hasta tocar el lápiz ── -->
+  <!-- ── Edición — oculto hasta tocar el lápiz. Solo nombre y foto: ver
+       nota de arriba sobre por qué Cargo dejó de ser autoeditable. ── -->
   <form id="perfilForm" class="profile-drawer-form" action="<?= BASE_URL ?>/perfil" method="post" enctype="multipart/form-data" hidden>
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
@@ -216,21 +208,6 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 
     <label class="profile-drawer-label">Nombre
       <input type="text" name="nombre" value="<?= e($nombre) ?>" required maxlength="100">
-    </label>
-    <label class="profile-drawer-label">Cargo
-      <input type="text" name="cargo" value="<?= e($cargo) ?>" maxlength="100">
-    </label>
-    <label class="profile-drawer-label">Dependencia
-      <input type="text" name="dependencia" value="<?= e($dependencia) ?>" maxlength="100">
-    </label>
-    <label class="profile-drawer-label">Extensión
-      <input type="text" name="extension" value="<?= e($extension) ?>" maxlength="20">
-    </label>
-    <label class="profile-drawer-label">Perfil de acceso
-      <input type="text" name="perfil_acceso" value="<?= e($perfilAcceso) ?>" maxlength="100">
-    </label>
-    <label class="profile-drawer-label">Sede
-      <input type="text" name="sede" value="<?= e($sede) ?>" maxlength="100">
     </label>
 
     <div class="profile-drawer-actions">
