@@ -1,0 +1,21 @@
+# Overlay SOLO para desarrollo local — súmalo así:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Monta tu código fuente completo dentro del contenedor, así que los
+# cambios que hagas en tu editor se reflejan al instante (recargas la
+# página, no reconstruyes la imagen). En producción esto NO se usa: el
+# código va horneado en la imagen (ver docker-compose.yml/Dockerfile).
+
+services:
+  app:
+    volumes:
+      - .:/var/www/html
+      # Evita que el vendor/ instalado DENTRO del contenedor (por el
+      # Dockerfile) se tape con el vendor/ (o su ausencia) de tu máquina.
+      - /var/www/html/vendor
+    ports:
+      - "${APP_PORT:-8080}:80"
+
+  phpmyadmin:
+    ports:
+      - "${PMA_PORT:-8081}:80"
