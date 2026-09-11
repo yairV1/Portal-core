@@ -84,5 +84,8 @@
           </div>
         </div>
       </div>
+
+<?php require __DIR__ . '/_explorador.php'; ?>
+
 <script src="<?= BASE_URL ?>/assets/portal/js/administrativa-financiera.js"></script>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

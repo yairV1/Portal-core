@@ -1,0 +1,29 @@
+.explorador{ margin-top:28px }
+.explorador-breadcrumb{ font-size:.85rem; margin-bottom:14px; opacity:.8 }
+.explorador-breadcrumb a{ color:inherit; text-decoration:none }
+.explorador-breadcrumb a:hover{ text-decoration:underline }
+.explorador-toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center }
+.explorador-form-inline{ display:flex; gap:8px; align-items:center }
+.explorador-form-inline input[type="text"]{
+  padding:8px 12px; border-radius:8px; border:1px solid var(--color-divider); font-size:.85rem;
+}
+.explorador-file-btn{ position:relative; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; gap:6px }
+.explorador-file-btn input[type="file"]{
+  position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+}
+.explorador-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:14px; }
+.explorador-item{
+  display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px 10px;
+  border-radius:12px; text-align:center; font-size:.8rem; text-decoration:none; color:inherit;
+  border:1px solid var(--color-divider); position:relative;
+}
+.explorador-item i{ font-size:2rem }
+.explorador-item-carpeta i{ color:var(--color-warning) }
+.explorador-item-archivo i{ color:var(--color-neutral-700) }
+.explorador-item-archivo{ padding-bottom:38px }
+.explorador-item-link{ display:flex; flex-direction:column; align-items:center; gap:8px; text-decoration:none; color:inherit }
+.explorador-item-borrar{
+  position:absolute; bottom:8px; right:8px; border:none; background:none; cursor:pointer; opacity:.5; font-size:.85rem; padding:4px;
+}
+.explorador-item-borrar:hover{ opacity:1; color:var(--color-danger) }
+.explorador-item span{ word-break:break-word; line-height:1.25 }
