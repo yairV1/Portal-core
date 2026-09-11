@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -r \"echo password_hash\\('TestQA2026!', PASSWORD_DEFAULT\\);\")",
+      "Bash(mysql -u portal_user -pPortal2026! -e 'INSERT INTO portal_core.usuarios \\(nombre, correo, password_hash, cargo, rol\\) VALUES \\('\\\\''Usuario Prueba QA'\\\\'', '\\\\''qa-test-temp@coreducacion.edu.co'\\\\'', '\\\\''__TRACKED_VAR__'\\\\'', '\\\\''QA'\\\\'', '\\\\''usuario'\\\\''\\);')",
+      "Bash(node dashboard_qa/screenshot_claro.mjs dashboard_qa/00_fondo_claro.png)",
+      "Bash(node dashboard_qa/screenshot_claro.mjs dashboard_qa/01_hero.png)",
+      "Bash(php -l app/Views/Portal/Home/Inicio.php)",
+      "Bash(node dashboard_qa/screenshot_claro.mjs dashboard_qa/02_completo_claro.png)",
+      "Bash(node dashboard_qa/screenshot_oscuro.mjs dashboard_qa/03_completo_oscuro.png)",
+      "Bash(php -l app/Views/Auth/login.php)",
+      "Bash(sudo tail -n 60 /var/log/apache2/portal-core-error.log)",
+      "Read(//var/log/apache2/**)",
+      "Bash(curl -s http://portal-core.local/login)",
+      "Bash(find /tmp -iname \"*.png\" -newer /home/yair/Proyecto-cor/Portal-core/app/Views/Auth/login.php -mmin -10 2>/dev/null | head -20 *)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "Bash(setfacl -m u:www-data:rwx /home/yair/Proyecto-cor/Portal-core/public/uploads/perfiles)",
+      "Bash(setfacl -d -m u:www-data:rwx /home/yair/Proyecto-cor/Portal-core/public/uploads/perfiles)",
+      "Bash(setfacl -d -m u::rwx /home/yair/Proyecto-cor/Portal-core/public/uploads/perfiles)",
+      "Bash(setfacl -d -m g::rwx /home/yair/Proyecto-cor/Portal-core/public/uploads/perfiles)",
+      "Bash(setfacl -d -m o::r-x /home/yair/Proyecto-cor/Portal-core/public/uploads/perfiles)",
+      "Bash(timeout 25 node -e ' *)",
+      "Bash(curl -s http://portal-core.local/assets/layouts/css/paneles.css)",
+      "Bash(mysql -u portal_user -p'Portal2026!' portal_core -e \"DESCRIBE usuarios;\")",
+      "Bash(php -r 'echo password_hash\\(\"TestQA2026!\", PASSWORD_DEFAULT\\);')",
+      "Bash(mysql -u portal_user -pPortal2026! portal_core -e ' *)",
+      "Bash(mysql -u portal_user -p'Portal2026!' portal_core -e \"SELECT id, nombre, correo FROM usuarios WHERE correo='qa-test-temp@coreducacion.edu.co';\")"
+    ]
+  }
+}

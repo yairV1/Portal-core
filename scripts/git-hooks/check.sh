@@ -16,6 +16,13 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 RED='\033[0;31m'; YELLOW='\033[0;33m'; GREEN='\033[0;32m'; NC='\033[0m'
 problemas=0
 
+PHP_BIN=""
+if command -v php >/dev/null 2>&1; then
+  PHP_BIN="$(command -v php)"
+elif [[ -x /c/xampp/php/php.exe ]]; then
+  PHP_BIN="/c/xampp/php/php.exe"
+fi
+
 echo ""
 echo "── Chequeo post-pull/checkout — Portal Core ──"
 
@@ -48,16 +55,20 @@ fi
 if [[ -n "$archivos_php" ]]; then
   fallo_sintaxis=0
   total=0
-  while IFS= read -r f; do
-    [[ -f "$f" ]] || continue
-    total=$((total + 1))
-    salida=$(php -l "$f" 2>&1)
-    if [[ $? -ne 0 ]]; then
-      echo -e "${RED}✗${NC} Error de sintaxis en $f"
-      echo "$salida" | sed 's/^/    /'
-      fallo_sintaxis=1
-    fi
-  done <<< "$archivos_php"
+  if [[ -z "$PHP_BIN" ]]; then
+    echo -e "${YELLOW}⚠${NC} No se encontró PHP en el PATH ni en /c/xampp/php/php.exe; se omitió el chequeo de sintaxis."
+  else
+    while IFS= read -r f; do
+      [[ -f "$f" ]] || continue
+      total=$((total + 1))
+      salida=$("$PHP_BIN" -l "$f" 2>&1)
+      if [[ $? -ne 0 ]]; then
+        echo -e "${RED}✗${NC} Error de sintaxis en $f"
+        echo "$salida" | sed 's/^/    /'
+        fallo_sintaxis=1
+      fi
+    done <<< "$archivos_php"
+  fi
   if [[ $fallo_sintaxis -eq 0 ]]; then
     echo -e "${GREEN}✓${NC} Sintaxis PHP OK ($total archivo(s))"
   else
@@ -68,8 +79,8 @@ fi
 # 3) Mayúsculas/minúsculas en las rutas de módulo de PortalController.php —
 #    funciona igual en Windows aunque el case no coincida; en Linux (donde
 #    corre el servidor real) revienta con "No such file or directory".
-if command -v php >/dev/null 2>&1 && [[ -f app/Controllers/PortalController.php ]]; then
-  malos=$(php -r '
+if [[ -n "$PHP_BIN" ]] && [[ -f app/Controllers/PortalController.php ]]; then
+  malos=$("$PHP_BIN" -r '
     $c = file_get_contents("app/Controllers/PortalController.php");
     preg_match_all("/\x27vista\x27\s*=>\s*\x27([^\x27]+)\x27/", $c, $m);
     $malos = [];
