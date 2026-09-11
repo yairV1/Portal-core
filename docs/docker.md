@@ -9,7 +9,18 @@
    ```
 
 2. Cambia `DB_PASS` y `DB_ROOT_PASS` por valores propios en `.env`.
-3. Levanta el entorno de desarrollo:
+3. En Linux, da a Apache la propiedad de las carpetas de datos y conserva tu
+   grupo local para poder editarlas:
+
+   ```sh
+   sudo chown -R 33:$(id -g) storage public/uploads
+   find storage public/uploads -type d -exec chmod 775 {} +
+   ```
+
+   Esto permite que Apache escriba las cargas en `storage/` y
+   `public/uploads/` sin usar permisos `777`. En Windows con Docker Desktop
+   normalmente no hace falta este paso.
+4. Levanta el entorno de desarrollo:
 
    ```sh
    docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
@@ -38,6 +49,15 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 El código fuente se monta con el overlay de desarrollo. Los datos de
 `storage/` y `public/uploads/` quedan fuera de la imagen y sobreviven a sus
 rebuilds.
+
+Si una instalación Linux existente ya tiene esas carpetas con permisos
+incorrectos, corrígelas y recrea el contenedor:
+
+```sh
+sudo chown -R 33:$(id -g) storage public/uploads
+find storage public/uploads -type d -exec chmod 775 {} +
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-recreate
+```
 
 ## Ejecutar una migración nueva
 
