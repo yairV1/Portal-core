@@ -12,7 +12,14 @@
               <span><i class="bi bi-<?= e($m['icono'] ?: 'app') ?>"></i></span>
               <span class="sitemap-nivel"><?= e($m['nivel']) ?></span>
             </div>
-            <div class="sitemap-titulo"><?= e($m['label']) ?></div>
+            <?php if ($m['ruta']): ?>
+              <a class="sitemap-titulo" href="<?= BASE_URL . e($m['ruta']) ?>"><?= e($m['label']) ?></a>
+            <?php else: ?>
+              <div class="sitemap-titulo"><?= e($m['label']) ?></div>
+            <?php endif; ?>
+            <?php if ($m['descripcion']): ?>
+              <p class="sitemap-desc"><?= e($m['descripcion']) ?></p>
+            <?php endif; ?>
             <div class="sitemap-rule"></div>
             <?php foreach ($m['hijos'] as $h): ?>
               <div class="sitemap-hijo"><?= e($h) ?></div>

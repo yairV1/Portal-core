@@ -101,6 +101,29 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['drive'])): ?>
+<script>
+  // Aviso tras crear/subir/eliminar en el explorador de documentos (ver
+  // CarpetaController.php, que agrega ?drive=... al volver al módulo).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['drive'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Documento subido correctamente' },
+      'carpeta': { icon: 'success', title: 'Carpeta creada' },
+      'eliminado': { icon: 'success', title: 'Documento eliminado' },
+      'carpeta_eliminada': { icon: 'success', title: 'Carpeta eliminada' },
+      'nombre': { icon: 'error', title: 'Escribe un nombre de carpeta válido' },
+      'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel, PowerPoint o una imagen (JPG/PNG/WEBP)' },
+      'tamano': { icon: 'error', title: 'El archivo pesa más de 15 MB' },
+      'error': { icon: 'error', title: 'No se pudo completar la acción' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <?php if (isset($_GET['evento'])): ?>
 <script>
   // Aviso tras crear un evento (ver EventoController.php, que agrega

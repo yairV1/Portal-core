@@ -27,5 +27,10 @@ $RECYCLE.BIN/
 /storage/contrataciones/*
 !/storage/contrataciones/.gitkeep
 
+# Explorador de documentos tipo "drive" de un módulo de dirección (ver
+# CarpetaController.php) — arranca en Administrativa y Financiera.
+/storage/direccion_carpetas/*
+!/storage/direccion_carpetas/.gitkeep
+
 
 docs
