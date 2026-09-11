@@ -202,7 +202,9 @@ if ($uri === '/cuadro-mando-integral') {
 // quemados en el JS — no tienen tabla propia todavía.
 if ($uri === '/talento-humano') {
     $thOrganigrama = [];
-    foreach ($pdo->query('SELECT id, label FROM organigrama_niveles ORDER BY orden')->fetchAll() as $nivel) {
+    // Algunos respaldos históricos nombran esta columna "nivel"; esa es la
+    // estructura presente en la base consolidada.
+    foreach ($pdo->query('SELECT id, nivel AS label FROM organigrama_niveles ORDER BY orden')->fetchAll() as $nivel) {
         $stmt = $pdo->prepare('SELECT label, meta, destacado FROM organigrama_cajas WHERE nivel_id = :id ORDER BY orden');
         $stmt->execute([':id' => $nivel['id']]);
         $cajas = array_map(function ($c) {

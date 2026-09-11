@@ -33,5 +33,11 @@ $RECYCLE.BIN/
 /storage/direccion_carpetas/*
 !/storage/direccion_carpetas/.gitkeep
 
+docs/*
+!docs/docker.md
 
-docs
+# Herramientas opcionales específicas de Linux/Apache y hooks locales.
+# Cada desarrollador las conserva en su copia si las necesita; no forman
+# parte del flujo Docker compartido y no deben producir cambios de permisos
+# al trabajar desde Windows.
+/scripts/

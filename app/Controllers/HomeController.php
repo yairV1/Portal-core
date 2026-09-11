@@ -7,6 +7,14 @@
 // dashboard — antes mandaba directo a /login, pero ahora hay una página
 // de presentación real que mostrar primero (ver app/Views/Landing/Inicio.php).
 if (empty($_SESSION['usuario_id'])) {
+    $landingSecciones = [];
+    foreach ($pdo->query('SELECT clave, etiqueta, titulo, descripcion FROM landing_secciones')->fetchAll() as $fila) {
+        $landingSecciones[$fila['clave']] = $fila;
+    }
+    $landingEstadisticas = $pdo->query('SELECT valor, etiqueta, descripcion, icono FROM landing_estadisticas ORDER BY orden')->fetchAll();
+    $landingModulos = $pdo->query('SELECT titulo, meta, ubicacion, estado, icono, tema FROM landing_modulos ORDER BY orden')->fetchAll();
+    $landingRoles = $pdo->query('SELECT titulo, descripcion, icono, tema FROM landing_roles ORDER BY orden')->fetchAll();
+    $landingPasos = $pdo->query('SELECT titulo, descripcion, icono FROM landing_pasos ORDER BY orden')->fetchAll();
     require ROOT_PATH . '/app/Views/Landing/Inicio.php';
     exit;
 }

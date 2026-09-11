@@ -9,7 +9,18 @@
    ```
 
 2. Cambia `DB_PASS` y `DB_ROOT_PASS` por valores propios en `.env`.
-3. Levanta el entorno de desarrollo:
+3. En Linux, da a Apache la propiedad de las carpetas de datos y conserva tu
+   grupo local para poder editarlas:
+
+   ```sh
+   sudo chown -R 33:$(id -g) storage public/uploads
+   find storage public/uploads -type d -exec chmod 775 {} +
+   ```
+
+   Esto permite que Apache escriba las cargas en `storage/` y
+   `public/uploads/` sin usar permisos `777`. En Windows con Docker Desktop
+   normalmente no hace falta este paso.
+4. Levanta el entorno de desarrollo:
 
    ```sh
    docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
@@ -18,9 +29,26 @@
 La aplicación queda en `http://localhost:8080` y phpMyAdmin en
 `http://localhost:8081` (o en los puertos configurados en `.env`). MySQL
 ejecuta automáticamente las migraciones numeradas al crear por primera vez el
-volumen `db_data`. Actualmente el repositorio contiene migraciones `001` a
-`019`, que se ejecutan en orden; las posteriores a `017` también forman parte
-del esquema actual.
+volumen `db_data`. El repositorio contiene migraciones `001` a `029`, que se
+ejecutan en orden sobre un esquema base compatible. Las migraciones `020` a
+`029` incluyen los avances más recientes del portal. La `029` guarda en MySQL
+el contenido institucional de la portada pública (módulos, roles, pasos,
+estadísticas y textos), para que ya no haya que editar la vista para
+actualizar esa información.
+
+Los scripts auxiliares de Apache nativo y los hooks Git específicos de Linux
+no forman parte del repositorio compartido: la carpeta `scripts/` está
+ignorada para evitar cambios de permisos (`100755`/`100644`) al trabajar
+desde Windows. El entorno recomendado para todos los sistemas operativos es
+Docker Compose. Si una máquina Linux necesita esos scripts, debe conservarlos
+localmente y no añadirlos con `git add`.
+
+En Windows también puede configurarse Git para no reportar cambios de bits de
+ejecución:
+
+```sh
+git config core.filemode false
+```
 
 ## Comandos del día a día
 
@@ -38,6 +66,15 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 El código fuente se monta con el overlay de desarrollo. Los datos de
 `storage/` y `public/uploads/` quedan fuera de la imagen y sobreviven a sus
 rebuilds.
+
+Si una instalación Linux existente ya tiene esas carpetas con permisos
+incorrectos, corrígelas y recrea el contenedor:
+
+```sh
+sudo chown -R 33:$(id -g) storage public/uploads
+find storage public/uploads -type d -exec chmod 775 {} +
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-recreate
+```
 
 ## Ejecutar una migración nueva
 

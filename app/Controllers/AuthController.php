@@ -1,4 +1,4 @@
-    <?php
+<?php
 // ══════════════════════════════════════════════════════════
 //  app/Controllers/AuthController.php
 //  $pdo, $csrf, $uri, e() ya vienen listos desde public/index.php
