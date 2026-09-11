@@ -41,6 +41,11 @@
   --gradient-brand-deep: linear-gradient(150deg, var(--pr-dark) 0%, var(--pr) 55%, var(--sec-dark) 100%);
   --auth-bg-top: #f8f7fb;
   --auth-bg-bottom: #ece9f2;
+
+  /* Login — panel oscuro/tecnológico (mismos --pr/--sec, tonos profundos) */
+  --auth-dark-1: #150a24;
+  --auth-dark-2: #241333;
+  --auth-dark-3: #2c1030;
 }
 
 /* ---- Base ---- */
@@ -272,28 +277,30 @@ a:hover { color: var(--pr-dark); }
 .modal-header { border-bottom: 1px solid var(--border); }
 .modal-footer { border-top: 1px solid var(--border); }
 
-/* ---- Login / pantallas centradas de docente ---- */
+/* ---- Login: entrada al ecosistema Portal Core ----
+   El agua de fondo cubre TODA la pantalla (#authWaterCanvas, ver
+   water-bg.js) para que un monitor grande no se vea con marco vacío
+   alrededor de la tarjeta — los estados finales de docente siguen
+   usando .status-shell, sin tocar. El degradado de acá abajo es solo
+   el respaldo mientras el canvas carga o si JS falla. */
 .auth-shell {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: linear-gradient(180deg, var(--auth-bg-top) 0%, var(--auth-bg-bottom) 100%);
-  background-attachment: fixed;
   position: relative;
-  overflow: hidden;
+  background: linear-gradient(160deg, var(--auth-dark-1) 0%, var(--auth-dark-2) 55%, var(--sec-dark) 130%);
 }
-/* Glows de marca muy sutiles en vez del degradado a máxima saturación de
-   antes — dan un toque de color sin competir con la tarjeta. */
-.auth-shell::before, .auth-shell::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(10px);
+
+.auth-water-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
-.auth-shell::before { width: 480px; height: 480px; top: -160px; left: -160px; background: rgba(158,31,99,.07); }
-.auth-shell::after { width: 380px; height: 380px; bottom: -140px; right: -120px; background: rgba(244,130,31,.07); }
 
 /* Estados finales (uso finalizado, salón ocupado, 404) reutilizan .status-shell */
 .status-shell {
@@ -602,207 +609,242 @@ a:hover { color: var(--pr-dark); }
 .badge-rol-pasante_sena { background-color: var(--warn) !important; color:#3a2b00 !important; }
 .badge-rol-vicerrectoria { background-color: #343a40 !important; }
 
-/* ---- Login: panel deslizante Iniciar sesión / Recuperar contraseña ────
-   Mismo patrón que el mockup de referencia (overlay de color que se
-   desliza de un lado a otro), con la paleta institucional en vez de rojo,
-   y el segundo panel como recuperación en vez de registro (este sistema
-   no tiene registro público). */
-.slide-auth {
+/* ---- Login: la puerta de entrada a Portal Core ----
+   Tarjeta partida en dos: panel visual (mascota CORE + identidad de marca,
+   fondo oscuro/tecnológico) y panel de formulario (claro, minimalista).
+   overflow: visible en la tarjeta y en el panel visual a propósito — es lo
+   que permite que la mascota sobresalga por encima del borde superior. */
+.core-auth-card {
   position: relative;
-  width: min(94vw, 1240px);
-  min-height: min(86vh, 760px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  box-shadow: var(--shadow-lg);
+  display: flex;
+  width: min(96vw, 1040px);
+  min-height: min(88vh, 620px);
+  border-radius: 20px;
+  overflow: visible;
+  box-shadow: 0 24px 60px -20px rgba(43, 32, 56, .28), 0 4px 18px rgba(43, 32, 56, .1);
+  animation: coreAuthCardIn .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes coreAuthCardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Panel visual: cristal esmerilado sobre el agua de #authWaterCanvas +
+   mascota opcional. background-color es el respaldo si el navegador no
+   soporta backdrop-filter (Firefox < 103, algunos navegadores viejos). ── */
+.core-auth-visual {
+  position: relative;
+  flex: 0 0 42%;
   overflow: hidden;
+  border-radius: 20px 0 0 20px;
+  background-color: rgba(21, 10, 36, .62);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3rem 2.5rem;
+  color: #fff;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .core-auth-visual {
+    background-color: rgba(21, 10, 36, .42);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+  }
 }
 
-/* ── Overlay de carga tras enviar el login ──
-   El formulario se envía normal (sin AJAX): esto solo cubre la tarjeta con
-   un spinner mientras el navegador espera la redirección del servidor, en
-   vez de dejar el clic en "Ingresar" sin ninguna señal de que algo pasó. */
-.slide-loading{
-  position: absolute; inset: 0; z-index: 300;
-  background: var(--surface);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1rem;
-}
-.slide-loading-spinner{
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 4px solid var(--border); border-top-color: var(--pr);
-  animation: slide-loading-spin .7s linear infinite;
-}
-.slide-loading p{ color: var(--ink-soft); font-weight: 600; margin: 0; }
-@keyframes slide-loading-spin{ to { transform: rotate(360deg); } }
-
-.form-container {
+/* Textura discreta encima del cristal: rejilla de puntos que se desvanece
+   hacia abajo, aporta profundidad sin competir con el agua de fondo. */
+.core-auth-visual-pattern {
   position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50%;
-  left: 0;
-  transition: transform .6s cubic-bezier(.65,0,.35,1), opacity .6s cubic-bezier(.65,0,.35,1);
+  inset: 0;
+  z-index: 1;
+  background-image: radial-gradient(rgba(255, 255, 255, .14) 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(200deg, black, transparent 65%);
+  mask-image: linear-gradient(200deg, black, transparent 65%);
+  pointer-events: none;
 }
-.sign-in-container{ z-index: 2; }
-.recover-container{ opacity: 0; z-index: 1; }
 
-.slide-auth.right-panel-active .sign-in-container{ transform: translateX(100%); opacity: 0; z-index: 1; }
-.slide-auth.right-panel-active .recover-container{ transform: translateX(100%); opacity: 1; z-index: 5; }
+/* Mascota "Core": recorte transparente (sin fondo propio) detrás del
+   bloque de texto — por eso el copy lleva text-shadow, para seguir siendo
+   legible encima de la imagen. */
+.core-auth-mascot {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%; max-width: 300px; height: auto;
+  z-index: 2;
+  filter: drop-shadow(0 18px 30px rgba(4, 1, 10, .5));
+  pointer-events: none;
+}
 
-.slide-form{
+.core-auth-visual-copy {
+  position: relative; z-index: 3;
+  text-shadow: 0 2px 12px rgba(8, 3, 18, .45);
+}
+.core-auth-visual-mark { width: 40px; height: 40px; display: block; margin-bottom: 1.1rem; }
+.core-auth-kicker {
+  display: block;
+  font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--sec-light); margin-bottom: .75rem;
+}
+.core-auth-tagline { font-size: 1.55rem; line-height: 1.3; font-weight: 700; color: #fff; margin: 0 0 .65rem; }
+.core-auth-visual-sub { font-size: .88rem; line-height: 1.55; color: rgba(255, 255, 255, .68); margin: 0; max-width: 26ch; }
+
+/* ── Panel de formulario ── */
+.core-auth-form-panel {
+  flex: 1 1 58%;
   background: var(--surface);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 100%; width: 100%; padding: 0 4.5rem; text-align: center;
+  border-radius: 0 20px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 3.25rem;
 }
-.slide-form input{
+.core-auth-form { width: 100%; max-width: 380px; animation: coreFormIn .5s .1s ease both; }
+@keyframes coreFormIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.core-auth-logo { display: inline-flex; width: 52px; height: 52px; margin-bottom: 1.1rem; }
+.core-auth-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.core-auth-form h1 { font-size: 1.65rem; font-weight: 700; color: var(--ink); margin: 0 0 .35rem; }
+.core-auth-form-sub { color: var(--ink-soft); font-size: .92rem; margin: 0 0 1.6rem; line-height: 1.4; }
+
+.core-auth-field { margin-bottom: 1.1rem; text-align: left; }
+.core-auth-field label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink); margin-bottom: .4rem; }
+.core-auth-field input {
   width: 100%; border: 1px solid var(--border); border-radius: 12px;
-  background: #fdfcff; padding: 1.05rem 1.2rem; font-size: 1.02rem; margin: .45rem 0;
-  color: var(--ink);
+  background: #fdfcff; padding: .9rem 1rem; font-size: 1rem; color: var(--ink);
   transition: border-color .18s ease, box-shadow .18s ease;
 }
-.slide-form input::placeholder{ color: var(--ink-soft); opacity: .75; }
-.slide-form input:focus{
-  outline: none; border-color: var(--pr-light); box-shadow: 0 0 0 .2rem rgba(158,31,99,.15);
+.core-auth-field input::placeholder { color: var(--ink-soft); opacity: .7; }
+.core-auth-field input:focus {
+  outline: none; border-color: var(--pr-light); box-shadow: 0 0 0 .2rem rgba(158, 31, 99, .15);
 }
 /* Estado de error inline (validación en JS) — mismo rojo institucional
    (--danger) que ya usan las alertas del resto del sistema. */
-.slide-form input.field-invalid{ border-color: var(--danger); }
-.slide-form input.field-invalid:focus{ border-color: var(--danger); box-shadow: 0 0 0 .2rem rgba(214,56,89,.15); }
-.field-error{
-  align-items: center; justify-content: center; gap: .4rem;
-  width: 100%; margin: -.05rem 0 .35rem; padding: 0;
+.core-auth-field input.field-invalid { border-color: var(--danger); }
+.core-auth-field input.field-invalid:focus { border-color: var(--danger); box-shadow: 0 0 0 .2rem rgba(214, 56, 89, .15); }
+.field-error {
+  align-items: center; gap: .4rem;
+  width: 100%; margin: .35rem 0 0; padding: 0;
   color: var(--danger); font-size: .82rem; font-weight: 500; text-align: left;
 }
-.field-error:not([hidden]){ display: flex; }
+.field-error:not([hidden]) { display: flex; }
 
 /* Input de contraseña + botón de mostrar/ocultar */
-.input-with-action{ position: relative; width: 100%; }
-.input-with-action input{ padding-right: 2.9rem; margin: .45rem 0; }
-.input-toggle-visibility{
+.input-with-action { position: relative; width: 100%; }
+.input-with-action input { padding-right: 2.9rem; }
+.input-toggle-visibility {
   position: absolute; top: 50%; right: .4rem; transform: translateY(-50%);
   width: 34px; height: 34px; border: none; background: transparent; border-radius: 8px;
   color: var(--ink-soft); display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: background-color .15s ease, color .15s ease;
 }
-.input-toggle-visibility:hover{ background: var(--bg); color: var(--ink); }
+.input-toggle-visibility:hover { background: var(--bg); color: var(--ink); }
 
-.slide-form h2{ margin: .55rem 0 .45rem; font-size: 1.85rem; }
-.slide-form-sub{ color: var(--ink-soft); font-size: .95rem; margin: 0 0 1.3rem; line-height: 1.4; }
-.slide-form .btn{ width: 100%; margin-top: .8rem; min-height: 54px; font-size: 1.05rem; }
-/* Acento apagado (--pr-dark) en vez del gris secundario: se lee como link
-   sin competir con el botón "Ingresar" (--pr a full color). 10.1:1 sobre
-   blanco. */
-.slide-form-link{ font-size: .85rem; margin-top: 1.4rem; color: var(--pr-dark); }
-.slide-form-link:hover{ color: var(--pr); text-decoration: underline; }
-.slide-mobile-link{
-  display: none; border: none; background: none; padding: 0;
-  color: var(--pr); font-size: .88rem; font-weight: 600; margin-top: 1rem; cursor: pointer;
-}
+.core-auth-submit { width: 100%; margin-top: .3rem; min-height: 52px; font-size: 1rem; }
 
 /* Estados del botón "Ingresar": label normal vs. "Ingresando…" + spinner,
    alternados por JS mientras se espera la respuesta del servidor. */
-.btn-label:not([hidden]){ display: inline-flex; align-items: center; gap: .5rem; }
-.btn-loading:not([hidden]){ display: inline-flex; align-items: center; gap: .55rem; }
-.btn-spinner{
+.btn-label:not([hidden]) { display: inline-flex; align-items: center; gap: .5rem; }
+.btn-loading:not([hidden]) { display: inline-flex; align-items: center; gap: .55rem; }
+.btn-spinner {
   width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
-  border: 2.5px solid rgba(255,255,255,.45); border-top-color: #fff;
+  border: 2.5px solid rgba(255, 255, 255, .45); border-top-color: #fff;
   animation: slide-loading-spin .7s linear infinite;
 }
 
-.slide-form-logo{
-  width: 54px; height: 54px; border-radius: 15px;
-  background: var(--gradient-brand); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; margin-bottom: .5rem;
+.core-auth-divider {
+  display: flex; align-items: center; gap: .75rem;
+  margin: 1.35rem 0; color: var(--ink-soft); font-size: .8rem;
 }
-.slide-form-logo-ok{ background: var(--ok); }
-.slide-form-logo-ghost{ background: rgba(255,255,255,.16); }
-.slide-form-logo-brand{ width: 168px; height: 126px; background: none; margin-bottom: .75rem; }
-.slide-form-logo-brand img{ width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: -webkit-optimize-contrast; }
+.core-auth-divider::before, .core-auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-/* Foco visible consistente (no el outline azul por defecto del navegador)
-   para botones y links del login — los inputs ya tienen su propio anillo
-   arriba. */
-.slide-auth :is(button, a):focus-visible{
+/* Botón de Google: alternativa secundaria, respeta las convenciones de
+   marca de Google (fondo blanco, texto gris oscuro, ícono multicolor) en
+   vez de convertirse en un segundo botón primario. */
+.core-auth-google {
+  display: flex; align-items: center; justify-content: center; gap: .65rem;
+  width: 100%; min-height: 50px; border-radius: 12px;
+  border: 1px solid var(--border); background: #fff; color: #3c4043;
+  font-weight: 600; font-size: .93rem; cursor: pointer;
+  transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+}
+.core-auth-google:hover { box-shadow: 0 4px 14px rgba(43, 32, 56, .12); border-color: #d6d3de; }
+.core-auth-google:active { transform: translateY(1px); }
+
+.core-auth-link {
+  display: block; text-align: center; margin-top: 1.5rem;
+  font-size: .85rem; color: var(--pr-dark); text-decoration: none;
+}
+.core-auth-link:hover { color: var(--pr); text-decoration: underline; }
+
+/* ── Overlay de carga tras enviar el login ──
+   El formulario se envía normal (sin AJAX): esto solo cubre la tarjeta con
+   un spinner mientras el navegador espera la redirección del servidor, en
+   vez de dejar el clic en "Ingresar" sin ninguna señal de que algo pasó. */
+.slide-loading {
+  position: absolute; inset: 0; z-index: 300;
+  background: var(--surface);
+  border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem;
+}
+.slide-loading-spinner {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 4px solid var(--border); border-top-color: var(--pr);
+  animation: slide-loading-spin .7s linear infinite;
+}
+.slide-loading p { color: var(--ink-soft); font-weight: 600; margin: 0; }
+@keyframes slide-loading-spin { to { transform: rotate(360deg); } }
+
+/* Foco visible consistente (no el outline azul por defecto del navegador). */
+.core-auth-card :is(button, a, input):focus-visible {
   outline: 2px solid var(--pr-light);
   outline-offset: 3px;
   border-radius: 10px;
 }
 
-/* ── Overlay que se desliza ── */
-.overlay-container{
-  position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
-  overflow: hidden; z-index: 100;
-  transition: transform .6s cubic-bezier(.65,0,.35,1);
-}
-.slide-auth.right-panel-active .overlay-container{ transform: translateX(-100%); }
-
-.overlay{
-  /* Scrim oscuro (24% negro) por encima del degradado: sin él, el extremo
-     más claro (ámbar) del gradient-brand-deep deja el texto blanco y los
-     íconos por debajo del mínimo WCAG AA (medido ~3.5:1). Con el scrim,
-     el peor punto del degradado sube a ~6:1 — el degradado de marca en sí
-     (--gradient-brand-deep) no se toca, solo se le suma esta capa. */
-  background-image: linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.24)), var(--gradient-brand-deep);
-  color: #fff;
-  position: relative;
-  left: -100%;
-  height: 100%; width: 200%;
-  transform: translateX(0);
-  transition: transform .6s cubic-bezier(.65,0,.35,1);
-}
-.slide-auth.right-panel-active .overlay{ transform: translateX(50%); }
-
-.overlay-panel{
-  position: absolute; top: 0; height: 100%; width: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 0 2.75rem; text-align: center;
-  transition: transform .6s cubic-bezier(.65,0,.35,1);
-}
-.overlay-left{ left: 0; transform: translateX(-20%); }
-.slide-auth.right-panel-active .overlay-left{ transform: translateX(0); }
-.overlay-right{ right: 0; transform: translateX(0); }
-.slide-auth.right-panel-active .overlay-right{ transform: translateX(20%); }
-
-.overlay-panel h2{ color: #fff; margin: .3rem 0 .6rem; }
-.overlay-panel p{ color: #fff; opacity: 1; font-size: .88rem; margin: 0 0 1.3rem; line-height: 1.5; }
-
-/* Botones "Iniciar sesión" / "Recuperar contraseña" del panel decorativo:
-   antes eran contorno blanco transparente sobre el degradado — apenas se
-   distinguían. Ahora, mismo patrón que .btn-primary del panel blanco pero
-   invertido: relleno blanco sólido + texto en el color de marca con mejor
-   contraste sobre blanco (magenta --pr, 7.4:1, vs. naranja --sec, 2.6:1). */
-.btn-outline-light{ border: 1.5px solid #fff; background: #fff; color: var(--pr); }
-.btn-outline-light:hover{ background: var(--pr-dark); border-color: var(--pr-dark); color: #fff; }
-
-/* ── Móvil: la animación de deslizamiento en 2 mitades no cabe cómoda por
-   debajo de este ancho, así que el panel decorativo se oculta y el cambio
-   entre formularios pasa a ser un simple enlace de texto (mismo JS). ── */
-@media (max-width: 760px) {
-  .slide-auth{ min-height: auto; border-radius: var(--radius); }
-  .overlay-container{ display: none; }
-  .form-container{ position: relative; width: 100%; transform: none !important; opacity: 1 !important; z-index: 1 !important; }
-  .recover-container{ display: none; }
-  .slide-auth.right-panel-active .sign-in-container{ display: none; }
-  .slide-auth.right-panel-active .recover-container{ display: block; }
-  .slide-form{ height: auto; padding: 2.25rem 1.5rem; }
-  .slide-mobile-link{ display: inline-block; }
-
-  /* El panel de "recuperar contraseña" no se desliza en mobile (no hay
-     espacio para las dos mitades lado a lado): se apila debajo del login,
-     reemplazándolo con un fade + leve slide en vez de un corte seco. */
-  .sign-in-container, .recover-container{ animation: authPanelIn .35s ease; }
+/* ── Tablet: el panel visual cede algo de ancho al formulario en vez de
+   mantener la proporción de escritorio a la fuerza. ── */
+@media (max-width: 900px) {
+  .core-auth-visual { flex-basis: 36%; padding: 2rem 1.75rem; }
+  .core-auth-tagline { font-size: 1.35rem; }
+  .core-auth-form-panel { padding: 2.5rem 2rem; }
 }
 
-@keyframes authPanelIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Móvil: la composición de dos columnas no cabe cómoda por debajo de
+   este ancho — el panel visual pasa a ser una franja superior compacta
+   y el formulario se apila debajo, a todo ancho. ── */
+@media (max-width: 720px) {
+  .auth-shell { padding: 0; align-items: flex-start; }
+  .core-auth-card {
+    flex-direction: column;
+    width: 100%; min-height: 100vh; border-radius: 0;
+    box-shadow: none;
+  }
+  .core-auth-visual {
+    flex: 0 0 auto;
+    min-height: 230px;
+    border-radius: 0;
+    padding: 2rem 1.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .core-auth-visual-copy { text-align: center; }
+  .core-auth-visual-mark { margin: 0 auto .9rem; }
+  .core-auth-visual-sub { max-width: none; margin: 0 auto; }
+  /* La mascota ya trae su propio "¡Bienvenido!" pintado en el PNG — en la
+     franja compacta de móvil, mostrarla junto al kicker/tagline los hace
+     pelear por el mismo espacio y queda ilegible. Se prioriza el texto. */
+  .core-auth-mascot { display: none; }
+  .core-auth-form-panel { border-radius: 0; padding: 2rem 1.5rem 2.5rem; flex: 1 1 auto; }
+  .slide-loading { border-radius: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sign-in-container, .recover-container,
-  .form-container, .overlay-container, .overlay, .overlay-panel {
+  .core-auth-card, .core-auth-form {
     animation: none !important;
     transition: none !important;
   }
