@@ -38,13 +38,8 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         y <?= $docsEnRevision ?> documento<?= $docsEnRevision === 1 ? '' : 's' ?> en revisión.
       <?php else: ?>
         y ningún documento en revisión.
-      <?php endif; ?> 
-      El semestre 2026-II sigue su curso.
+      <?php endif; ?>
     </p>
-    <div class="hero-status">
-      <span class="hero-pill"><span class="dot"></span>Operación normal</span>
-      <span class="hero-pill">2026 · Semestre II</span>
-    </div>
   </div>
 
   <?php if ($pdiValor !== ''): ?>
@@ -142,17 +137,39 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
   </div>
 
   <div class="side-col">
-    <div class="section-head" style="margin-bottom:6px"><h4>Mis pendientes</h4></div>
+    <div class="section-head" style="margin-bottom:6px">
+      <h4>Mis pendientes</h4>
+      <button type="button" class="link" id="btnNuevoPendiente">+ Agregar</button>
+    </div>
+
+    <form action="<?= BASE_URL ?>/pendientes/crear" method="post" class="pendiente-form" id="formNuevoPendiente" hidden>
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <input type="text" name="titulo" placeholder="¿Qué tienes pendiente?" maxlength="200" required>
+      <input type="text" name="meta" placeholder="Detalle (opcional, ej. vence hoy)" maxlength="150">
+      <button type="submit" class="btn btn-primary">Agregar</button>
+    </form>
+
     <div id="pendientes">
       <?php if (!$pendientes): ?>
         <p class="text-muted">No hay pendientes por ahora.</p>
       <?php else: foreach ($pendientes as $p): ?>
-        <div class="pendiente">
-          <span class="dotp" style="background:<?= e($p['color']) ?>"></span>
+        <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
+          <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
+            <input type="hidden" name="completado" value="0">
+            <input type="checkbox" name="completado" value="1" class="pendiente-check" style="accent-color:<?= e($p['color']) ?>"
+                   <?= $p['completado'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Marcar como hecho">
+          </form>
           <span style="flex:1">
             <span class="t" style="display:block"><?= e($p['titulo']) ?></span>
-            <span class="m" style="display:block"><?= e($p['meta']) ?></span>
+            <?php if ($p['meta']): ?><span class="m" style="display:block"><?= e($p['meta']) ?></span><?php endif; ?>
           </span>
+          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
+            <button type="submit" class="pendiente-eliminar" title="Eliminar" onclick="return confirm('¿Eliminar este pendiente?')"><i class="fa-solid fa-xmark"></i></button>
+          </form>
         </div>
       <?php endforeach; endif; ?>
     </div>

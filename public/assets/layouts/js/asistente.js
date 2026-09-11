@@ -15,7 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var DESTINOS = [
     { label: 'Inicio', url: base + '/', kw: ['inicio', 'dashboard', 'panel', 'resumen', 'pendientes', 'cumpleanos', 'agenda', 'kpi'] },
-    { label: 'Tableros Estratégicos', url: base + '/tableros', kw: ['tablero', 'tableros', 'indicadores', 'estadisticas', 'power bi', 'matricula'] },
+    { label: 'Cuadro de Mando Integral', url: base + '/cuadro-mando-integral', kw: ['cuadro de mando', 'cmi', 'tablero', 'tableros', 'indicadores', 'estadisticas', 'power bi', 'matricula'] },
+    { label: 'CMI · Finanzas', url: base + '/cuadro-mando-integral/finanzas', kw: ['cmi finanzas', 'perspectiva financiera'] },
+    { label: 'CMI · Planeación', url: base + '/cuadro-mando-integral/planeacion', kw: ['cmi planeacion', 'perspectiva de planeacion'] },
+    { label: 'CMI · Vicerrectoría Académica', url: base + '/cuadro-mando-integral/vicerrectoria-academica', kw: ['cmi academica', 'perspectiva academica'] },
+    { label: 'CMI · Dirección de Investigación', url: base + '/cuadro-mando-integral/investigacion', kw: ['cmi investigacion', 'perspectiva de investigacion'] },
     { label: 'Mapa del portal', url: base + '/mapa-portal', kw: ['mapa', 'sitemap', 'estructura', 'arquitectura de informacion'] },
     { label: 'Gestión Institucional', url: base + '/gestion-institucional', kw: ['gestion institucional', 'rectoria', 'secretaria general'] },
     { label: 'Sistema de Gestión Integral', url: base + '/sgi', kw: ['sgi', 'calidad', 'procesos', 'iso', 'auditoria', 'riesgos', 'mejoramiento'] },

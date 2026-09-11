@@ -28,6 +28,10 @@ $RECYCLE.BIN/
 /storage/contrataciones/*
 !/storage/contrataciones/.gitkeep
 
-# Mantén versionada la guía de Docker, pero ignora otros documentos locales.
-docs/*
-!docs/docker.md
+# Explorador de documentos tipo "drive" de un módulo de dirección (ver
+# CarpetaController.php) — arranca en Administrativa y Financiera.
+/storage/direccion_carpetas/*
+!/storage/direccion_carpetas/.gitkeep
+
+
+docs

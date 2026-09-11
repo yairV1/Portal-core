@@ -1,6 +1,6 @@
-<?php $titulo = 'Tableros Estratégicos'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
+<?php $titulo = 'Cuadro de Mando Integral'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/tableros.css">
-<h1 class="page-title">Tableros Estratégicos</h1>
+<h1 class="page-title">Cuadro de Mando Integral</h1>
 <p class="page-desc">Indicadores institucionales en tiempo real. Vista Rectoría, con descenso a dirección y área.</p>
 
 <div class="pill-tabs" style="margin-bottom:28px" id="tableroTabs"></div>
@@ -64,6 +64,20 @@
         <?php endforeach; endif; ?>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="subsection">
+  <h4 class="section-title">Submódulos</h4>
+  <div class="tile-grid">
+    <?php if (!$tableroSubmodulos): ?>
+      <p class="text-muted">Sin submódulos registrados por ahora.</p>
+    <?php else: foreach ($tableroSubmodulos as $s): ?>
+      <a class="tile tile-submodulo" href="<?= BASE_URL . e($s['ruta']) ?>">
+        <i class="bi bi-<?= e($s['icono'] ?: 'app') ?>"></i>
+        <span class="label"><?= e($s['label']) ?></span>
+      </a>
+    <?php endforeach; endif; ?>
   </div>
 </div>
 
