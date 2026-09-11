@@ -18,9 +18,9 @@
 La aplicación queda en `http://localhost:8080` y phpMyAdmin en
 `http://localhost:8081` (o en los puertos configurados en `.env`). MySQL
 ejecuta automáticamente las migraciones numeradas al crear por primera vez el
-volumen `db_data`. Actualmente el repositorio contiene migraciones `001` a
-`019`, que se ejecutan en orden; las posteriores a `017` también forman parte
-del esquema actual.
+volumen `db_data`. El repositorio contiene migraciones `001` a `028`, que se
+ejecutan en orden sobre un esquema base compatible. Las migraciones `020` a
+`028` incluyen los avances más recientes del portal.
 
 ## Comandos del día a día
 
