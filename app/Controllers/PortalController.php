@@ -26,7 +26,7 @@ $modulos = [
     '/sgi'                        => ['titulo' => 'Sistema de Gestión Integral', 'vista' => 'Sistema_Gestion_Integral/Sistema_Integral.php', 'slug' => 'sgi'],
     '/vicerrectoria-academica'    => ['titulo' => 'Vicerrectoría Académica',     'vista' => 'Vicerrectoria_Academica/Vicerrectoria.php',     'slug' => 'academica'],
     '/administrativa-financiera'  => ['titulo' => 'Administrativa y Financiera', 'vista' => 'Administrativa_Financiera/Financiera.php',      'slug' => 'financiera'],
-    '/talento-humano'             => ['titulo' => 'Talento Humano',              'vista' => 'Talento_Humano/Tal_Humano.php'],
+    '/talento-humano'             => ['titulo' => 'Talento Humano',              'vista' => 'Talento_Humano/Tal_Humano.php', 'slug' => 'talento-humano'],
     '/investigacion-innovacion'   => ['titulo' => 'Investigación e Innovación',  'vista' => 'Investigacion_Innovacion/Investigacion.php',     'slug' => 'investigacion'],
     '/gestion-documental'         => ['titulo' => 'Gestión Documental',          'vista' => 'Gestion_Documental/Documental.php'],
     '/normatividad'               => ['titulo' => 'Normatividad',                'vista' => 'Normatividad/Normatividad.php'],
@@ -60,9 +60,20 @@ if (!empty($modulo['slug'])) {
     $moduloTitulo = $direccion['titulo'] ?? $titulo;
     $moduloDesc = $direccion['descripcion'] ?? '';
 
+    // Pestañas Administración/Finanzas (ver migración 032) — hoy solo las
+    // usa el centro documental de Financiera, pero vive acá porque
+    // direccion_documentos es de este bloque genérico compartido. El
+    // resto de los módulos nunca manda ?area=, así que siempre les queda
+    // en 'administracion' (que es también el valor por defecto de sus
+    // filas ya existentes) — no les cambia nada.
+    $areaActiva = ($_GET['area'] ?? '') === 'finanzas' ? 'finanzas' : 'administracion';
+
     $moduloKpis = [];
     $moduloAreas = [];
     $moduloDocumentos = [];
+    $moduloFormatos = [];
+    $moduloResponsables = [];
+    $moduloSoftware = [];
     if ($direccion) {
         $stmt = $pdo->prepare('SELECT label, valor FROM direccion_kpis WHERE direccion_id = :id ORDER BY orden');
         $stmt->execute([':id' => $direccion['id']]);
@@ -72,9 +83,25 @@ if (!empty($modulo['slug'])) {
         $stmt->execute([':id' => $direccion['id']]);
         $moduloAreas = $stmt->fetchAll();
 
-        $meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-        $stmt = $pdo->prepare('SELECT id, nombre, tipo, version, archivo, fecha FROM direccion_documentos WHERE direccion_id = :id ORDER BY orden');
+        // Responsables/software: tablas reales que ya existían pero cada
+        // *.js de módulo seguía usando nombres inventados quemados en vez
+        // de consultarlas — ver administrativa-financiera.js (y los otros
+        // 5 módulos genéricos) antes de este cambio.
+        $stmt = $pdo->prepare('SELECT nombre, cargo, foto FROM direccion_responsables WHERE direccion_id = :id ORDER BY orden');
         $stmt->execute([':id' => $direccion['id']]);
+        $moduloResponsables = $stmt->fetchAll();
+
+        $stmt = $pdo->prepare('SELECT nombre FROM direccion_software WHERE direccion_id = :id ORDER BY orden');
+        $stmt->execute([':id' => $direccion['id']]);
+        $moduloSoftware = $stmt->fetchAll();
+
+        // "Documentación destacada" y "Formatos" (plantillas en blanco para
+        // descargar y diligenciar) viven en la misma tabla — categoria
+        // (migración 031) separa una de otra, area (migración 032) las
+        // separa por pestaña Administración/Finanzas.
+        $meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        $stmt = $pdo->prepare('SELECT id, nombre, tipo, version, archivo, fecha FROM direccion_documentos WHERE direccion_id = :id AND categoria = :cat AND area = :area ORDER BY orden');
+        $stmt->execute([':id' => $direccion['id'], ':cat' => 'documento', ':area' => $areaActiva]);
         foreach ($stmt->fetchAll() as $d) {
             $fecha = new DateTime($d['fecha']);
             $moduloDocumentos[] = [
@@ -84,32 +111,58 @@ if (!empty($modulo['slug'])) {
                 'version' => $d['version'],
                 'archivo' => $d['archivo'],
                 'fecha'   => $fecha->format('d') . ' ' . $meses[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
+                'fecha_raw' => $d['fecha'],
+            ];
+        }
+
+        $stmt->execute([':id' => $direccion['id'], ':cat' => 'formato', ':area' => $areaActiva]);
+        foreach ($stmt->fetchAll() as $d) {
+            $fecha = new DateTime($d['fecha']);
+            $moduloFormatos[] = [
+                'id'      => $d['id'],
+                'nombre'  => $d['nombre'],
+                'tipo'    => $d['tipo'],
+                'version' => $d['version'],
+                'archivo' => $d['archivo'],
+                'fecha'   => $fecha->format('d') . ' ' . $meses[(int) $fecha->format('n') - 1] . ' ' . $fecha->format('Y'),
+                'fecha_raw' => $d['fecha'],
             ];
         }
     }
 }
 
-// ── Explorador de documentos tipo "drive" (por ahora solo Financiera) ──
-// Ver CarpetaController.php (crear/subir/descargar/eliminar) y
-// Administrativa_Financiera/_explorador.php (la vista). ?carpeta=<id> es
-// la carpeta abierta; sin ese parámetro se muestra la raíz de la dirección.
-if (!empty($modulo['slug']) && $modulo['slug'] === 'financiera' && $direccion) {
+// ── Centro documental (Financiera y Talento Humano comparten esta misma
+//    lógica) ── Ver CarpetaController.php (crear/subir/descargar/eliminar)
+// y las vistas de cada módulo (Financiera.php/Tal_Humano.php, ambas usan
+// _explorador.php). ?carpeta=<id> es la carpeta abierta; sin ese parámetro
+// se muestra el panel principal (categorías + recientes + búsqueda).
+// Financiera además tiene pestañas Administración/Finanzas (area) — Talento
+// Humano no las usa (siempre 'administracion'), pero comparte la columna.
+$MODULOS_CON_CENTRO_DOCUMENTAL = ['financiera', 'talento-humano'];
+if (!empty($modulo['slug']) && in_array($modulo['slug'], $MODULOS_CON_CENTRO_DOCUMENTAL, true) && $direccion) {
     $carpetaIdPedida = isset($_GET['carpeta']) ? (int) $_GET['carpeta'] : null;
 
     $carpetaActual = null;
     if ($carpetaIdPedida) {
-        $stmt = $pdo->prepare('SELECT id, parent_id, nombre FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
+        $stmt = $pdo->prepare('SELECT id, parent_id, nombre, area FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
         $stmt->execute([':id' => $carpetaIdPedida, ':did' => $direccion['id']]);
         $carpetaActual = $stmt->fetch() ?: null;
     }
     $carpetaIdActual = $carpetaActual ? (int) $carpetaActual['id'] : null;
+
+    // Dentro de una carpeta, la carpeta misma ya dice a qué pestaña
+    // pertenece — más confiable que confiar en el ?area= de la URL (que
+    // ya cumplió su función al armar el link para llegar hasta acá).
+    if ($carpetaActual) {
+        $areaActiva = $carpetaActual['area'];
+    }
 
     $rutaCarpetas = [];
     $cursor = $carpetaActual;
     while ($cursor) {
         array_unshift($rutaCarpetas, $cursor);
         if (!$cursor['parent_id']) break;
-        $stmt = $pdo->prepare('SELECT id, parent_id, nombre FROM direccion_carpetas WHERE id = :id');
+        $stmt = $pdo->prepare('SELECT id, parent_id, nombre, area FROM direccion_carpetas WHERE id = :id');
         $stmt->execute([':id' => $cursor['parent_id']]);
         $cursor = $stmt->fetch() ?: null;
     }
@@ -117,17 +170,93 @@ if (!empty($modulo['slug']) && $modulo['slug'] === 'financiera' && $direccion) {
     if ($carpetaIdActual) {
         $stmt = $pdo->prepare('SELECT id, nombre FROM direccion_carpetas WHERE direccion_id = :did AND parent_id = :pid ORDER BY nombre');
         $stmt->execute([':did' => $direccion['id'], ':pid' => $carpetaIdActual]);
+        $subcarpetas = $stmt->fetchAll();
     } else {
-        $stmt = $pdo->prepare('SELECT id, nombre FROM direccion_carpetas WHERE direccion_id = :did AND parent_id IS NULL ORDER BY nombre');
-        $stmt->execute([':did' => $direccion['id']]);
+        // Raíz: estas filas son las "Categorías" del panel principal, con
+        // conteo de archivos propio — no recursivo (solo lo que cuelga
+        // directo de la categoría), igual de simple que el resto del portal.
+        $stmt = $pdo->prepare('
+            SELECT c.id, c.nombre, COUNT(a.id) AS total_archivos
+            FROM direccion_carpetas c
+            LEFT JOIN direccion_carpeta_archivos a ON a.carpeta_id = c.id
+            WHERE c.direccion_id = :did AND c.parent_id IS NULL AND c.area = :area
+            GROUP BY c.id, c.nombre
+            ORDER BY c.nombre
+        ');
+        $stmt->execute([':did' => $direccion['id'], ':area' => $areaActiva]);
+        $subcarpetas = $stmt->fetchAll();
     }
-    $subcarpetas = $stmt->fetchAll();
 
     $archivosCarpeta = [];
     if ($carpetaIdActual) {
-        $stmt = $pdo->prepare('SELECT id, nombre, archivo, peso_bytes, subido_en FROM direccion_carpeta_archivos WHERE carpeta_id = :cid ORDER BY nombre');
+        $stmt = $pdo->prepare('SELECT id, nombre, tipo, archivo, peso_bytes, subido_en FROM direccion_carpeta_archivos WHERE carpeta_id = :cid ORDER BY nombre');
         $stmt->execute([':cid' => $carpetaIdActual]);
         $archivosCarpeta = $stmt->fetchAll();
+    }
+
+    // "Archivos recientes" del panel principal: junta archivos sueltos
+    // dentro de cualquier carpeta de esta pestaña + Documentos/Formatos de
+    // la misma — una sola lista ordenada por fecha, más nuevo primero.
+    $archivosRecientes = [];
+    if (!$carpetaIdActual) {
+        $stmt = $pdo->prepare('
+            SELECT a.id, a.nombre, a.tipo, a.archivo, a.subido_en AS fecha_raw, c.id AS carpeta_id
+            FROM direccion_carpeta_archivos a
+            JOIN direccion_carpetas c ON c.id = a.carpeta_id
+            WHERE c.direccion_id = :did AND c.area = :area AND a.archivo <> ""
+            ORDER BY a.subido_en DESC
+            LIMIT 12
+        ');
+        $stmt->execute([':did' => $direccion['id'], ':area' => $areaActiva]);
+        foreach ($stmt->fetchAll() as $a) {
+            $archivosRecientes[] = [
+                'id' => $a['id'], 'nombre' => $a['nombre'], 'tipo' => $a['tipo'], 'archivo' => $a['archivo'],
+                'fecha_raw' => $a['fecha_raw'], 'carpeta_id' => (int) $a['carpeta_id'], 'origen' => 'carpeta',
+            ];
+        }
+        foreach ($moduloDocumentos as $d) {
+            if ($d['archivo']) $archivosRecientes[] = $d + ['carpeta_id' => null, 'origen' => 'documento'];
+        }
+        foreach ($moduloFormatos as $f) {
+            if ($f['archivo']) $archivosRecientes[] = $f + ['carpeta_id' => null, 'origen' => 'formato'];
+        }
+        usort($archivosRecientes, fn ($a, $b) => strtotime($b['fecha_raw']) <=> strtotime($a['fecha_raw']));
+        $archivosRecientes = array_slice($archivosRecientes, 0, 12);
+    }
+
+    // Búsqueda real (GET, sin JS de mentira): filtra por nombre entre los
+    // archivos de carpetas y los Documentos/Formatos de esta misma pestaña.
+    $terminoBusqueda = trim($_GET['buscar'] ?? '');
+    $resultadosBusqueda = null;
+    if ($terminoBusqueda !== '') {
+        $like = '%' . $terminoBusqueda . '%';
+        $resultadosBusqueda = [];
+        $stmt = $pdo->prepare('
+            SELECT a.id, a.nombre, a.tipo, a.archivo, a.subido_en AS fecha_raw, c.id AS carpeta_id, c.nombre AS carpeta_nombre
+            FROM direccion_carpeta_archivos a
+            JOIN direccion_carpetas c ON c.id = a.carpeta_id
+            WHERE c.direccion_id = :did AND c.area = :area AND a.nombre LIKE :like AND a.archivo <> ""
+            ORDER BY a.subido_en DESC
+        ');
+        $stmt->execute([':did' => $direccion['id'], ':area' => $areaActiva, ':like' => $like]);
+        foreach ($stmt->fetchAll() as $a) {
+            $resultadosBusqueda[] = [
+                'id' => $a['id'], 'nombre' => $a['nombre'], 'tipo' => $a['tipo'], 'archivo' => $a['archivo'],
+                'fecha_raw' => $a['fecha_raw'], 'carpeta_id' => (int) $a['carpeta_id'],
+                'carpeta_nombre' => $a['carpeta_nombre'], 'origen' => 'carpeta',
+            ];
+        }
+        foreach ($moduloDocumentos as $d) {
+            if ($d['archivo'] && mb_stripos($d['nombre'], $terminoBusqueda) !== false) {
+                $resultadosBusqueda[] = $d + ['carpeta_id' => null, 'carpeta_nombre' => null, 'origen' => 'documento'];
+            }
+        }
+        foreach ($moduloFormatos as $f) {
+            if ($f['archivo'] && mb_stripos($f['nombre'], $terminoBusqueda) !== false) {
+                $resultadosBusqueda[] = $f + ['carpeta_id' => null, 'carpeta_nombre' => null, 'origen' => 'formato'];
+            }
+        }
+        usort($resultadosBusqueda, fn ($a, $b) => strtotime($b['fecha_raw']) <=> strtotime($a['fecha_raw']));
     }
 }
 
@@ -190,32 +319,6 @@ if ($uri === '/cuadro-mando-integral') {
         ORDER BY ni.orden");
     $stmt->execute();
     $tableroSubmodulos = $stmt->fetchAll();
-}
-
-// ── Talento Humano ──
-// Organigrama/cargos/competencias vienen de tablas reales (ver
-// database/migrations/006_talento_humano.sql); se pasan a talento-humano.js
-// como constantes ya resueltas (mismo mecanismo que portal-footer.php usa
-// para window.BASE_URL) porque esa vista cambia de pestaña sin recargar la
-// página, así que el JS necesita los datos en memoria, no otra petición.
-// Comités, KPIs, desempeño y bienestar de esa misma pestaña siguen
-// quemados en el JS — no tienen tabla propia todavía.
-if ($uri === '/talento-humano') {
-    $thOrganigrama = [];
-    // Algunos respaldos históricos nombran esta columna "nivel"; esa es la
-    // estructura presente en la base consolidada.
-    foreach ($pdo->query('SELECT id, nivel AS label FROM organigrama_niveles ORDER BY orden')->fetchAll() as $nivel) {
-        $stmt = $pdo->prepare('SELECT label, meta, destacado FROM organigrama_cajas WHERE nivel_id = :id ORDER BY orden');
-        $stmt->execute([':id' => $nivel['id']]);
-        $cajas = array_map(function ($c) {
-            $c['destacado'] = (bool) $c['destacado'];
-            return $c;
-        }, $stmt->fetchAll());
-        $thOrganigrama[] = ['nivel' => $nivel['label'], 'cajas' => $cajas];
-    }
-
-    $thCargos = $pdo->query('SELECT cargo, direccion, nivel, codigo FROM cargos ORDER BY orden')->fetchAll();
-    $thCompetencias = $pdo->query('SELECT label, pct FROM competencias ORDER BY orden')->fetchAll();
 }
 
 // ── Directorio (fase 4) ──

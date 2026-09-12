@@ -106,21 +106,20 @@
     margin-bottom: 20px
   }
 
-  .section-head .link {
+  .section-note {
     font-size: 12px;
-    cursor: pointer;
-    color: var(--color-accent-700);
-    font-weight: 800
+    color: var(--color-neutral-700);
+    font-weight: 700
   }
 
-  /* reset de <button>: "Centro de aplicaciones" es un <span>, pero
-     "+ Agregar" de Mis pendientes es un <button> real (dispara JS) */
-  button.link {
-    border: none;
-    background: none;
-    font-family: inherit;
-    padding: 0;
-  }
+  .section-head--spaced { margin-top: 44px; }
+  .section-head--spaced-small { margin-top: 34px; }
+  .section-head--compact { margin-bottom: 6px; }
+  .section-head .btn-link { min-height: 32px; padding: 5px 9px; font-size: 12px; }
+  .cell-muted { opacity: .7; }
+  .document-status { display: inline-flex; align-items: center; gap: 8px; }
+  .item-copy { flex: 1; min-width: 0; }
+  .item-copy .t, .item-copy .m, .evento .dia, .evento .mes, .evento .h { display: block; }
 
   .accesos {
     display: grid;
@@ -261,7 +260,7 @@
   }
 
   .pendiente-check-form { flex: 0 0 auto; margin-top: 2px }
-  .pendiente-check { width: 16px; height: 16px; cursor: pointer; margin: 0 }
+  .pendiente-check { width: 16px; height: 16px; cursor: pointer; margin: 0; accent-color: var(--color-accent); }
 
   /* Tildado: no desaparece (eso es "eliminar"), se queda pero se ve
      claramente resuelto — mismo criterio que un to-do normal. */

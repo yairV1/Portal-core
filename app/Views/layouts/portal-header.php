@@ -133,7 +133,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       <i class="fa-regular fa-moon icon-claro"></i>
       <i class="fa-regular fa-sun icon-oscuro"></i>
     </button>
-    <button class="btn btn-icon" id="btnBell" title="Notificaciones" style="position:relative">
+    <button class="btn btn-icon btn-bell" id="btnBell" title="Notificaciones">
       <i class="fa-regular fa-bell"></i><span class="bell-dot"></span>
     </button>
     <div class="profile" id="btnProfile">

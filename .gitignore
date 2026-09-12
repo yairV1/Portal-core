@@ -33,6 +33,11 @@ $RECYCLE.BIN/
 /storage/direccion_carpetas/*
 !/storage/direccion_carpetas/.gitkeep
 
+# Clave de la cuenta de servicio de Google (ver GoogleDrive.php/.env.example)
+# — es una credencial real, nunca va al repo.
+/storage/google/*
+!/storage/google/.gitkeep
+
 docs/*
 !docs/docker.md
 
