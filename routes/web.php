@@ -5,9 +5,11 @@
 // ══════════════════════════════════════════════════════════
 
 return [
-    '/login'  => 'AuthController.php',
-    '/logout' => 'AuthController.php',
-    '/'       => 'HomeController.php',
+    '/login'                => 'AuthController.php',
+    '/logout'               => 'AuthController.php',
+    '/auth/google'          => 'AuthController.php',
+    '/auth/google/callback' => 'AuthController.php',
+    '/'                     => 'HomeController.php',
 
     // Trabaja con nosotros — landing pública (sin sesión) + panel admin
     '/trabaja-con-nosotros'           => 'TrabajoController.php',
@@ -61,4 +63,18 @@ return [
     '/calendario/editar-evento'  => 'EventoController.php',
     '/calendario/eliminar-evento'=> 'EventoController.php',
     '/calendario/exportar'       => 'EventoController.php',
+
+    // Contenido de la landing pública — solo admin (ver PortalController /
+    // registrado en su propio controlador porque no es un módulo del
+    // Portal como los demás, es el contenido institucional de "/").
+    '/contenido-landing'                     => 'ContenidoLandingController.php',
+    '/contenido-landing/guardar-seccion'     => 'ContenidoLandingController.php',
+    '/contenido-landing/estadistica/guardar' => 'ContenidoLandingController.php',
+    '/contenido-landing/estadistica/eliminar'=> 'ContenidoLandingController.php',
+    '/contenido-landing/modulo/guardar'      => 'ContenidoLandingController.php',
+    '/contenido-landing/modulo/eliminar'     => 'ContenidoLandingController.php',
+    '/contenido-landing/rol/guardar'         => 'ContenidoLandingController.php',
+    '/contenido-landing/rol/eliminar'        => 'ContenidoLandingController.php',
+    '/contenido-landing/paso/guardar'        => 'ContenidoLandingController.php',
+    '/contenido-landing/paso/eliminar'       => 'ContenidoLandingController.php',
 ];

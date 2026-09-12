@@ -75,7 +75,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
 
         <div class="core-auth-divider" role="separator"><span>o</span></div>
 
-        <button type="button" class="core-auth-google" id="btnGoogleLogin">
+        <a href="<?= BASE_URL ?>/auth/google" class="core-auth-google">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
             <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.36 0-4.36-1.6-5.08-3.74H.9v2.33A8.997 8.997 0 0 0 9 18z"/>
@@ -83,7 +83,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
             <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A8.997 8.997 0 0 0 .9 4.99l3.02 2.33C4.64 5.18 6.64 3.58 9 3.58z"/>
           </svg>
           <span>Continuar con Google</span>
-        </button>
+        </a>
 
         <a href="<?= BASE_URL ?>/horario" class="core-auth-link">Consultar mi horario sin iniciar sesión</a>
       </form>
@@ -188,21 +188,6 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
       });
     }
 
-    // Google todavía no tiene un backend de OAuth propio en este proyecto
-    // (no hay credenciales/cliente configurados) — en vez de simular un
-    // login falso, se avisa con el mismo patrón de aviso que ya usa el
-    // resto del sistema, para no dejar el botón sin respuesta.
-    var btnGoogleLogin = document.getElementById('btnGoogleLogin');
-    if (btnGoogleLogin) {
-      btnGoogleLogin.addEventListener('click', function () {
-        if (typeof SwalBrand === 'undefined') return;
-        SwalBrand.fire({
-          icon: 'info',
-          title: 'Muy pronto',
-          text: 'El inicio de sesión con Google institucional está en preparación. Por ahora, ingresa con tu correo y contraseña.'
-        });
-      });
-    }
   })();
 
   // Avisos con SweetAlert2 (SwalBrand se define en footer.php, cargado
@@ -234,6 +219,24 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
         icon: 'warning',
         title: 'Tu sesión expiró',
         text: 'Cerramos tu sesión por inactividad. Inicia sesión de nuevo para continuar.'
+      });
+    <?php elseif (($_GET['google_error'] ?? '') === 'no_configurado'): ?>
+      SwalBrand.fire({
+        icon: 'info',
+        title: 'Google todavía no está disponible',
+        text: 'El inicio de sesión con Google no está configurado en este entorno. Ingresa con tu correo y contraseña.'
+      });
+    <?php elseif (($_GET['google_error'] ?? '') === 'no_registrado'): ?>
+      SwalBrand.fire({
+        icon: 'warning',
+        title: 'Esa cuenta no está registrada',
+        text: 'Tu cuenta de Google no coincide con ningún correo institucional en Portal CORE. Solicita el alta a un administrador.'
+      });
+    <?php elseif (!empty($_GET['google_error'])): ?>
+      SwalBrand.fire({
+        icon: 'error',
+        title: 'No se pudo iniciar sesión con Google',
+        text: 'Intenta de nuevo o ingresa con tu correo y contraseña.'
       });
     <?php endif; ?>
   });

@@ -20,6 +20,10 @@ services:
       DB_NAME: ${DB_NAME:-portal_core}
       DB_USER: ${DB_USER:-portal_user}
       DB_PASS: ${DB_PASS:?Falta DB_PASS en tu .env}
+      # Opcionales: sin ellas, el botón "Continuar con Google" simplemente
+      # avisa que el login con Google no está configurado (ver AuthController.php).
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
