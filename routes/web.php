@@ -5,9 +5,11 @@
 // ══════════════════════════════════════════════════════════
 
 return [
-    '/login'  => 'AuthController.php',
-    '/logout' => 'AuthController.php',
-    '/'       => 'HomeController.php',
+    '/login'                => 'AuthController.php',
+    '/logout'               => 'AuthController.php',
+    '/auth/google'          => 'AuthController.php',
+    '/auth/google/callback' => 'AuthController.php',
+    '/'                     => 'HomeController.php',
 
     // Trabaja con nosotros — landing pública (sin sesión) + panel admin
     '/trabaja-con-nosotros'           => 'TrabajoController.php',
