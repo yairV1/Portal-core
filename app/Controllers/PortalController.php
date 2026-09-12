@@ -12,7 +12,7 @@ if (empty($_SESSION['usuario_id'])) {
 }
 
 $modulos = [
-    '/cuadro-mando-integral'      => ['titulo' => 'Cuadro de Mando Integral',    'vista' => 'Tablero_Estratégicos/Tablero.php'],
+    '/cuadro-mando-integral'      => ['titulo' => 'Cuadro de Mando Integral',    'vista' => 'Tablero_Estrategicos/Tablero.php'],
     // Perspectivas del CMI: rutas propias y vacías (sin fila en
     // direccion_kpis/áreas/documentos todavía), no las páginas de
     // dirección reales — reusan el mismo "módulo genérico" de abajo
@@ -22,13 +22,13 @@ $modulos = [
     '/cuadro-mando-integral/vicerrectoria-academica'  => ['titulo' => 'Vicerrectoría Académica',    'vista' => 'Cuadro_Mando_Integral/Perspectiva.php', 'slug' => 'cmi-vicerrectoria-academica'],
     '/cuadro-mando-integral/investigacion'            => ['titulo' => 'Dirección de Investigación', 'vista' => 'Cuadro_Mando_Integral/Perspectiva.php', 'slug' => 'cmi-investigacion'],
     '/mapa-portal'                => ['titulo' => 'Mapa del portal',             'vista' => 'Mapa_Portal/Mapa.php'],
-    '/gestion-institucional'      => ['titulo' => 'Gestión Institucional',       'vista' => 'Gestión_Institucional/Gestión_Ins.php',        'slug' => 'institucional'],
-    '/sgi'                        => ['titulo' => 'Sistema de Gestión Integral', 'vista' => 'Sistema_Gestión_Integral/Sistema_Integral.php', 'slug' => 'sgi'],
-    '/vicerrectoria-academica'    => ['titulo' => 'Vicerrectoría Académica',     'vista' => 'Vicerrectoría_Académica/Vicerrectoria.php',     'slug' => 'academica'],
+    '/gestion-institucional'      => ['titulo' => 'Gestión Institucional',       'vista' => 'Gestion_Institucional/Gestion_Ins.php',        'slug' => 'institucional'],
+    '/sgi'                        => ['titulo' => 'Sistema de Gestión Integral', 'vista' => 'Sistema_Gestion_Integral/Sistema_Integral.php', 'slug' => 'sgi'],
+    '/vicerrectoria-academica'    => ['titulo' => 'Vicerrectoría Académica',     'vista' => 'Vicerrectoria_Academica/Vicerrectoria.php',     'slug' => 'academica'],
     '/administrativa-financiera'  => ['titulo' => 'Administrativa y Financiera', 'vista' => 'Administrativa_Financiera/Financiera.php',      'slug' => 'financiera'],
     '/talento-humano'             => ['titulo' => 'Talento Humano',              'vista' => 'Talento_Humano/Tal_Humano.php'],
-    '/investigacion-innovacion'   => ['titulo' => 'Investigación e Innovación',  'vista' => 'Investigacón_Innovación/Investigacion.php',     'slug' => 'investigacion'],
-    '/gestion-documental'         => ['titulo' => 'Gestión Documental',          'vista' => 'Gestión_Documental/Documental.php'],
+    '/investigacion-innovacion'   => ['titulo' => 'Investigación e Innovación',  'vista' => 'Investigacion_Innovacion/Investigacion.php',     'slug' => 'investigacion'],
+    '/gestion-documental'         => ['titulo' => 'Gestión Documental',          'vista' => 'Gestion_Documental/Documental.php'],
     '/normatividad'               => ['titulo' => 'Normatividad',                'vista' => 'Normatividad/Normatividad.php'],
     '/novedades'                  => ['titulo' => 'Novedades',                   'vista' => 'Novedades/Novedades.php',                       'slug' => 'novedades'],
     '/aplicaciones'               => ['titulo' => 'Aplicaciones',                'vista' => 'Aplicaciones/Aplicaciones.php'],

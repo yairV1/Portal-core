@@ -3,7 +3,7 @@
         'name' => 'coreducacion/portal-core',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '361c3ffd0114bc0975a7c29109d6f41daafe05c8',
+        'reference' => '7779eba731fffb605685b46f3f06882020b58962',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'coreducacion/portal-core' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '361c3ffd0114bc0975a7c29109d6f41daafe05c8',
+            'reference' => '7779eba731fffb605685b46f3f06882020b58962',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

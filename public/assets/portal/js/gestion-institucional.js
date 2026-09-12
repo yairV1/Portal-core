@@ -1,4 +1,4 @@
-  /* kicker/titulo/desc/kpis/areas/docs ya los renderiza Gestión_Ins.php con
+  /* kicker/titulo/desc/kpis/areas/docs ya los renderiza Gestion_Ins.php con
      datos reales desde $pdo (ver PortalController.php) — acá solo queda lo
      que todavía no tiene tabla real (responsables/software, ver plan). */
   const MODULO = {
