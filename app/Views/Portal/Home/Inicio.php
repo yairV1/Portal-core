@@ -92,9 +92,9 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
       <?php endforeach; endif; ?>
     </div>
 
-    <div class="section-head" style="margin-top:44px">
+    <div class="section-head section-head--spaced">
       <h4>Documentos recientes</h4>
-      <span class="link">Repositorio</span>
+      <span class="section-note">Repositorio institucional</span>
     </div>
     <table class="table">
       <thead><tr><th>Documento</th><th>Área</th><th>Ver.</th><th>Actualizado</th></tr></thead>
@@ -104,20 +104,20 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         <?php else: foreach ($docsRecientes as $d): ?>
           <tr>
             <td><strong><?= e($d['nombre']) ?></strong></td>
-            <td style="opacity:.7"><?= e($d['area']) ?></td>
+            <td class="cell-muted"><?= e($d['area']) ?></td>
             <td>
-              <span style="display:inline-flex;align-items:center;gap:8px">
+              <span class="document-status">
                 <span class="tag-stamp"><?= e($d['version']) ?></span>
                 <span class="tag tag-<?= e($d['estadoTag']) ?>"><?= e($d['estado']) ?></span>
               </span>
             </td>
-            <td style="opacity:.7"><?= e($d['fecha']) ?></td>
+            <td class="cell-muted"><?= e($d['fecha']) ?></td>
           </tr>
         <?php endforeach; endif; ?>
       </tbody>
     </table>
 
-    <div class="section-head" style="margin-top:44px">
+    <div class="section-head section-head--spaced">
       <h4>Novedades institucionales</h4>
     </div>
     <div class="noticias" id="noticias">
@@ -137,9 +137,9 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
   </div>
 
   <div class="side-col">
-    <div class="section-head" style="margin-bottom:6px">
+    <div class="section-head section-head--compact">
       <h4>Mis pendientes</h4>
-      <button type="button" class="link" id="btnNuevoPendiente">+ Agregar</button>
+      <button type="button" class="btn btn-link" id="btnNuevoPendiente"><i class="bi bi-plus-lg"></i> Agregar</button>
     </div>
 
     <form action="<?= BASE_URL ?>/pendientes/crear" method="post" class="pendiente-form" id="formNuevoPendiente" hidden>
@@ -158,12 +158,12 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
             <input type="hidden" name="completado" value="0">
-            <input type="checkbox" name="completado" value="1" class="pendiente-check" style="accent-color:<?= e($p['color']) ?>"
+            <input type="checkbox" name="completado" value="1" class="pendiente-check"
                    <?= $p['completado'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Marcar como hecho">
           </form>
-          <span style="flex:1">
-            <span class="t" style="display:block"><?= e($p['titulo']) ?></span>
-            <?php if ($p['meta']): ?><span class="m" style="display:block"><?= e($p['meta']) ?></span><?php endif; ?>
+          <span class="item-copy">
+            <span class="t"><?= e($p['titulo']) ?></span>
+            <?php if ($p['meta']): ?><span class="m"><?= e($p['meta']) ?></span><?php endif; ?>
           </span>
           <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
@@ -174,25 +174,25 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
       <?php endforeach; endif; ?>
     </div>
 
-    <div class="section-head" style="margin-bottom:6px; margin-top:34px"><h4>Agenda de la semana</h4></div>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4>Agenda de la semana</h4></div>
     <div id="eventos">
       <?php if (!$eventos): ?>
         <p class="text-muted">No hay eventos programados.</p>
       <?php else: foreach ($eventos as $ev): ?>
         <div class="evento">
           <span class="fecha">
-            <span class="dia" style="display:block"><?= e($ev['dia']) ?></span>
-            <span class="mes" style="display:block"><?= e($ev['mes']) ?></span>
+            <span class="dia"><?= e($ev['dia']) ?></span>
+            <span class="mes"><?= e($ev['mes']) ?></span>
           </span>
-          <span style="flex:1">
-            <span class="t" style="display:block"><?= e($ev['titulo']) ?></span>
-            <span class="h" style="display:block"><?= e($ev['hora']) ?></span>
+          <span class="item-copy">
+            <span class="t"><?= e($ev['titulo']) ?></span>
+            <span class="h"><?= e($ev['hora']) ?></span>
           </span>
         </div>
       <?php endforeach; endif; ?>
     </div>
 
-    <div class="section-head" style="margin-bottom:6px; margin-top:34px"><h4>Cumpleaños</h4></div>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4>Cumpleaños</h4></div>
     <div id="cumpleanos">
       <?php if (!$cumpleanos): ?>
         <p class="text-muted">Sin cumpleaños esta semana.</p>

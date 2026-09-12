@@ -24,6 +24,11 @@ services:
       # avisa que el login con Google no está configurado (ver AuthController.php).
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Opcional: ruta (dentro del contenedor) al .json de una cuenta de
+      # servicio de Google Cloud, para "Traer de Drive" en el explorador de
+      # Administrativa y Financiera (ver app/Helpers/GoogleDrive.php). Sin
+      # ella, ese botón avisa que no está configurado.
+      GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE: ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE:-}
     depends_on:
       db:
         condition: service_healthy

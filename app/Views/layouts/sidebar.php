@@ -174,7 +174,7 @@ if (isset($pdo)) {
   <div class="sidebar-divider"></div>
 
   <!-- ── Cerrar sesión ── -->
-  <div class="sidebar-nav" style="padding: 8px 12px 12px">
+  <div class="sidebar-nav sidebar-nav--logout">
     <a href="<?= BASE_URL ?>/logout" class="sidebar-item" id="btnCerrarSesion">
       <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Cerrar sesión</span>
     </a>

@@ -1,5 +1,6 @@
 <?php $titulo = 'Gestión Documental'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/gestion-documental.css">
+<link rel="stylesheet" href="<?= v('/assets/portal/css/modulo-generico.css') ?>">
 <h1 class="page-title">Gestión Documental</h1>
 <p class="page-desc">Repositorio institucional de documentos, formatos y control de versiones.</p>
 
@@ -20,6 +21,9 @@
       <table class="table" style="margin-bottom:24px">
         <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Responsable</th><th>Actualizado</th><th>Archivo</th></tr></thead>
         <tbody>
+          <?php if (!$archivosPorCarpeta[$area['id']]): ?>
+            <tr><td colspan="6"><div class="modulo-vacio"><i class="bi bi-file-earmark-text"></i> Sin documentos por ahora.</div></td></tr>
+          <?php endif; ?>
           <?php foreach ($archivosPorCarpeta[$area['id']] as $arc): ?>
             <tr>
               <td><strong><?= e($arc['nombre']) ?></strong></td>
@@ -56,6 +60,20 @@
           <?php endforeach; ?>
         </tbody>
       </table>
+      <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
+        <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="modulo-add" style="margin-top:-8px">
+          <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+          <input type="hidden" name="tipo" value="documental">
+          <input type="hidden" name="volver" value="/gestion-documental">
+          <input type="hidden" name="carpeta_id" value="<?= (int) $area['id'] ?>">
+          <input type="text" name="nombre" placeholder="Nombre del documento" required>
+          <input type="text" name="tipo_doc" placeholder="Tipo (ej: Formato)">
+          <input type="text" name="version" placeholder="v1.0">
+          <input type="text" name="responsable" placeholder="Responsable">
+          <input type="date" name="fecha" value="<?= date('Y-m-d') ?>">
+          <button type="submit" class="tag tag-accent" style="border:none;cursor:pointer"><i class="bi bi-plus-lg"></i> Agregar documento</button>
+        </form>
+      <?php endif; ?>
     <?php endforeach; ?>
   </div>
 <?php endforeach; endif; ?>

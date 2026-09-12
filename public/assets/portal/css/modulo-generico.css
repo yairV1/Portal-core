@@ -1,0 +1,86 @@
+  /* .table y .tag ya viven en paneles.css (componente único). Este archivo
+     es compartido por los 6 módulos genéricos de dirección (Administrativa
+     y Financiera, Novedades, Gestión Institucional, SGI, Vicerrectoría
+     Académica, Investigación e Innovación) — antes cada uno tenía su
+     propia copia idéntica de este mismo CSS (6 archivos, 0 diferencias);
+     ahora hay uno solo y los 6 lo enlazan. */
+
+  /* ── módulo genérico de dirección ── */
+  .modulo-head{border-bottom:2px solid var(--color-divider);padding-bottom:24px;margin-bottom:30px}
+  .modulo-kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--color-accent-700);padding-bottom:10px}
+  .modulo-titulo{font-size:40px;margin:0 0 10px}
+  .modulo-desc{opacity:.65;max-width:700px;margin:0}
+
+  .modulo-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));border:1px solid var(--color-divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);overflow:hidden;margin-bottom:36px}
+  .modulo-kpi{position:relative;padding:20px 22px;border-right:1px solid var(--color-divider);transition:background .15s ease}
+  .modulo-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--color-accent)}
+  .modulo-kpi:hover{background:var(--color-surface)}
+  .modulo-kpi .label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.55}
+  .modulo-kpi .valor{font-weight:800;font-size:30px;letter-spacing:-.03em;padding-top:8px}
+  .modulo-kpi .spark{display:flex;padding-top:6px;opacity:.85}
+
+  .modulo-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:start}
+  .section-head{border-bottom:2px solid var(--color-divider);padding-bottom:10px;margin-bottom:2px}
+
+  .area-item{display:flex;gap:18px;padding:18px 14px;margin:0 -14px;border-radius:var(--radius-md);border-bottom:1px solid var(--color-divider);cursor:pointer;transition:background .15s ease}
+  .area-item:hover{background:var(--color-surface)}
+  .area-item .ic{color:var(--color-accent);padding-top:2px}
+  .area-item .label{display:block;font-weight:800;font-size:16px}
+  .area-item .meta{display:block;font-size:12.5px;opacity:.6;padding-top:4px}
+  .area-item .arrow{opacity:.4}
+
+  .side-box{border:1px solid var(--color-divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:22px}
+  .side-box-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;opacity:.5;padding-bottom:12px}
+  .responsable{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--color-divider)}
+  .responsable .ini{width:32px;height:32px;flex:0 0 auto;background:var(--color-accent-200);color:var(--color-accent-800);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;border-radius:50%}
+  .responsable .nombre{display:block;font-weight:800;font-size:13px}
+  .responsable .cargo{display:block;font-size:11px;opacity:.6}
+  .software-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--color-divider);font-size:12.5px}
+
+  /* ── Estado vacío compacto ──
+     Antes: un <p class="text-muted"> perdido, sin jerarquía. Ahora: un
+     recuadro punteado con ícono, mismo lenguaje visual que .empty-state
+     (paneles.css) pero pensado para caber DENTRO de una tarjeta/KPI/tabla
+     en vez de ocupar toda la página. */
+  .modulo-vacio{display:flex;align-items:center;gap:10px;padding:16px 18px;border:1.5px dashed var(--color-divider);border-radius:var(--radius-md);color:var(--color-text);opacity:.6;font-size:13px}
+  .modulo-vacio i{font-size:16px;flex:0 0 auto}
+  .modulo-kpis .modulo-vacio{border:none;grid-column:1/-1}
+  td .modulo-vacio{border:none;padding:10px 0}
+
+  /* ── Tarjeta "agregar" ──
+     Envuelve los formularios de crear carpeta/documento/traer de Drive
+     (antes eran filas sueltas de <input style="..."> repetidas en cada
+     vista) — mismo tratamiento visual que .side-box, para que se vean
+     como una acción propia y no como controles perdidos. */
+  .modulo-add{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:14px 16px;margin:12px 0 24px;background:var(--color-surface);min-width:0;box-sizing:border-box;max-width:100%}
+  .modulo-add input[type="text"],
+  .modulo-add input[type="date"],
+  .modulo-add select{padding:9px 12px;border-radius:8px;border:1px solid var(--color-divider);font:inherit;background:var(--color-bg)}
+  .modulo-add input[type="text"]{flex:1 1 160px}
+  .modulo-add input[type="date"]{flex:0 0 150px}
+  .modulo-add .modulo-add-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.5;flex:0 0 100%;margin-bottom:-2px}
+
+  /* ── Botón "Subir" dentro de una celda de tabla ──
+     Antes: <input type="file"> a la vista, con su botón nativo feo del
+     navegador atropellando el texto de al lado. Ahora: el input real
+     queda invisible encima de un botón .tag normal — mismo truco que ya
+     usa .explorador-file-btn (explorador.css), pero para las tablas de
+     Documentos/Formatos en vez del explorador de carpetas. */
+  .file-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .file-btn input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+  /* — responsive: apila la columna lateral debajo en pantallas angostas — */
+  @media (max-width: 880px){
+    .modulo-titulo{font-size:30px}
+    .modulo-grid{grid-template-columns:1fr}
+  }
+
+  /* En pantallas angostas cada campo ocupa su propia fila — evita que la
+     suma de anchos mínimos (sobre todo el <input type="date">, que el
+     navegador nunca encoge del todo) empuje el formulario más ancho que
+     la pantalla y provoque scroll horizontal. */
+  @media (max-width: 480px){
+    .modulo-add input[type="text"],
+    .modulo-add input[type="date"],
+    .modulo-add select{flex-basis:100%}
+  }

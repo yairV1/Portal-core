@@ -91,6 +91,8 @@
     var resultado = <?= json_encode($_GET['doc'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     var textos = {
       '1': { icon: 'success', title: 'Documento subido correctamente' },
+      'creado': { icon: 'success', title: 'Documento creado — ya puedes subirle el archivo' },
+      'nombre': { icon: 'error', title: 'Escribe un nombre y una fecha válida' },
       'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
       'tamano': { icon: 'error', title: 'El archivo pesa más de 20 MB' },
       'error': { icon: 'error', title: 'No se pudo subir el documento' }
@@ -116,6 +118,11 @@
       'nombre': { icon: 'error', title: 'Escribe un nombre de carpeta válido' },
       'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel, PowerPoint o una imagen (JPG/PNG/WEBP)' },
       'tamano': { icon: 'error', title: 'El archivo pesa más de 15 MB' },
+      'importado': { icon: 'success', title: 'Documento importado desde Drive' },
+      'drive_link': { icon: 'error', title: 'Pega un link válido de Google Drive' },
+      'drive_no_encontrado': { icon: 'error', title: 'No se pudo acceder a ese archivo — revisa el link y que esté compartido con la cuenta de servicio' },
+      'drive_google_doc': { icon: 'error', title: 'Ese es un Doc/Sheet/Slide nativo de Google — expórtalo primero como PDF o Word desde Drive' },
+      'drive_no_configurado': { icon: 'error', title: 'La importación desde Drive todavía no está configurada en este entorno' },
       'error': { icon: 'error', title: 'No se pudo completar la acción' }
     };
     var t = textos[resultado] || textos['error'];
