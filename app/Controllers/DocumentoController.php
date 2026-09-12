@@ -2,7 +2,7 @@
 // ══════════════════════════════════════════════════════════
 //  app/Controllers/DocumentoController.php
 //  Sube y descarga el archivo real de un documento — de
-//  archivos_documentales (Gestión_Documental/Documental.php) o de
+//  archivos_documentales (Gestion_Documental/Documental.php) o de
 //  direccion_documentos ("Documentación destacada" de los 6 módulos
 //  genéricos de dirección), según ?tipo=documental|direccion.
 //  $pdo, $csrf, $uri, e() ya vienen listos desde public/index.php

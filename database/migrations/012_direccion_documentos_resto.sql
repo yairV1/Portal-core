@@ -3,7 +3,7 @@
 -- valores tal cual estaban quemados en cada *.js, solo convertidos a
 -- fecha real. Después de esto, MODULO.docs se puede borrar de cada JS
 -- porque Financiera.php/etc. van a renderizarlo en PHP con estos datos
--- (mismo patrón que ya tiene Gestión_Ins.php).
+-- (mismo patrón que ya tiene Gestion_Ins.php).
 
 -- Sistema de Gestión Integral (direccion_id=2)
 INSERT INTO direccion_documentos (direccion_id, nombre, tipo, version, fecha, orden) VALUES

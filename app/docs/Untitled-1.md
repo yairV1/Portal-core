@@ -14,12 +14,12 @@
                     ├── Financiera.html
                 └── 📁Aplicaciones
                     ├── Aplicaciones.html
-                └── 📁Gestión_Documental
-                └── 📁Gestión_Institucional
-                    ├── Gestión_Ins.html
+                └── 📁Gestion_Documental
+                └── 📁Gestion_Institucional
+                    ├── Gestion_Ins.html
                 └── 📁Home
                     ├── Inicio.html
-                └── 📁Investigacón_Innovación
+                └── 📁Investigacion_Innovacion
                     ├── Investigacion.html
                 └── 📁Mapa_Portal
                     ├── Mapa.html
@@ -27,13 +27,13 @@
                     ├── Normatividad.html
                 └── 📁Novedades
                     ├── Novedades.html
-                └── 📁Sistema_Gestión_Integral
+                └── 📁Sistema_Gestion_Integral
                     ├── Sistema_Integral.html
-                └── 📁Tablero_Estratégicos
+                └── 📁Tablero_Estrategicos
                     ├── Tablero.html
                 └── 📁Talento_Humano
                     ├── Tal_Humano.html
-                └── 📁Vicerrectoría_Académica
+                └── 📁Vicerrectoria_Academica
                     ├── Vicerrectoria.html
     └── 📁config
         ├── database.php
