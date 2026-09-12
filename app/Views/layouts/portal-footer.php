@@ -143,6 +143,25 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['landing'])): ?>
+<script>
+  // Aviso tras guardar/eliminar contenido de la landing (ver
+  // ContenidoLandingController.php, que agrega ?landing=guardado|eliminado|error
+  // al volver a /contenido-landing).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['landing'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      'guardado': { icon: 'success', title: 'Guardado correctamente' },
+      'eliminado': { icon: 'success', title: 'Eliminado correctamente' },
+      'error': { icon: 'error', title: 'No se pudo guardar — revisa los campos obligatorios' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <?php if (isset($_GET['pendiente'])): ?>
 <script>
   // Aviso tras crear/eliminar un pendiente (ver PendienteController.php,
