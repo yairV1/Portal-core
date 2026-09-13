@@ -173,11 +173,22 @@ if (isset($pdo)) {
 
   <div class="sidebar-divider"></div>
 
-  <!-- ── Cerrar sesión ── -->
+  <!-- ── Cerrar sesión ──
+       /logout exige POST+CSRF (ver AuthController.php), así que un <a href>
+       normal ya no sirve — el link dispara el submit de este form oculto. -->
   <div class="sidebar-nav sidebar-nav--logout">
-    <a href="<?= BASE_URL ?>/logout" class="sidebar-item" id="btnCerrarSesion">
+    <a href="#" class="sidebar-item" id="btnCerrarSesion">
       <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Cerrar sesión</span>
     </a>
+    <form id="formCerrarSesion" method="POST" action="<?= BASE_URL ?>/logout" style="display:none">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+    </form>
   </div>
+  <script>
+    document.getElementById('btnCerrarSesion').addEventListener('click', function (e) {
+      e.preventDefault();
+      document.getElementById('formCerrarSesion').submit();
+    });
+  </script>
 
 </aside>

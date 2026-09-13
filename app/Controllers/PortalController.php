@@ -352,7 +352,11 @@ if ($uri === '/calendario') {
     $primerDia = preg_match('/^\d{4}-\d{2}$/', $mesParam)
         ? DateTime::createFromFormat('Y-m-d', $mesParam . '-01')
         : false;
-    if (!$primerDia) {
+    // createFromFormat es permisivo y "rueda" meses fuera de 01-12 en vez de
+    // fallar (ej. 2026-13 -> enero 2027) — el re-chequeo format() === original
+    // es el mismo criterio que ya usan EventoController.php/DocumentoController.php
+    // para rechazar fechas inválidas.
+    if (!$primerDia || $primerDia->format('Y-m-d') !== $mesParam . '-01') {
         $primerDia = new DateTime('first day of this month');
     }
 

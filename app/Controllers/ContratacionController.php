@@ -162,7 +162,12 @@ if ($uri === '/contratacion/enviar') {
     $stmtDoc = $pdo->prepare('INSERT INTO contratacion_documentos (contratacion_id, tipo, archivo) VALUES (:cid, :tipo, :archivo)');
     foreach ($archivosValidos as $clave => $a) {
         $nombreArchivo = 'contratacion_' . $contratacionId . '_' . $clave . '.' . $a['ext'];
-        move_uploaded_file($a['tmp'], $carpetaContrataciones . '/' . $nombreArchivo);
+        if (!move_uploaded_file($a['tmp'], $carpetaContrataciones . '/' . $nombreArchivo)) {
+            // Sin esto quedaría una fila en BD apuntando a un archivo que
+            // nunca se escribió en disco (mismo chequeo que ya hacen
+            // CarpetaController.php y DocumentoController.php en sus /subir).
+            continue;
+        }
         $stmtDoc->execute([':cid' => $contratacionId, ':tipo' => $clave, ':archivo' => $nombreArchivo]);
     }
 

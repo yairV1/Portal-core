@@ -295,9 +295,22 @@ if ($accionCarpeta === 'importar-drive') {
 // ---- /administrativa-financiera/carpetas/descargar (GET) ----
 if ($accionCarpeta === 'descargar') {
     $id = (int) ($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare('SELECT nombre, archivo FROM direccion_carpeta_archivos WHERE id = :id');
+    // A diferencia de crear/subir/importar-drive/eliminar (que reciben el
+    // direccion_id del formulario), acá solo llega el id del archivo por
+    // GET — así que la dirección se resuelve vía JOIN y se valida contra
+    // $rutaPorDireccionId, para no servir un archivo de una dirección que
+    // este controlador ni siquiera gestiona (mismo criterio que 'eliminar').
+    $stmt = $pdo->prepare('
+        SELECT a.nombre, a.archivo, c.direccion_id
+        FROM direccion_carpeta_archivos a
+        JOIN direccion_carpetas c ON c.id = a.carpeta_id
+        WHERE a.id = :id
+    ');
     $stmt->execute([':id' => $id]);
     $fila = $stmt->fetch();
+    if ($fila && !isset($rutaPorDireccionId[$fila['direccion_id']])) {
+        $fila = false;
+    }
 
     $ruta = $fila ? $carpetaStorage . '/' . $fila['archivo'] : null;
     if (!$fila || !is_file($ruta)) {

@@ -115,7 +115,7 @@ if ($uri === '/documentos/crear') {
             ->execute([':did' => $direccionId, ':categoria' => $categoria, ':area' => $area, ':nombre' => $nombre, ':tipo' => $tipo, ':version' => $version, ':fecha' => $fecha]);
     } else {
         $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
-        $stmt = $pdo->prepare('SELECT id FROM direccion_areas WHERE id = :id');
+        $stmt = $pdo->prepare('SELECT id FROM carpetas_documentales WHERE id = :id');
         $stmt->execute([':id' => $carpetaId]);
         if (!$stmt->fetch()) {
             volver_documento($volver, 'error');
