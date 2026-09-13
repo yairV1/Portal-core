@@ -52,7 +52,7 @@
                       <a class="tag tag-accent" href="<?= BASE_URL ?>/documentos/descargar?tipo=direccion&id=<?= (int) $d['id'] ?>">
                         <i class="bi bi-download"></i> Descargar
                       </a>
-                    <?php elseif (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
+                    <?php elseif (usuario_admin_de($direccion['id'] ?? null)): ?>
                       <form action="<?= BASE_URL ?>/documentos/subir" method="post" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center">
                         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                         <input type="hidden" name="tipo" value="direccion">
@@ -71,7 +71,7 @@
               <?php endforeach; endif; ?>
             </tbody>
           </table>
-          <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin' && $direccion): ?>
+          <?php if ($direccion && usuario_admin_de($direccion['id'])): ?>
             <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="modulo-add">
               <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
               <input type="hidden" name="tipo" value="direccion">

@@ -97,6 +97,23 @@ function v(string $rutaRelativa): string {
     return BASE_URL . $rutaRelativa . '?v=' . $version;
 }
 
+// usuario_admin_de(): ¿puede el usuario en sesión administrar (crear/subir/
+// eliminar carpetas y documentos de) esta dirección puntual? Ver migración
+// 036_roles_por_direccion.sql — 'admin' sigue siendo global (todo el
+// portal, igual que siempre); 'admin_direccion' solo puede administrar la
+// única dirección a la que quedó atado al crear su usuario (Panel de
+// Usuarios, ver UsuariosController.php). $direccionId en null (ej. antes
+// de resolver a qué dirección pertenece algo) nunca autoriza a un
+// admin_direccion, solo a un admin global.
+function usuario_admin_de(?int $direccionId): bool {
+    $rol = $_SESSION['usuario_rol'] ?? '';
+    if ($rol === 'admin') return true;
+    if ($rol === 'admin_direccion' && $direccionId !== null) {
+        return (int) ($_SESSION['usuario_direccion_id'] ?? 0) === $direccionId;
+    }
+    return false;
+}
+
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)
 require ROOT_PATH . '/config/database.php';
 

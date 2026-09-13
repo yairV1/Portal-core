@@ -81,7 +81,12 @@ if ($uri === '/documentos/crear') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         volver_documento($volver);
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    // direccion_documentos (esDireccion) se puede delegar a un
+    // admin_direccion atado a esa misma dirección (ver migración 036);
+    // archivos_documentales (Gestión Documental) sigue solo para admin
+    // global — no tiene direccion_id, así que usuario_admin_de(null) ya
+    // exige 'admin' de por sí.
+    if (!usuario_admin_de($esDireccion ? (int) ($_POST['direccion_id'] ?? 0) : null)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -134,27 +139,26 @@ if ($uri === '/documentos/subir') {
         volver_documento($volver);
     }
 
-    // Subir es una acción administrativa (mismo criterio que el resto del
-    // portal hoy: rol admin/usuario, sin niveles de acceso todavía — eso
-    // vive en el módulo de áreas y permisos, pendiente).
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $archivoId = (int) ($_POST['archivo_id'] ?? 0);
+    // area/direccion_id vienen de la fila misma (si es direccion_documentos)
+    // — más confiable que confiar en lo que mande el formulario, y hace
+    // falta el direccion_id real para saber si un admin_direccion puede
+    // subir acá (ver migración 036).
+    $campoArea = $esDireccion ? ', area, direccion_id' : '';
+    $stmt = $pdo->prepare("SELECT id{$campoArea} FROM {$TABLA} WHERE id = :id");
+    $stmt->execute([':id' => $archivoId]);
+    $filaDoc = $stmt->fetch();
+    if (!$filaDoc) {
+        volver_documento($volver, 'error');
+    }
+
+    if (!usuario_admin_de($esDireccion ? (int) $filaDoc['direccion_id'] : null)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
     }
 
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        volver_documento($volver, 'error');
-    }
-
-    $archivoId = (int) ($_POST['archivo_id'] ?? 0);
-    // area viene de la fila misma (si es direccion_documentos) — más
-    // confiable que confiar en lo que mande el formulario.
-    $campoArea = $esDireccion ? ', area' : '';
-    $stmt = $pdo->prepare("SELECT id{$campoArea} FROM {$TABLA} WHERE id = :id");
-    $stmt->execute([':id' => $archivoId]);
-    $filaDoc = $stmt->fetch();
-    if (!$filaDoc) {
         volver_documento($volver, 'error');
     }
     $area = $esDireccion ? $filaDoc['area'] : null;

@@ -136,10 +136,17 @@ document.addEventListener('DOMContentLoaded', function () {
   // portal-footer.php). El aviso de "sesión cerrada" ya lo muestra
   // login.php al volver, vía el ?salida=1 que agrega AuthController.
   const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-  if (btnCerrarSesion) {
+  const formCerrarSesion = document.getElementById('formCerrarSesion');
+  if (btnCerrarSesion && formCerrarSesion) {
     btnCerrarSesion.addEventListener('click', function (e) {
-      if (typeof SwalBrand === 'undefined') return; // sin SweetAlert2, deja el enlace normal
       e.preventDefault();
+      // /logout exige POST+CSRF (ver AuthController.php) — el link ya no
+      // tiene una URL real que navegar, así que en ambas ramas el logout
+      // de verdad ocurre enviando #formCerrarSesion.
+      if (typeof SwalBrand === 'undefined') {
+        formCerrarSesion.submit(); // sin SweetAlert2, cierra sesión directo
+        return;
+      }
       SwalBrand.fire({
         icon: 'question',
         title: '¿Cerrar sesión?',
@@ -150,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cancelButtonText: 'Cancelar'
       }).then(function (resultado) {
         if (resultado.isConfirmed) {
-          window.location.href = btnCerrarSesion.href;
+          formCerrarSesion.submit();
         }
       });
     });

@@ -84,8 +84,6 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
           </svg>
           <span>Continuar con Google</span>
         </a>
-
-        <a href="<?= BASE_URL ?>/horario" class="core-auth-link">Consultar mi horario sin iniciar sesión</a>
       </form>
     </div>
 

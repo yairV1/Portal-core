@@ -68,6 +68,26 @@ body[data-tema="oscuro"]{
   --color-info:    #6fb3ec; --color-info-bg:    rgba(111,179,236,.16);
 }
 
+/* SweetAlert2 (avisos de "cerrar sesión", bienvenida, guardado, etc. — ver
+   portal-footer.php) trae su propio tema claro por defecto, ajeno a
+   data-tema — sin esto el toast queda con fondo blanco fijo mientras el
+   resto de la página ya cambió a oscuro. Mismas variables que el resto del
+   sitio para que se vea como una pieza más del sistema, no un parche. */
+body[data-tema="oscuro"] .swal2-popup{
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+body[data-tema="oscuro"] .swal2-title,
+body[data-tema="oscuro"] .swal2-html-container{
+  color: var(--color-text);
+}
+body[data-tema="oscuro"] .swal2-popup.swal2-toast{
+  box-shadow: var(--shadow-hover);
+}
+body[data-tema="oscuro"] .swal2-timer-progress-bar{
+  background: var(--color-accent-200);
+}
+
 *{ box-sizing: border-box; }
 body{ margin:0; font-family: var(--font-heading); background: var(--color-bg); color: var(--color-text); transition: background .15s ease, color .15s ease; }
 

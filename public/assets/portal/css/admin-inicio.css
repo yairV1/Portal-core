@@ -1,0 +1,29 @@
+/* ══════════════════════════════════════════════════════════
+   admin-inicio.css — Centro de administración (Home/InicioAdmin.php)
+   Complementa inicio.css (reusa .hero/.kicker/.pendiente-* tal cual) —
+   acá solo el layout de 2 columnas (Soportes / Mis pendientes) y el
+   detalle propio de Soportes (etiqueta Fallo/Mejora, radios de tipo).
+   ══════════════════════════════════════════════════════════ */
+
+.hero-main p a { color: #fff; text-decoration: underline; font-weight: 600; }
+.hero-main p a:hover { opacity: .85; }
+
+.admin-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 36px;
+  align-items: start;
+}
+
+.soporte-tag { margin-right: 8px; vertical-align: middle; }
+
+.soporte-tipo-radios {
+  display: flex; gap: 16px; font-size: 13px; padding: 2px 0;
+}
+.soporte-tipo-radios label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.soporte-tipo-radios input { accent-color: var(--color-accent); }
+
+@media (max-width: 880px) {
+  .admin-two-col { grid-template-columns: 1fr; gap: 32px; }
+}

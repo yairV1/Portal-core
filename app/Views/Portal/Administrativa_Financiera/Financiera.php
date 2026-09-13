@@ -1,7 +1,7 @@
 <?php
 $titulo = 'Administrativa y Financiera';
 require ROOT_PATH . '/app/Views/layouts/portal-header.php';
-$esAdminDoc = ($_SESSION['usuario_rol'] ?? '') === 'admin';
+$esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 // Copys de respaldo para el hero — nunca pisan $moduloTitulo/$moduloDesc si
 // ya tienen contenido real cargado desde Contenido Landing/BD; solo llenan
 // el vacío mientras nadie los ha escrito.
@@ -40,11 +40,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
       <i class="bi bi-search"></i>
       <input type="text" name="buscar" value="<?= e($terminoBusqueda) ?>" placeholder="Buscar documentos...">
     </form>
-    <?php if ($esAdminDoc): ?>
-      <a href="#doc-agregar" class="doc-btn doc-btn--primary">
-        <i class="bi bi-upload"></i> Subir archivo
-      </a>
-    <?php endif; ?>
+    <?php $rutaModuloActual = '/administrativa-financiera'; require ROOT_PATH . '/app/Views/Portal/_shared/_agregar_documento.php'; ?>
   </div>
 
   <?php if ($terminoBusqueda !== ''): ?>
@@ -133,7 +129,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
       </div>
     <?php endif; ?>
 
-    <div class="doc-section-head" id="doc-agregar"><h4>Archivos recientes</h4></div>
+    <div class="doc-section-head"><h4>Archivos recientes</h4></div>
     <?php if (!$archivosRecientes): ?>
       <div class="empty-state">
         <div class="ic"><i class="bi bi-file-earmark-text"></i></div>
@@ -210,35 +206,6 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
-
-      <div class="doc-section-head doc-section-head--spaced"><h4>Agregar un archivo suelto</h4><span class="text-muted">Sin carpeta — para eso están las categorías de arriba</span></div>
-      <div class="doc-add-grid">
-        <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="doc-add-card">
-          <span class="doc-add-card__title">Documento</span>
-          <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-          <input type="hidden" name="tipo" value="direccion">
-          <input type="hidden" name="volver" value="/administrativa-financiera">
-          <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
-          <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
-          <input type="text" name="nombre" placeholder="Nombre" required class="doc-input">
-          <input type="text" name="tipo_doc" placeholder="Tipo" class="doc-input">
-          <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" class="doc-input">
-          <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-plus-lg"></i> Agregar</button>
-        </form>
-        <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="doc-add-card">
-          <span class="doc-add-card__title">Formato (plantilla en blanco)</span>
-          <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-          <input type="hidden" name="tipo" value="direccion">
-          <input type="hidden" name="categoria" value="formato">
-          <input type="hidden" name="volver" value="/administrativa-financiera">
-          <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
-          <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
-          <input type="text" name="nombre" placeholder="Nombre" required class="doc-input">
-          <input type="text" name="tipo_doc" placeholder="Tipo" class="doc-input">
-          <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" class="doc-input">
-          <button type="submit" class="doc-btn doc-btn--secondary"><i class="bi bi-plus-lg"></i> Agregar</button>
-        </form>
-      </div>
     <?php endif; ?>
 
   <?php endif; ?>

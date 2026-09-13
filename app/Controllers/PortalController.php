@@ -138,7 +138,7 @@ if (!empty($modulo['slug'])) {
 // se muestra el panel principal (categorías + recientes + búsqueda).
 // Financiera además tiene pestañas Administración/Finanzas (area) — Talento
 // Humano no las usa (siempre 'administracion'), pero comparte la columna.
-$MODULOS_CON_CENTRO_DOCUMENTAL = ['financiera', 'talento-humano'];
+$MODULOS_CON_CENTRO_DOCUMENTAL = ['financiera', 'talento-humano', 'institucional', 'sgi', 'academica', 'investigacion'];
 if (!empty($modulo['slug']) && in_array($modulo['slug'], $MODULOS_CON_CENTRO_DOCUMENTAL, true) && $direccion) {
     $carpetaIdPedida = isset($_GET['carpeta']) ? (int) $_GET['carpeta'] : null;
 

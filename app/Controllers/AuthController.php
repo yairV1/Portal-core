@@ -130,7 +130,7 @@ if ($uri === '/auth/google/callback') {
 
     $correo = trim(strtolower($perfil['email']));
 
-    $stmt = $pdo->prepare('SELECT id, nombre, correo, cargo, rol, foto FROM usuarios WHERE correo = :correo');
+    $stmt = $pdo->prepare('SELECT id, nombre, correo, cargo, rol, direccion_id, foto FROM usuarios WHERE correo = :correo');
     $stmt->execute([':correo' => $correo]);
     $usuario = $stmt->fetch();
 
@@ -140,13 +140,14 @@ if ($uri === '/auth/google/callback') {
     }
 
     session_regenerate_id(true);
-    $_SESSION['usuario_id']       = $usuario['id'];
-    $_SESSION['usuario_nombre']   = $usuario['nombre'];
-    $_SESSION['usuario_correo']   = $usuario['correo'];
-    $_SESSION['usuario_cargo']    = $usuario['cargo'];
-    $_SESSION['usuario_rol']      = $usuario['rol'];
-    $_SESSION['usuario_foto']     = $usuario['foto'];
-    $_SESSION['ultima_actividad'] = time();
+    $_SESSION['usuario_id']          = $usuario['id'];
+    $_SESSION['usuario_nombre']      = $usuario['nombre'];
+    $_SESSION['usuario_correo']      = $usuario['correo'];
+    $_SESSION['usuario_cargo']       = $usuario['cargo'];
+    $_SESSION['usuario_rol']         = $usuario['rol'];
+    $_SESSION['usuario_direccion_id'] = $usuario['direccion_id'];
+    $_SESSION['usuario_foto']        = $usuario['foto'];
+    $_SESSION['ultima_actividad']    = time();
 
     header('Location: ' . BASE_URL . '/?bienvenida=1');
     exit;
@@ -180,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $correo   = trim(strtolower($_POST['correo'] ?? ''));
         $password = $_POST['password'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT id, nombre, correo, password_hash, cargo, rol, foto FROM usuarios WHERE correo = :correo");
+        $stmt = $pdo->prepare("SELECT id, nombre, correo, password_hash, cargo, rol, direccion_id, foto FROM usuarios WHERE correo = :correo");
         $stmt->execute([':correo' => $correo]);
         $usuario = $stmt->fetch();
 
@@ -207,13 +208,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare('DELETE FROM intentos_login WHERE ip = :ip')->execute([':ip' => $ip]);
 
             session_regenerate_id(true);
-            $_SESSION['usuario_id']       = $usuario['id'];
-            $_SESSION['usuario_nombre']   = $usuario['nombre'];
-            $_SESSION['usuario_correo']   = $usuario['correo'];
-            $_SESSION['usuario_cargo']    = $usuario['cargo'];
-            $_SESSION['usuario_rol']      = $usuario['rol'];
-            $_SESSION['usuario_foto']     = $usuario['foto'];
-            $_SESSION['ultima_actividad'] = time();
+            $_SESSION['usuario_id']          = $usuario['id'];
+            $_SESSION['usuario_nombre']      = $usuario['nombre'];
+            $_SESSION['usuario_correo']      = $usuario['correo'];
+            $_SESSION['usuario_cargo']       = $usuario['cargo'];
+            $_SESSION['usuario_rol']         = $usuario['rol'];
+            $_SESSION['usuario_direccion_id'] = $usuario['direccion_id'];
+            $_SESSION['usuario_foto']        = $usuario['foto'];
+            $_SESSION['ultima_actividad']    = time();
 
             // El ?bienvenida=1 le dice a portal-footer.php que muestre el
             // aviso de bienvenida con SweetAlert2 (ver ese archivo).

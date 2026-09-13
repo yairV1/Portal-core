@@ -1,7 +1,7 @@
 <?php
 $titulo = 'Talento Humano';
 require ROOT_PATH . '/app/Views/layouts/portal-header.php';
-$esAdminDoc = ($_SESSION['usuario_rol'] ?? '') === 'admin';
+$esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/modulo-generico.css') ?>">
 <link rel="stylesheet" href="<?= v('/assets/portal/css/centro-documental.css') ?>">
