@@ -184,11 +184,8 @@ if (isset($pdo)) {
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     </form>
   </div>
-  <script>
-    document.getElementById('btnCerrarSesion').addEventListener('click', function (e) {
-      e.preventDefault();
-      document.getElementById('formCerrarSesion').submit();
-    });
-  </script>
+  <!-- El click de #btnCerrarSesion lo maneja paneles.js (confirmación con
+       SweetAlert2 antes de enviar #formCerrarSesion) — nada acá, para no
+       registrar dos listeners sobre el mismo botón. -->
 
 </aside>

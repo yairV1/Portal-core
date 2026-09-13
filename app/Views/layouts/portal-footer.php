@@ -82,6 +82,30 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['usuarios'])): ?>
+<script>
+  // Aviso tras crear/editar/eliminar un usuario (ver UsuariosController.php,
+  // que agrega ?usuarios=... al volver a "/usuarios").
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['usuarios'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      'creado': { icon: 'success', title: 'Usuario creado' },
+      'actualizado': { icon: 'success', title: 'Usuario actualizado' },
+      'eliminado': { icon: 'success', title: 'Usuario eliminado' },
+      'datos': { icon: 'error', title: 'Revisa el correo y que la contraseña tenga al menos 8 caracteres' },
+      'direccion': { icon: 'error', title: 'Falta elegir la dirección para ese rol' },
+      'correo_existente': { icon: 'error', title: 'Ya existe un usuario con ese correo' },
+      'auto_rol': { icon: 'error', title: 'No puedes quitarte a ti mismo el rol de administrador global' },
+      'auto_eliminar': { icon: 'error', title: 'No puedes eliminar tu propio usuario' },
+      'error': { icon: 'error', title: 'No se pudo completar la acción' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <?php if (isset($_GET['doc'])): ?>
 <script>
   // Aviso tras subir un documento (ver DocumentoController.php, que agrega
@@ -169,6 +193,24 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['soporte'])): ?>
+<script>
+  // Aviso tras crear/eliminar un soporte (ver SoportesController.php, que
+  // agrega ?soporte=1|eliminado|error al volver a Inicio).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['soporte'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      '1': { icon: 'success', title: 'Soporte agregado' },
+      'eliminado': { icon: 'success', title: 'Soporte eliminado' },
+      'error': { icon: 'error', title: 'No se pudo guardar el soporte' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <?php if (isset($_GET['pendiente'])): ?>
 <script>
   // Aviso tras crear/eliminar un pendiente (ver PendienteController.php,
@@ -189,5 +231,7 @@
 
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
+<script src="<?= v('/assets/portal/js/fluid-orb.js') ?>"></script>
+<script src="<?= v('/assets/portal/js/doc-modal.js') ?>"></script>
 </body>
 </html>

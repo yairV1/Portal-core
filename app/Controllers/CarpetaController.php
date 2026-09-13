@@ -42,7 +42,14 @@ $MIME_PERMITIDOS = [
 
 // A qué URL de módulo volver según la dirección — agregar acá el día que
 // se active el explorador en otra dirección (ej. 'sgi' => '/sgi').
-$mapaSlugRuta = ['financiera' => '/administrativa-financiera', 'talento-humano' => '/talento-humano'];
+$mapaSlugRuta = [
+    'financiera'     => '/administrativa-financiera',
+    'talento-humano' => '/talento-humano',
+    'institucional'  => '/gestion-institucional',
+    'sgi'            => '/sgi',
+    'academica'      => '/vicerrectoria-academica',
+    'investigacion'  => '/investigacion-innovacion',
+];
 $rutaPorDireccionId = [];
 foreach ($pdo->query('SELECT id, slug FROM direcciones')->fetchAll() as $d) {
     if (isset($mapaSlugRuta[$d['slug']])) {
@@ -89,7 +96,8 @@ if ($accionCarpeta === 'crear') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -99,7 +107,6 @@ if ($accionCarpeta === 'crear') {
         exit;
     }
 
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
     $parentId = ($_POST['carpeta_id'] ?? '') !== '' ? (int) $_POST['carpeta_id'] : null;
     $nombre = trim($_POST['nombre'] ?? '');
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
@@ -134,7 +141,8 @@ if ($accionCarpeta === 'subir') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -144,7 +152,6 @@ if ($accionCarpeta === 'subir') {
         exit;
     }
 
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
     $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
 
@@ -214,7 +221,8 @@ if ($accionCarpeta === 'importar-drive') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -224,7 +232,6 @@ if ($accionCarpeta === 'importar-drive') {
         exit;
     }
 
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
     $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
 
@@ -348,7 +355,8 @@ if ($accionCarpeta === 'eliminar') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -358,7 +366,6 @@ if ($accionCarpeta === 'eliminar') {
         exit;
     }
 
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
 
     if (!empty($_POST['archivo_id'])) {

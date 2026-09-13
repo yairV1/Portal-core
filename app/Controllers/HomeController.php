@@ -21,11 +21,47 @@ if (empty($_SESSION['usuario_id'])) {
 
 $titulo = 'Inicio';
 
+$MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+// ── Centro de administración: el admin global no ve el dashboard "mi día"
+// de un usuario normal (hero/KPIs/accesos/documentos recientes/novedades)
+// — ve solo dos cosas: Soportes (su bitácora de fallos/mejoras del
+// sistema) y Mis pendientes, ver Home/InicioAdmin.php. Reemplazo
+// completo, no una sección agregada.
+if (($_SESSION['usuario_rol'] ?? '') === 'admin') {
+    // Soportes: bitácora técnica del admin (fallos/mejoras del propio
+    // sistema, ver migración 040_soportes.sql) — mismo criterio de orden
+    // que "Mis pendientes" (los resueltos se van al final).
+    $soportes = [];
+    $stmt = $pdo->query('SELECT id, titulo, descripcion, tipo, resuelto FROM soportes ORDER BY resuelto ASC, id DESC');
+    foreach ($stmt->fetchAll() as $r) {
+        $soportes[] = [
+            'id' => $r['id'], 'titulo' => $r['titulo'], 'descripcion' => $r['descripcion'],
+            'tipo' => $r['tipo'], 'resuelto' => (bool) $r['resuelto'],
+        ];
+    }
+
+    // Mis pendientes personales — el admin también es una persona con su
+    // propio to-do, no solo un rol (mismo query que ya usa el dashboard
+    // normal, ver más abajo).
+    $pdo->exec("DELETE FROM pendientes WHERE completado = 1 AND completado_en < DATE_SUB(NOW(), INTERVAL 1 MONTH)");
+    $misPendientes = [];
+    $stmt = $pdo->prepare('SELECT id, titulo, meta, color, completado FROM pendientes WHERE usuario_id = :usuario_id ORDER BY completado ASC, id DESC');
+    $stmt->execute([':usuario_id' => $_SESSION['usuario_id']]);
+    foreach ($stmt->fetchAll() as $r) {
+        $misPendientes[] = [
+            'id' => $r['id'], 'titulo' => $r['titulo'], 'meta' => $r['meta'],
+            'color' => $r['color'] ?: '#9e1f63', 'completado' => (bool) $r['completado'],
+        ];
+    }
+
+    require ROOT_PATH . '/app/Views/Portal/Home/InicioAdmin.php';
+    exit;
+}
+
 // Datos reales del dashboard (ver database/migrations/002_kpis_e_iconos.sql).
 // inicio.js espera cada arreglo con la misma forma que antes tenía
 // hardcodeada — acá solo se arma esa misma forma desde $pdo.
-
-$MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
 // Avance PDI: fila protagonista del hero, aparte de la franja de KPIs.
 $stmt = $pdo->prepare("SELECT valor, delta FROM kpis WHERE label = 'Avance PDI' LIMIT 1");
