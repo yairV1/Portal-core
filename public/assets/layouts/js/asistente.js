@@ -61,7 +61,10 @@ document.addEventListener('DOMContentLoaded', function () {
       return { texto: '¡Con gusto! Acá ando si necesitas algo más. 🐿️' };
     }
     if (q.indexOf('cerrar sesion') !== -1 || q === 'salir') {
-      return { texto: 'Te llevo a cerrar sesión…', redirigir: base + '/logout' };
+      // /logout exige POST+CSRF (ver AuthController.php) — no es una URL a
+      // la que se pueda navegar directo, así que se marca aparte de
+      // "redirigir" y se envía el form oculto del sidebar (ver sidebar.php).
+      return { texto: 'Te llevo a cerrar sesión…', logout: true };
     }
     var destino = buscarDestino(pregunta);
     if (destino) {
@@ -147,7 +150,12 @@ document.addEventListener('DOMContentLoaded', function () {
         agregarMensaje(r.texto, 'bot');
         // Coincidencia encontrada: redirige directo, como un acceso rápido
         // (deja ver el mensaje un momento antes de navegar).
-        if (r.redirigir) {
+        if (r.logout) {
+          setTimeout(function () {
+            var f = document.getElementById('formCerrarSesion');
+            if (f) f.submit();
+          }, 700);
+        } else if (r.redirigir) {
           setTimeout(function () { window.location.href = r.redirigir; }, 700);
         }
       }, 450 + Math.random() * 400);

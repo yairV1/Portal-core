@@ -67,6 +67,18 @@ if (!empty($_FILES['foto']['tmp_name']) && $_FILES['foto']['error'] === UPLOAD_E
         header('Location: ' . BASE_URL . '/?perfil=error');
         exit;
     }
+    // Si la foto anterior tenía otra extensión (ej. jpg -> png), el nombre
+    // nuevo no la pisa — sin esto quedaba huérfana en public/uploads/perfiles/
+    // para siempre.
+    foreach ($extensiones as $ext) {
+        if ($ext === $extensiones[$info[2]]) {
+            continue;
+        }
+        $anterior = $carpeta . '/usuario_' . (int)$_SESSION['usuario_id'] . '.' . $ext;
+        if (is_file($anterior)) {
+            unlink($anterior);
+        }
+    }
     $foto = '/uploads/perfiles/' . $archivo;
 }
 

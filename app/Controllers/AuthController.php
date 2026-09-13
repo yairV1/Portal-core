@@ -6,6 +6,13 @@
 
 // ---- /logout ----
 if ($uri === '/logout') {
+    // POST + CSRF, igual que cualquier otra acción que cambia estado — sin
+    // esto, un GET simple (ej. un <img>/link en un sitio externo) podía
+    // cerrarle la sesión a un usuario logueado sin que él lo pidiera.
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+        header('Location: ' . BASE_URL . '/');
+        exit;
+    }
     $_SESSION = [];
     session_destroy();
     // El ?salida=1 le dice a login.php que muestre el aviso de "sesión
