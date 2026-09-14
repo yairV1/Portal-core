@@ -6,10 +6,14 @@
 //   antes de este require (config/local.php ya está gitignorado).
 // Usa el usuario dedicado 'portal_user' (creado en MySQL), nunca 'root'.
 
-$DB_HOST = getenv('DB_HOST') ?: '127.0.0.1';
-$DB_NAME = getenv('DB_NAME') ?: 'portal_core';
-$DB_USER = getenv('DB_USER') ?: 'portal_user';
-$DB_PASS = getenv('DB_PASS') ?: null;
+$configLocal = is_file(__DIR__ . '/database.local.php')
+    ? require __DIR__ . '/database.local.php'
+    : [];
+
+$DB_HOST = getenv('DB_HOST') ?: ($configLocal['host'] ?? '127.0.0.1');
+$DB_NAME = getenv('DB_NAME') ?: ($configLocal['name'] ?? 'portal_core');
+$DB_USER = getenv('DB_USER') ?: ($configLocal['user'] ?? 'portal_user');
+$DB_PASS = getenv('DB_PASS') ?: ($configLocal['pass'] ?? null);
 
 if ($DB_PASS === null) {
     die('Falta configurar DB_PASS. Con Docker: revisa tu .env. Sin Docker: exporta la variable de entorno o defínela en config/local.php antes de este archivo.');
