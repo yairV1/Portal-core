@@ -29,9 +29,9 @@
 La aplicación queda en `http://localhost:8080` y phpMyAdmin en
 `http://localhost:8081` (o en los puertos configurados en `.env`). MySQL
 ejecuta automáticamente las migraciones numeradas al crear por primera vez el
-volumen `db_data`. El repositorio contiene migraciones `001` a `029`, que se
+volumen `db_data`. El repositorio contiene migraciones `000` a `040`, que se
 ejecutan en orden sobre un esquema base compatible. Las migraciones `020` a
-`029` incluyen los avances más recientes del portal. La `029` guarda en MySQL
+`040` incluyen los avances más recientes del portal. La `029` guarda en MySQL
 el contenido institucional de la portada pública (módulos, roles, pasos,
 estadísticas y textos), para que ya no haya que editar la vista para
 actualizar esa información.
@@ -80,7 +80,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-rec
 
 Las migraciones nuevas no se ejecutan automáticamente sobre un `db_data` que
 ya existe. Después de crear, por ejemplo,
-`database/migrations/020_nueva_migracion.sql`, ejecútala desde la raíz del
+`database/migrations/041_nueva_migracion.sql`, ejecútala desde la raíz del
 proyecto:
 
 ```sh
@@ -88,7 +88,7 @@ set -a
 . ./.env
 set +a
 docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
-  < database/migrations/020_nueva_migracion.sql
+   < database/migrations/041_nueva_migracion.sql
 ```
 
 ## Producción

@@ -5,6 +5,8 @@
 // ══════════════════════════════════════════════════════════
 
 return [
+    '/error/403'            => 'ErrorController.php',
+    '/error/500'            => 'ErrorController.php',
     '/login'                => 'AuthController.php',
     '/logout'               => 'AuthController.php',
     '/auth/google'          => 'AuthController.php',

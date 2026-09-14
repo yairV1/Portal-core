@@ -18,7 +18,23 @@ foreach (['core-mascota.webp', 'core-mascota.png'] as $candidato) {
 require ROOT_PATH . '/app/Views/layouts/header.php';
 ?>
 
+<script>
+  (function () {
+    try {
+      var elegido = localStorage.getItem('tema');
+      var tema = (elegido === 'claro' || elegido === 'oscuro')
+        ? elegido
+        : (new Date().getHours() >= 6 && new Date().getHours() < 18 ? 'claro' : 'oscuro');
+      if (tema === 'oscuro') document.body.dataset.tema = 'oscuro';
+    } catch (e) {}
+  })();
+</script>
+
 <div class="auth-shell">
+  <button type="button" class="auth-theme-toggle" id="btnLoginTheme" title="Modo claro / oscuro" aria-label="Cambiar modo de color">
+    <i class="fa-regular fa-moon auth-theme-icon-claro" aria-hidden="true"></i>
+    <i class="fa-regular fa-sun auth-theme-icon-oscuro" aria-hidden="true"></i>
+  </button>
   <!-- ── Agua interactiva de fondo (toda la pantalla, detrás de la tarjeta):
        canvas + JS vanilla, sin librerías 3D. Reacciona al mouse y también
        ondula sola de a poco para que la pantalla nunca se vea "vacía" en
@@ -99,6 +115,15 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
 <script src="<?= BASE_URL ?>/assets/login/water-bg.js" defer></script>
 <script>
   (function () {
+    var btnLoginTheme = document.getElementById('btnLoginTheme');
+    if (btnLoginTheme) {
+      btnLoginTheme.addEventListener('click', function () {
+        var oscuro = document.body.dataset.tema !== 'oscuro';
+        document.body.dataset.tema = oscuro ? 'oscuro' : 'claro';
+        try { localStorage.setItem('tema', oscuro ? 'oscuro' : 'claro'); } catch (e) {}
+      });
+    }
+
     // Mostrar/ocultar contraseña — botón real (no solo ícono decorativo),
     // con aria-label que refleja la acción disponible, no el estado actual.
     var loginPassword = document.getElementById('loginPassword');

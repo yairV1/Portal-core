@@ -520,6 +520,72 @@ a.card:hover {
   background: linear-gradient(160deg, var(--auth-dark-1) 0%, var(--auth-dark-2) 55%, var(--sec-dark) 130%);
 }
 
+.auth-theme-toggle {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 5;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 50%;
+  background: rgba(21, 10, 36, .55);
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.auth-theme-toggle:hover {
+  background: rgba(158, 31, 99, .85);
+  transform: translateY(-1px);
+}
+
+.auth-theme-icon-oscuro,
+body[data-tema="oscuro"] .auth-theme-icon-claro {
+  display: none;
+}
+
+body[data-tema="oscuro"] .auth-theme-icon-oscuro {
+  display: inline;
+}
+
+body[data-tema="oscuro"] .auth-shell {
+  background: linear-gradient(160deg, #08050f 0%, #160b24 55%, #56210d 130%);
+}
+
+body[data-tema="oscuro"] .core-auth-form-panel {
+  background: #1d1827;
+}
+
+body[data-tema="oscuro"] .core-auth-form h1 {
+  color: #fff;
+}
+
+body[data-tema="oscuro"] .core-auth-form-sub,
+body[data-tema="oscuro"] .core-auth-field label {
+  color: #c9c2d5;
+}
+
+body[data-tema="oscuro"] .core-auth-field input {
+  border-color: #514762;
+  background: #2a2337;
+  color: #fff;
+}
+
+body[data-tema="oscuro"] .core-auth-field input::placeholder {
+  color: #aaa1b8;
+}
+
+body[data-tema="oscuro"] .core-auth-google {
+  border-color: #514762;
+  background: #2a2337;
+  color: #fff;
+}
+
+body[data-tema="oscuro"] .core-auth-google:hover {
+  background: #352d45;
+}
+
 .auth-water-canvas {
   position: fixed;
   inset: 0;

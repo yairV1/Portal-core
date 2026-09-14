@@ -45,7 +45,7 @@ services:
       - db_data:/var/lib/mysql
       # Solo se ejecutan la PRIMERA vez que el volumen db_data está vacío
       # (comportamiento estándar de la imagen mysql) — recrean el esquema
-      # completo migración por migración, en orden (001...017).
+      # completo migración por migración, en orden (000...040).
       - ./database/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
