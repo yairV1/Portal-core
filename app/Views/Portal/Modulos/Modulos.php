@@ -70,6 +70,18 @@
       <span class="nombre">Aplicaciones</span>
     </a>
   </article>
+  <article class="doc-categoria-card">
+    <a href="<?= BASE_URL ?>/directorio" class="doc-categoria-link">
+      <span class="ic"><i class="bi bi-person-badge"></i></span>
+      <span class="nombre">Directorio</span>
+    </a>
+  </article>
+  <article class="doc-categoria-card">
+    <a href="<?= BASE_URL ?>/calendario" class="doc-categoria-link">
+      <span class="ic"><i class="bi bi-calendar3"></i></span>
+      <span class="nombre">Calendario</span>
+    </a>
+  </article>
 </div>
 
 <div class="section-head" style="margin-top:32px"><h4>Analítica</h4></div>

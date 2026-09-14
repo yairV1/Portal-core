@@ -91,6 +91,23 @@ docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
    < database/migrations/041_nueva_migracion.sql
 ```
 
+Antes de desplegar código que dependa de una migración, confirma primero que
+su estructura existe. Por ejemplo, las versiones que agregan roles por
+dirección y la bitácora del panel se aplican así:
+
+```sh
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  < database/migrations/036_roles_por_direccion.sql
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  < database/migrations/040_soportes.sql
+```
+
+No ejecutes dos veces una migración que contenga `ALTER TABLE` o inserciones
+con IDs únicos. En una base que ya recibió parte de una migración, revisa
+primero el esquema y aplica únicamente las pendientes. En instalaciones
+nuevas, Docker sí ejecuta todos los archivos montados en
+`/docker-entrypoint-initdb.d` al crear el volumen por primera vez.
+
 ## Producción
 
 En producción no uses el overlay de desarrollo: el código queda horneado en la

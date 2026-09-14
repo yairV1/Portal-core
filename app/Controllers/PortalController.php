@@ -45,6 +45,27 @@ if (!$modulo) {
 
 $titulo = $modulo['titulo'];
 
+// Las vistas de los módulos documentales también deben poder renderizarse
+// cuando todavía no existe la fila de configuración de su dirección.
+$direccion = null;
+$moduloKicker = '';
+$moduloTitulo = $titulo;
+$moduloDesc = '';
+$moduloKpis = [];
+$moduloAreas = [];
+$moduloDocumentos = [];
+$moduloFormatos = [];
+$moduloResponsables = [];
+$moduloSoftware = [];
+$carpetaActual = null;
+$carpetaIdActual = null;
+$rutaCarpetas = [];
+$subcarpetas = [];
+$archivosCarpeta = [];
+$archivosRecientes = [];
+$terminoBusqueda = '';
+$resultadosBusqueda = null;
+
 // ── Módulo genérico de dirección (6 rutas comparten esta única consulta,
 //    parametrizada por slug — ver database/migrations/002_kpis_e_iconos.sql
 //    y las tablas direcciones/direccion_kpis/direccion_areas/
