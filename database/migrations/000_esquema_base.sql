@@ -5,11 +5,11 @@
 -- "000_usuarios.sql" (ver SEGUIMIENTO.md, Problema 2 y Problema 4) que se
 -- corrigió en la máquina de un compañero pero nunca se commiteó al repo.
 -- Sin este archivo, una base de datos nueva no tiene ni siquiera la tabla
--- `usuarios`, y las migraciones 001-034 (que solo hacen ALTER TABLE/INSERT/
+-- `usuarios`, y las migraciones 001-040 (que solo hacen ALTER TABLE/INSERT/
 -- UPDATE sobre tablas que dan por hechas) fallan desde la primera.
 --
 -- RECONSTRUCCIÓN: se leyeron completas las 34 migraciones existentes
--- (database/migrations/001_*.sql .. 034_*.sql) y los 12 controladores de
+-- (database/migrations/001_*.sql .. 040_*.sql) y los 12 controladores de
 -- app/Controllers/*.php (más app/Views/layouts/sidebar.php, la única vista
 -- que consulta $pdo directamente) para inferir, de cada tabla que NUNCA
 -- aparece en un CREATE TABLE dentro de 001-034, sus columnas base: las que
