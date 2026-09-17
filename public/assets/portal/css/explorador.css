@@ -29,6 +29,10 @@
   position:absolute; bottom:8px; right:8px; opacity:.5; font-size:.85rem;
 }
 .explorador-item-borrar:hover{ opacity:1 }
+.explorador-item-editar{
+  position:absolute; bottom:8px; left:8px; opacity:.5; font-size:.85rem;
+}
+.explorador-item-editar:hover{ opacity:1 }
 .explorador-item span{ word-break:break-word; line-height:1.25 }
 .explorador-delete-folder{ margin-top:18px }
 

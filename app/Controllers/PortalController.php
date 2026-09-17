@@ -11,6 +11,12 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+// onlyoffice_configurado()/onlyoffice_editable() — las vistas de este
+// controlador (Financiera.php/Tal_Humano.php/Documental.php...) los usan
+// para decidir si muestran el botón "Editar"/"Abrir" del editor de Office
+// (ver EditorController.php).
+require_once ROOT_PATH . '/app/Helpers/OnlyOffice.php';
+
 $modulos = [
     '/cuadro-mando-integral'      => ['titulo' => 'Cuadro de Mando Integral',    'vista' => 'Tablero_Estrategicos/Tablero.php'],
     // Perspectivas del CMI: rutas propias y vacías (sin fila en

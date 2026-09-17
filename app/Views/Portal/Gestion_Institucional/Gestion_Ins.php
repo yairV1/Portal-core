@@ -63,6 +63,9 @@ $heroDesc = $moduloDesc ?: 'Actas, resoluciones y documentos de gobierno institu
                   : BASE_URL . '/documentos/descargar?tipo=direccion&id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
               <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
+                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/gestion-institucional') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+              <?php endif; ?>
             </span>
           </div>
         <?php endforeach; ?>
@@ -143,6 +146,9 @@ $heroDesc = $moduloDesc ?: 'Actas, resoluciones y documentos de gobierno institu
                   : BASE_URL . '/documentos/descargar?tipo=direccion&id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
               <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
+                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/gestion-institucional') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+              <?php endif; ?>
               <?php if ($esAdminDoc && $a['origen'] === 'carpeta'): ?>
                 <form action="<?= BASE_URL ?>/gestion-institucional/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar este documento?')">
                   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">

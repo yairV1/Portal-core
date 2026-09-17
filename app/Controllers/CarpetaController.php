@@ -72,7 +72,7 @@ foreach ($pdo->query('SELECT id, slug FROM direcciones')->fetchAll() as $d) {
 $accionCarpeta = null;
 $rutaModuloDeUri = '/administrativa-financiera'; // respaldo si algo falla antes de conocer direccion_id
 foreach (array_values($mapaSlugRuta) as $prefijo) {
-    if (preg_match('#^' . preg_quote($prefijo, '#') . '/carpetas/(crear|subir|importar-drive|descargar|eliminar)$#', $uri, $m)) {
+    if (preg_match('#^' . preg_quote($prefijo, '#') . '/carpetas/(crear|crear-documento|subir|importar-drive|descargar|eliminar)$#', $uri, $m)) {
         $accionCarpeta = $m[1];
         $rutaModuloDeUri = $prefijo;
         break;
@@ -231,6 +231,85 @@ if ($accionCarpeta === 'subir') {
     google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $carpetaStorage . '/' . $nombreArchivo, $nombreArchivo, $mime);
 
     volver_a_carpeta($rutaModulo, $carpetaId, '1');
+}
+
+// ---- /administrativa-financiera/carpetas/crear-documento (POST) ----
+// Tercera forma de meter un archivo a una carpeta (junto a /subir e
+// /importar-drive): un Word/Excel/PowerPoint EN BLANCO para empezar a
+// escribir de una vez, sin tener ya un archivo hecho en el equipo. Copia
+// la plantilla vacía correspondiente (ver storage/plantillas_office/,
+// extraídas tal cual del propio OnlyOffice — no son plantillas
+// institucionales, son la hoja en blanco de siempre de Word/Excel/
+// PowerPoint) y manda derecho al editor ya en modo edición (ver
+// EditorController.php), no de vuelta a la carpeta.
+if ($accionCarpeta === 'crear-documento') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri);
+        exit;
+    }
+    // direccion_id se deriva de la carpeta real (no del POST) — ver el
+    // mismo criterio en 'subir' arriba.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
+    if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
+        exit;
+    }
+
+    $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
+
+    $PLANTILLAS_EN_BLANCO = ['docx' => 'blank.docx', 'xlsx' => 'blank.xlsx', 'pptx' => 'blank.pptx'];
+    $formato = $_POST['formato'] ?? '';
+    if (!isset($PLANTILLAS_EN_BLANCO[$formato])) {
+        volver_a_carpeta($rutaModulo, $carpetaId, 'formato');
+    }
+    $plantilla = ROOT_PATH . '/storage/plantillas_office/' . $PLANTILLAS_EN_BLANCO[$formato];
+    if (!is_file($plantilla)) {
+        volver_a_carpeta($rutaModulo, $carpetaId, 'error');
+    }
+
+    if (!is_dir($carpetaStorage)) {
+        mkdir($carpetaStorage, 0775, true);
+    }
+
+    $nombreOriginal = trim($_POST['nombre'] ?? '') ?: 'Documento sin título';
+    $stmt = $pdo->prepare('INSERT INTO direccion_carpeta_archivos (carpeta_id, nombre, archivo, peso_bytes) VALUES (:cid, :nombre, :archivo, :peso)');
+    $stmt->execute([
+        ':cid'     => $carpetaId,
+        ':nombre'  => mb_substr($nombreOriginal, 0, 150),
+        ':archivo' => '',
+        ':peso'    => filesize($plantilla),
+    ]);
+    $archivoId = (int) $pdo->lastInsertId();
+
+    $nombreArchivo = 'archivo_' . $archivoId . '.' . $formato;
+    if (!copy($plantilla, $carpetaStorage . '/' . $nombreArchivo)) {
+        $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
+        volver_a_carpeta($rutaModulo, $carpetaId, 'error');
+    }
+
+    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
+        ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
+
+    $MIME_POR_FORMATO_BLANCO = [
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $carpetaStorage . '/' . $nombreArchivo, $nombreArchivo, $MIME_POR_FORMATO_BLANCO[$formato]);
+
+    header('Location: ' . BASE_URL . '/editor?tipo=carpeta&id=' . $archivoId . '&volver=' . urlencode(BASE_URL . $rutaModulo . '?carpeta=' . $carpetaId));
+    exit;
 }
 
 // ---- /administrativa-financiera/carpetas/importar-drive (POST) ----

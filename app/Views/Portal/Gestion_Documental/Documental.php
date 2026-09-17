@@ -101,6 +101,11 @@
                   <a class="tag tag-accent" href="<?= BASE_URL ?>/documentos/descargar?tipo=documental&id=<?= (int) $arc['id'] ?>">
                     <i class="bi bi-download"></i> Descargar
                   </a>
+                  <?php if (onlyoffice_configurado() && onlyoffice_editable($arc['archivo'])): ?>
+                    <a class="tag tag-neutral" href="<?= BASE_URL ?>/editor?tipo=documental&id=<?= (int) $arc['id'] ?>&volver=<?= urlencode(BASE_URL . '/gestion-documental') ?>" title="<?= ($_SESSION['usuario_rol'] ?? '') === 'admin' ? 'Editar' : 'Abrir' ?> dentro del portal">
+                      <i class="bi <?= ($_SESSION['usuario_rol'] ?? '') === 'admin' ? 'bi-pencil-square' : 'bi-eye' ?>"></i>
+                    </a>
+                  <?php endif; ?>
                 <?php elseif (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
                   <form action="<?= BASE_URL ?>/documentos/subir" method="post" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center">
                     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">

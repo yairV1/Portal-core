@@ -27,7 +27,11 @@
    ```
 
 La aplicación queda en `http://localhost:8080` y phpMyAdmin en
-`http://localhost:8081` (o en los puertos configurados en `.env`). MySQL
+`http://localhost:8081` (o en los puertos configurados en `.env`). Si
+configuraste `ONLYOFFICE_JWT_SECRET` en `.env` (ver .env.example), el editor
+de Word/Excel/PowerPoint dentro del portal queda en `http://localhost:8082`
+— nunca lo abras directo, es el navegador el que lo carga solo al usar el
+botón "Editar"/"Abrir" de un documento (ver EditorController.php). MySQL
 ejecuta automáticamente las migraciones numeradas al crear por primera vez el
 volumen `db_data`. El repositorio contiene migraciones `000` a `040`, que se
 ejecutan en orden sobre un esquema base compatible. Las migraciones `020` a

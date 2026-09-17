@@ -155,6 +155,7 @@
   .doc-modal-tabs input:checked + label{ background:var(--color-bg); color:var(--color-accent); box-shadow:var(--shadow-soft) }
   .doc-modal-section[hidden]{ display:none }
   .doc-modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:4px }
+  .doc-modal-actions--nuevo{ flex-wrap:wrap }
   .doc-modal-trigger{ cursor:pointer; border:none }
 
   /* Pestañas de 3 acciones (ver _explorador_documental.php + doc-modal.js) —
@@ -168,3 +169,12 @@
     transition:background .15s ease,color .15s ease;
   }
   .doc-modal-tab-btn.active{ background:var(--color-bg); color:var(--color-accent); box-shadow:var(--shadow-soft) }
+
+  /* Con 4 pestañas (Carpeta/Archivo/Drive/Documento nuevo, ver
+     _explorador_documental.php) "flex:1" ya no entra en una sola fila en
+     el modal angosto de celular — pasa a una grilla 2x2 en vez de
+     recortarse contra el borde del <dialog>. */
+  @media (max-width: 480px){
+    .doc-modal-tabs{ flex-wrap:wrap }
+    .doc-modal-tab-btn{ flex:1 1 calc(50% - 4px) }
+  }
