@@ -114,6 +114,24 @@ function usuario_admin_de(?int $direccionId): bool {
     return false;
 }
 
+// usuario_area_asignada(): a qué dirección quedó atado este usuario para
+// EFECTOS DE VER contenido — no solo de administrarlo (ver
+// usuario_admin_de() arriba). null = puede ver todas las direcciones (el
+// admin global, o cualquiera sin área asignada — hoy la mayoría de
+// 'usuario', mismo comportamiento de siempre). Un entero = solo puede ver
+// esa dirección puntual; cualquier otra le devuelve 403 (ver
+// PortalController.php/CarpetaController.php/DocumentoController.php) y no
+// aparece como tarjeta en "Todos los módulos" (ver ModulosController.php).
+// La columna usuarios.direccion_id ya existía para 'admin_direccion' (ver
+// migración 036_roles_por_direccion.sql); esto solo deja que un 'usuario'
+// normal también la tenga (UsuariosController.php) — no hace falta
+// migración nueva, la columna ya admitía NULL para cualquier rol.
+function usuario_area_asignada(): ?int {
+    if (($_SESSION['usuario_rol'] ?? '') === 'admin') return null;
+    $id = $_SESSION['usuario_direccion_id'] ?? null;
+    return $id !== null ? (int) $id : null;
+}
+
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)
 require ROOT_PATH . '/config/database.php';
 

@@ -201,9 +201,20 @@ if ($uri === '/documentos/subir') {
 // ---- /documentos/descargar ----
 if ($uri === '/documentos/descargar') {
     $archivoId = (int) ($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT nombre, archivo FROM {$TABLA} WHERE id = :id");
+    $campoDireccion = $esDireccion ? ', direccion_id' : '';
+    $stmt = $pdo->prepare("SELECT nombre, archivo{$campoDireccion} FROM {$TABLA} WHERE id = :id");
     $stmt->execute([':id' => $archivoId]);
     $fila = $stmt->fetch();
+
+    // Mismo bloqueo por área que PortalController.php/CarpetaController.php
+    // (ver usuario_area_asignada()) — archivos_documentales (Gestión
+    // Documental) no tiene dirección, así que no aplica ahí.
+    if ($fila && $esDireccion) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
+            $fila = false;
+        }
+    }
 
     if (!$fila || !$fila['archivo']) {
         http_response_code(404);

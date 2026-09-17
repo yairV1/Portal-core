@@ -2,6 +2,7 @@
 <h1 class="page-title">Usuarios y roles</h1>
 <p class="page-desc">
   Crea cuentas para las demás direcciones y decide qué puede administrar cada una. Un <strong>administrador de dirección</strong> solo puede crear, subir y eliminar carpetas/documentos DENTRO de la dirección que le asignes acá — el resto del portal (Contenido Landing, Contrataciones, Calendario, etc.) sigue siendo exclusivo del administrador global.
+  Si le asignas un <strong>área de trabajo</strong> a un <strong>usuario</strong> normal, esa persona deja de ver las demás direcciones (ni la tarjeta en "Todos los módulos" ni la página si entra por la URL directa) — solo ve la suya. Sin área asignada, sigue viendo todo el portal como hasta ahora.
 </p>
 
 <?php
@@ -30,7 +31,7 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
     ?>
     <select name="<?= e($name) ?>" class="<?= e($claseJs) ?>"
             style="flex:1 1 220px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
-      <option value="">— Elige una dirección —</option>
+      <option value="">— Sin área asignada (ve todo) —</option>
       <?php foreach ($direccionesDisponibles as $d): ?>
         <option value="<?= (int) $d['id'] ?>" <?= (int) $d['id'] === $valor ? 'selected' : '' ?>><?= e($d['titulo']) ?></option>
       <?php endforeach; ?>
@@ -69,8 +70,8 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
           <td style="opacity:.75"><?= e($u['cargo'] ?? '—') ?></td>
           <td>
             <span class="tag <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
-            <?php if ($u['rol'] === 'admin_direccion'): ?>
-              <span class="tag" style="margin-left:4px"><?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
+            <?php if ($u['direccion_id'] !== null): ?>
+              <span class="tag" style="margin-left:4px" title="Solo ve esta dirección"><i class="bi bi-eye"></i> <?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
             <?php endif; ?>
           </td>
           <td style="opacity:.6"><?= e((new DateTime($u['creado_en']))->format('d/m/Y')) ?></td>
@@ -104,17 +105,18 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
 <?php endif; ?>
 
 <script>
-  // El selector de dirección solo tiene sentido para 'admin_direccion' —
-  // se oculta para los otros dos roles en vez de dejarlo siempre visible
-  // y confundir (queda igual de funcional sin JS: el servidor ya ignora
-  // direccion_id salvo cuando rol=admin_direccion, ver UsuariosController.php).
+  // El selector de dirección no tiene sentido para 'admin' (siempre ve/
+  // administra todo el portal) — se oculta solo para ese rol. Para
+  // 'admin_direccion' y 'usuario' sí aplica (obligatorio en el primero,
+  // opcional en el segundo — ver UsuariosController.php); queda igual de
+  // funcional sin JS, esto solo evita confundir con un campo que no aplica.
   document.addEventListener('DOMContentLoaded', function () {
     function conectar(rolSelect) {
       var sufijo = rolSelect.className.replace('usuarios-rol-', '');
       var direccionSelect = document.querySelector('.usuarios-direccion-' + sufijo);
       if (!direccionSelect) return;
       function actualizar() {
-        direccionSelect.style.display = rolSelect.value === 'admin_direccion' ? '' : 'none';
+        direccionSelect.style.display = rolSelect.value === 'admin' ? 'none' : '';
       }
       rolSelect.addEventListener('change', actualizar);
       actualizar();

@@ -72,10 +72,29 @@ $resultadosBusqueda = null;
 //    direccion_documentos (ver 007_direccion_documentos.sql)). Responsables
 //    y software todavía no tienen tabla real (ver plan) y siguen viniendo
 //    del MODULO.responsables/software de cada *.js. ──
+// Direcciones reales (no las perspectivas del CMI, que son analítica
+// compartida, no un área de trabajo a la que se asigne gente) — un usuario
+// con área asignada (ver usuario_area_asignada() en public/index.php) solo
+// puede entrar a la suya; cualquier otra le devuelve 403, tanto por acá
+// como si intenta la URL directa. Sin fila en `direcciones` todavía
+// (institucional/sgi/academica/investigacion, ver roadmap) nadie puede
+// estar asignado a ellas, así que siguen abiertas para todos mientras
+// tanto.
+$DIRECCIONES_REALES = ['institucional', 'sgi', 'academica', 'financiera', 'talento-humano', 'investigacion'];
+
 if (!empty($modulo['slug'])) {
     $stmt = $pdo->prepare('SELECT id, kicker, titulo, descripcion FROM direcciones WHERE slug = :slug');
     $stmt->execute([':slug' => $modulo['slug']]);
     $direccion = $stmt->fetch();
+
+    if ($direccion && in_array($modulo['slug'], $DIRECCIONES_REALES, true)) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $direccion['id']) {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
+    }
 
     $moduloKicker = $direccion['kicker'] ?? '';
     $moduloTitulo = $direccion['titulo'] ?? $titulo;

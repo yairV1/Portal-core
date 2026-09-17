@@ -4,44 +4,32 @@
 <h1 class="page-title">Todos los módulos</h1>
 <p class="page-desc">Todo el Portal, agrupado en un solo lugar — cada tarjeta te lleva a su propia página.</p>
 
+<?php
+// Si esta cuenta tiene un área de trabajo asignada (ver
+// usuario_area_asignada() en public/index.php), tacha del listado las
+// direcciones que no sean la suya — misma regla que ya bloquea la URL
+// directa en PortalController.php, para que el menú nunca ofrezca un
+// enlace que de todos modos va a dar 403.
+$direcciones = [
+    ['slug' => 'institucional',   'ruta' => '/gestion-institucional',     'icono' => 'bank',          'nombre' => 'Gestión Institucional'],
+    ['slug' => 'sgi',             'ruta' => '/sgi',                       'icono' => 'folder2-open',  'nombre' => 'Sistema de Gestión Integral'],
+    ['slug' => 'academica',       'ruta' => '/vicerrectoria-academica',   'icono' => 'mortarboard',   'nombre' => 'Vicerrectoría Académica'],
+    ['slug' => 'financiera',      'ruta' => '/administrativa-financiera', 'icono' => 'cash-coin',     'nombre' => 'Administrativa y Financiera'],
+    ['slug' => 'talento-humano',  'ruta' => '/talento-humano',            'icono' => 'people',        'nombre' => 'Talento Humano'],
+    ['slug' => 'investigacion',   'ruta' => '/investigacion-innovacion',  'icono' => 'stars',         'nombre' => 'Investigación e Innovación'],
+];
+?>
 <div class="section-head"><h4>Direcciones</h4></div>
 <div class="doc-categorias">
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/gestion-institucional" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-bank"></i></span>
-      <span class="nombre">Gestión Institucional</span>
-    </a>
-  </article>
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/sgi" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-folder2-open"></i></span>
-      <span class="nombre">Sistema de Gestión Integral</span>
-    </a>
-  </article>
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/vicerrectoria-academica" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-mortarboard"></i></span>
-      <span class="nombre">Vicerrectoría Académica</span>
-    </a>
-  </article>
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/administrativa-financiera" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-cash-coin"></i></span>
-      <span class="nombre">Administrativa y Financiera</span>
-    </a>
-  </article>
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/talento-humano" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-people"></i></span>
-      <span class="nombre">Talento Humano</span>
-    </a>
-  </article>
-  <article class="doc-categoria-card">
-    <a href="<?= BASE_URL ?>/investigacion-innovacion" class="doc-categoria-link">
-      <span class="ic"><i class="bi bi-stars"></i></span>
-      <span class="nombre">Investigación e Innovación</span>
-    </a>
-  </article>
+  <?php foreach ($direcciones as $d): ?>
+    <?php if ($areaAsignada !== null && ($direccionIdPorSlug[$d['slug']] ?? null) !== $areaAsignada) continue; ?>
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL . $d['ruta'] ?>" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-<?= e($d['icono']) ?>"></i></span>
+        <span class="nombre"><?= e($d['nombre']) ?></span>
+      </a>
+    </article>
+  <?php endforeach; ?>
 </div>
 
 <div class="section-head" style="margin-top:32px"><h4>Recursos</h4></div>

@@ -96,7 +96,15 @@ if ($accionCarpeta === 'crear') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    $slugModulo = array_search($rutaModuloDeUri, $mapaSlugRuta, true);
+    $stmt = $pdo->prepare('SELECT id FROM direcciones WHERE slug = :slug');
+    $stmt->execute([':slug' => $slugModulo]);
+    $direccion = $stmt->fetch();
+    if (!$direccion) {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
+        exit;
+    }
+    $direccionId = (int) $direccion['id'];
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -107,7 +115,11 @@ if ($accionCarpeta === 'crear') {
         exit;
     }
 
-    $parentId = ($_POST['carpeta_id'] ?? '') !== '' ? (int) $_POST['carpeta_id'] : null;
+    // "0" (lo que manda el formulario cuando no hay ninguna carpeta abierta,
+    // ver _explorador_documental.php) debe tratarse igual que vacío: raíz
+    // del módulo (parent_id NULL) — un id real de carpeta siempre es >0
+    // (AUTO_INCREMENT), así que empty() no puede confundirse con uno real.
+    $parentId = !empty($_POST['carpeta_id']) ? (int) $_POST['carpeta_id'] : null;
     $nombre = trim($_POST['nombre'] ?? '');
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
     $area = ($_POST['area'] ?? '') === 'finanzas' ? 'finanzas' : 'administracion';
@@ -141,7 +153,17 @@ if ($accionCarpeta === 'subir') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva de la carpeta real (no del POST) — mismo
+    // criterio que ya usa 'crear' más arriba: nunca confiar en qué
+    // dirección dice el formulario que es, sino en la que de verdad es
+    // dueña de la carpeta destino.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -152,14 +174,7 @@ if ($accionCarpeta === 'subir') {
         exit;
     }
 
-    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
-
-    $stmt = $pdo->prepare('SELECT id FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-    $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
-    if (!$stmt->fetch()) {
-        volver_a_carpeta($rutaModulo, null, 'error');
-    }
 
     $archivo = $_FILES['documento'] ?? null;
     if (empty($archivo['tmp_name']) || $archivo['error'] !== UPLOAD_ERR_OK) {
@@ -221,7 +236,25 @@ if ($accionCarpeta === 'importar-drive') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva del archivo/carpeta real que se va a borrar
+    // (no del POST) — ver el mismo criterio en 'subir' arriba.
+    $direccionId = 0;
+    if (!empty($_POST['archivo_id'])) {
+        $stmt = $pdo->prepare('
+            SELECT c.direccion_id FROM direccion_carpeta_archivos a
+            JOIN direccion_carpetas c ON c.id = a.carpeta_id
+            WHERE a.id = :id
+        ');
+        $stmt->execute([':id' => (int) $_POST['archivo_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    } elseif (!empty($_POST['carpeta_id'])) {
+        $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+        $stmt->execute([':id' => (int) $_POST['carpeta_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    }
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -232,14 +265,7 @@ if ($accionCarpeta === 'importar-drive') {
         exit;
     }
 
-    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
-
-    $stmt = $pdo->prepare('SELECT id FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-    $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
-    if (!$stmt->fetch()) {
-        volver_a_carpeta($rutaModulo, null, 'error');
-    }
 
     require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
 
@@ -318,6 +344,16 @@ if ($accionCarpeta === 'descargar') {
     if ($fila && !isset($rutaPorDireccionId[$fila['direccion_id']])) {
         $fila = false;
     }
+    // Mismo bloqueo por área que PortalController.php (ver
+    // usuario_area_asignada()) — sin esto, alguien restringido a su propia
+    // dirección podría igual descargar un archivo de otra si adivina o
+    // guarda el id, sin pasar nunca por la página bloqueada.
+    if ($fila) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
+            $fila = false;
+        }
+    }
 
     $ruta = $fila ? $carpetaStorage . '/' . $fila['archivo'] : null;
     if (!$fila || !is_file($ruta)) {
@@ -355,7 +391,15 @@ if ($accionCarpeta === 'eliminar') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva de la carpeta real (no del POST) — ver el
+    // mismo criterio en 'subir' arriba.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -370,12 +414,8 @@ if ($accionCarpeta === 'eliminar') {
 
     if (!empty($_POST['archivo_id'])) {
         $archivoId = (int) $_POST['archivo_id'];
-        $stmt = $pdo->prepare('
-            SELECT a.archivo, a.carpeta_id FROM direccion_carpeta_archivos a
-            JOIN direccion_carpetas c ON c.id = a.carpeta_id
-            WHERE a.id = :id AND c.direccion_id = :did
-        ');
-        $stmt->execute([':id' => $archivoId, ':did' => $direccionId]);
+        $stmt = $pdo->prepare('SELECT archivo, carpeta_id FROM direccion_carpeta_archivos WHERE id = :id');
+        $stmt->execute([':id' => $archivoId]);
         $fila = $stmt->fetch();
         if (!$fila) {
             volver_a_carpeta($rutaModulo, null, 'error');
@@ -390,8 +430,8 @@ if ($accionCarpeta === 'eliminar') {
 
     if (!empty($_POST['carpeta_id'])) {
         $carpetaId = (int) $_POST['carpeta_id'];
-        $stmt = $pdo->prepare('SELECT parent_id, area FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-        $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
+        $stmt = $pdo->prepare('SELECT parent_id, area FROM direccion_carpetas WHERE id = :id');
+        $stmt->execute([':id' => $carpetaId]);
         $fila = $stmt->fetch();
         if (!$fila) {
             volver_a_carpeta($rutaModulo, null, 'error');

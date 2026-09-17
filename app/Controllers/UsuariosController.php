@@ -42,7 +42,13 @@ if ($uri === '/usuarios/crear') {
     $correo = trim(strtolower($_POST['correo'] ?? ''));
     $cargo = trim($_POST['cargo'] ?? '') ?: null;
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
-    $direccionId = $rol === 'admin_direccion' ? (int) ($_POST['direccion_id'] ?? 0) : null;
+    // Área de trabajo: obligatoria para admin_direccion (administra esa
+    // dirección), opcional para 'usuario' (si se la asignas, ve SOLO esa
+    // dirección — ver usuario_area_asignada() en public/index.php; sin
+    // asignar, sigue viendo todo el portal como siempre). 'admin' nunca
+    // queda atado a ninguna.
+    $direccionIdPedida = (int) ($_POST['direccion_id'] ?? 0);
+    $direccionId = in_array($rol, ['admin_direccion', 'usuario'], true) && $direccionIdPedida ? $direccionIdPedida : null;
     $password = $_POST['password'] ?? '';
 
     if ($nombre === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
@@ -95,7 +101,8 @@ if ($uri === '/usuarios/editar') {
     $correo = trim(strtolower($_POST['correo'] ?? ''));
     $cargo = trim($_POST['cargo'] ?? '') ?: null;
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
-    $direccionId = $rol === 'admin_direccion' ? (int) ($_POST['direccion_id'] ?? 0) : null;
+    $direccionIdPedida = (int) ($_POST['direccion_id'] ?? 0);
+    $direccionId = in_array($rol, ['admin_direccion', 'usuario'], true) && $direccionIdPedida ? $direccionIdPedida : null;
     $password = $_POST['password'] ?? ''; // vacío = no cambiar la contraseña
 
     if ($nombre === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
