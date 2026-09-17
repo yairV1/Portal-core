@@ -70,6 +70,12 @@ $direcciones = [
       <span class="nombre">Calendario</span>
     </a>
   </article>
+  <article class="doc-categoria-card">
+    <a href="<?= BASE_URL ?>/trello" class="doc-categoria-link">
+      <span class="ic"><i class="bi bi-kanban"></i></span>
+      <span class="nombre">Trello</span>
+    </a>
+  </article>
 </div>
 
 <div class="section-head" style="margin-top:32px"><h4>Analítica</h4></div>

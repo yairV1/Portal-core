@@ -41,6 +41,12 @@ services:
       # "Editar" de los documentos de Office simplemente no aparece.
       ONLYOFFICE_JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
       ONLYOFFICE_PORT: ${ONLYOFFICE_PORT:-8082}
+      # Tablero de Trello en "Todos los módulos" → Trello (opcional, ver
+      # app/Helpers/Trello.php). Sin ellas, ese módulo avisa que no está
+      # configurado.
+      TRELLO_API_KEY: ${TRELLO_API_KEY:-}
+      TRELLO_TOKEN: ${TRELLO_TOKEN:-}
+      TRELLO_BOARD_ID: ${TRELLO_BOARD_ID:-}
     depends_on:
       db:
         condition: service_healthy

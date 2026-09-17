@@ -135,6 +135,7 @@ return [
     '/calendario/editar-evento'  => 'EventoController.php',
     '/calendario/eliminar-evento'=> 'EventoController.php',
     '/calendario/exportar'       => 'EventoController.php',
+    '/trello'                    => 'PortalController.php',
 
     // Contenido de la landing pública — solo admin (ver PortalController /
     // registrado en su propio controlador porque no es un módulo del

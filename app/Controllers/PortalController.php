@@ -40,6 +40,7 @@ $modulos = [
     '/aplicaciones'               => ['titulo' => 'Aplicaciones',                'vista' => 'Aplicaciones/Aplicaciones.php'],
     '/directorio'                 => ['titulo' => 'Directorio',                  'vista' => 'Directorio/Directorio.php'],
     '/calendario'                 => ['titulo' => 'Calendario',                  'vista' => 'Calendario/Calendario.php'],
+    '/trello'                     => ['titulo' => 'Trello',                      'vista' => 'Trello/Trello.php'],
 ];
 
 $modulo = $modulos[$uri] ?? null;
@@ -552,6 +553,13 @@ if ($uri === '/gestion-documental') {
         }
         $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
     }
+}
+
+// ── Trello (tablero externo de solo lectura, ver app/Helpers/Trello.php) ──
+if ($uri === '/trello') {
+    require_once ROOT_PATH . '/app/Helpers/Trello.php';
+    $trelloConfigurado = trello_configurado();
+    $trelloListas = $trelloConfigurado ? trello_listas_con_tarjetas() : null;
 }
 
 require ROOT_PATH . '/app/Views/Portal/' . $modulo['vista'];
