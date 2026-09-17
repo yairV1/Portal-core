@@ -236,22 +236,12 @@ if ($accionCarpeta === 'importar-drive') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    // direccion_id se deriva del archivo/carpeta real que se va a borrar
-    // (no del POST) — ver el mismo criterio en 'subir' arriba.
-    $direccionId = 0;
-    if (!empty($_POST['archivo_id'])) {
-        $stmt = $pdo->prepare('
-            SELECT c.direccion_id FROM direccion_carpeta_archivos a
-            JOIN direccion_carpetas c ON c.id = a.carpeta_id
-            WHERE a.id = :id
-        ');
-        $stmt->execute([':id' => (int) $_POST['archivo_id']]);
-        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
-    } elseif (!empty($_POST['carpeta_id'])) {
-        $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
-        $stmt->execute([':id' => (int) $_POST['carpeta_id']]);
-        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
-    }
+    // direccion_id se deriva de la carpeta real (no del POST) — ver el
+    // mismo criterio en 'subir' arriba.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
@@ -391,12 +381,22 @@ if ($accionCarpeta === 'eliminar') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    // direccion_id se deriva de la carpeta real (no del POST) — ver el
-    // mismo criterio en 'subir' arriba.
-    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
-    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
-    $stmt->execute([':id' => $carpetaId]);
-    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    // direccion_id se deriva del archivo/carpeta real que se va a borrar
+    // (no del POST) — ver el mismo criterio en 'subir' arriba.
+    $direccionId = 0;
+    if (!empty($_POST['archivo_id'])) {
+        $stmt = $pdo->prepare('
+            SELECT c.direccion_id FROM direccion_carpeta_archivos a
+            JOIN direccion_carpetas c ON c.id = a.carpeta_id
+            WHERE a.id = :id
+        ');
+        $stmt->execute([':id' => (int) $_POST['archivo_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    } elseif (!empty($_POST['carpeta_id'])) {
+        $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+        $stmt->execute([':id' => (int) $_POST['carpeta_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    }
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
