@@ -329,17 +329,30 @@ if ($uri === '/cuadro-mando-integral') {
     $tableroEjecucion = $pdo->query('SELECT label, pct FROM ejecucion_presupuestal ORDER BY orden')->fetchAll();
     $tableroAlertas = $pdo->query('SELECT texto FROM alertas_indicador ORDER BY orden')->fetchAll();
 
-    // Enlaces a los 4 submódulos (Finanzas/Planeación/Vicerrectoría
-    // Académica/Investigación): misma fuente que ya arma el submenú del
-    // sidebar (nav_items.parent_id — ver migration 025), así que la
-    // página y el menú nunca quedan desincronizados.
-    $stmt = $pdo->prepare("SELECT ni.label, ni.ruta, ni.icono
-        FROM nav_items ni
-        JOIN nav_items padre ON padre.id = ni.parent_id
-        WHERE padre.slug = 'cuadro-mando-integral'
-        ORDER BY ni.orden");
-    $stmt->execute();
-    $tableroSubmodulos = $stmt->fetchAll();
+    // Antes se leía de nav_items.parent_id (migración 025) para no
+    // desincronizarse del submenú del sidebar — pero la migración 039 sacó
+    // "Cuadro de Mando Integral" del sidebar entero (absorbido por "Todos
+    // los módulos") y de paso borró esas filas hijas por
+    // nav_items_parent_fk ON DELETE CASCADE, dejando esta sección
+    // silenciosamente vacía aunque las 4 rutas siguen funcionando. Ya no
+    // hay ningún menú con el que sincronizarse, así que se arma directo
+    // desde $modulos (misma fuente de arriba, no una lista nueva) — con
+    // isset() por si el día de mañana $modulos deja de ser un array fijo:
+    // una entrada que falte se omite en silencio en vez de un
+    // "Undefined array key".
+    $ICONOS_SUBMODULOS_CMI = [
+        '/cuadro-mando-integral/finanzas'               => 'cash-coin',
+        '/cuadro-mando-integral/planeacion'              => 'bullseye',
+        '/cuadro-mando-integral/vicerrectoria-academica' => 'mortarboard',
+        '/cuadro-mando-integral/investigacion'           => 'stars',
+    ];
+    $tableroSubmodulos = [];
+    foreach ($ICONOS_SUBMODULOS_CMI as $ruta => $icono) {
+        if (!isset($modulos[$ruta])) {
+            continue;
+        }
+        $tableroSubmodulos[] = ['label' => $modulos[$ruta]['titulo'], 'ruta' => $ruta, 'icono' => $icono];
+    }
 }
 
 // ── Directorio (fase 4) ──
