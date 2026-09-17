@@ -6,6 +6,66 @@
 
 <?php $ESTADO_TAG = ['Vigente' => 'success', 'En revisión' => 'warning', 'Obsoleto' => 'danger']; ?>
 
+<div class="section-head" style="margin-bottom:14px"><h4><i class="bi bi-google"></i> Mi Google Drive</h4></div>
+<?php if (!$miDriveOauthConfigurado): ?>
+  <div class="modulo-vacio"><i class="bi bi-google"></i> Conectar tu Drive personal necesita tener configurado el login con Google (ver .env.example) — pregúntale al administrador del portal.</div>
+<?php elseif (!$miDriveConectado): ?>
+  <p class="text-muted" style="margin:0 0 10px">Conecta tu cuenta para ver tus propios archivos de Drive acá y llevarlos a la carpeta que quieras — sin compartir nada con nadie primero.</p>
+  <a href="<?= BASE_URL ?>/gestion-documental/drive/conectar" class="tag tag-accent" style="border:none;cursor:pointer;display:inline-flex;text-decoration:none">
+    <i class="bi bi-google"></i>&nbsp;Conectar mi Google Drive
+  </a>
+<?php else: ?>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <span class="text-muted"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu Google Drive está conectado.</span>
+    <form action="<?= BASE_URL ?>/gestion-documental/drive/desconectar" method="post" onsubmit="return confirm('¿Desconectar tu Google Drive? Podrás volver a conectarlo cuando quieras.')">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <button type="submit" class="tag tag-neutral" style="border:none;cursor:pointer"><i class="bi bi-x-circle"></i> Desconectar</button>
+    </form>
+  </div>
+
+  <?php if (!$misArchivosDrive): ?>
+    <div class="modulo-vacio"><i class="bi bi-folder2-open"></i> No encontramos archivos en tu Drive — o Google tardó en responder, intenta de nuevo en un momento.</div>
+  <?php elseif (!$carpetasDestinoDrive): ?>
+    <div class="modulo-vacio"><i class="bi bi-lock"></i> Puedes ver tus archivos, pero no administras ninguna carpeta a la que llevarlos — pídele a un administrador que te asigne una dirección para poder organizar documentos ahí.</div>
+  <?php else: ?>
+    <div style="overflow-x:auto">
+    <table class="table" style="margin-bottom:10px">
+      <thead><tr><th>Archivo</th><th>Modificado</th><th></th><th>Llevar a...</th></tr></thead>
+      <tbody>
+        <?php foreach ($misArchivosDrive as $af): ?>
+          <tr>
+            <td><i class="bi bi-file-earmark"></i> <?= e($af['name'] ?? 'Sin nombre') ?></td>
+            <td style="opacity:.7;white-space:nowrap"><?= !empty($af['modifiedTime']) ? (new DateTime($af['modifiedTime']))->format('d/m/Y') : '' ?></td>
+            <td>
+              <?php if (!empty($af['webViewLink'])): ?>
+                <a class="tag tag-neutral" href="<?= e($af['webViewLink']) ?>" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Ver</a>
+              <?php endif; ?>
+            </td>
+            <td>
+              <form action="<?= BASE_URL ?>/gestion-documental/drive/importar" method="post" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+                <input type="hidden" name="file_id" value="<?= e($af['id']) ?>">
+                <select name="carpeta_id" required style="max-width:260px;padding:6px 8px;border-radius:8px;border:1px solid var(--color-divider);background:var(--color-bg);color:var(--color-text)">
+                  <option value="">Elige una carpeta...</option>
+                  <?php foreach ($carpetasDestinoDrive as $cd): ?>
+                    <option value="<?= (int) $cd['id'] ?>"><?= e($cd['label']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <button type="submit" class="tag tag-accent" style="border:none;cursor:pointer"><i class="bi bi-box-arrow-in-down"></i> Traer</button>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+    </div>
+    <?php if ($miDriveSiguientePagina): ?>
+      <a href="<?= BASE_URL ?>/gestion-documental?drive_token=<?= urlencode($miDriveSiguientePagina) ?>#" class="tag tag-neutral" style="border:none;text-decoration:none">Ver más archivos</a>
+    <?php endif; ?>
+  <?php endif; ?>
+<?php endif; ?>
+
+<div class="section-head" style="margin:26px 0 14px"><h4>Repositorio institucional</h4></div>
 <?php if (!$direccionesDoc): ?>
   <div class="empty-state">
     <div class="ic"><i class="bi bi-cone-striped"></i></div>

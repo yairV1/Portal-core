@@ -22,6 +22,13 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+// google_drive_oauth_sincronizar_archivo(): sube/actualiza una copia en el
+// Drive de quien sube/crea el archivo — decisión explícita del cliente,
+// aplica siempre que esa persona tenga su Drive conectado (ver
+// GoogleDrive.php y migración 042_drive_sync_automatica.sql). Si no lo
+// tiene conectado, no hace nada — nunca tumba la acción principal.
+require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+
 $carpetaStorage = ROOT_PATH . '/storage/direccion_carpetas';
 
 // Igual que TrabajoController.php/ContratacionController.php: se valida el
@@ -221,6 +228,8 @@ if ($accionCarpeta === 'subir') {
     $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
         ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
 
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $carpetaStorage . '/' . $nombreArchivo, $nombreArchivo, $mime);
+
     volver_a_carpeta($rutaModulo, $carpetaId, '1');
 }
 
@@ -275,18 +284,36 @@ if ($accionCarpeta === 'importar-drive') {
         // distinguir cuál de los dos fue, así que el aviso cubre ambos.
         volver_a_carpeta($rutaModulo, $carpetaId, 'drive_no_encontrado');
     }
-    if (str_starts_with($meta['mimeType'] ?? '', 'application/vnd.google-apps.')) {
-        // Documentos/Hojas/Presentaciones nativos de Google no tienen
-        // bytes descargables tal cual — habría que exportarlos primero
-        // (desde Drive: Archivo → Descargar → PDF/Word) y traer ese
-        // archivo ya exportado, no el original.
-        volver_a_carpeta($rutaModulo, $carpetaId, 'drive_google_doc');
+    // Un Doc/Sheet/Slide NATIVO de Google (mimeType "application/vnd.google-
+    // apps.*") no tiene bytes propios que bajar — hay que pedirle a Drive
+    // que lo CONVIERTA al vuelo a su equivalente de Office (ver
+    // google_drive_exportar() en GoogleDrive.php). Solo esos 3 tienen un
+    // equivalente razonable; Formularios/Dibujos/etc. siguen bloqueados,
+    // no hay a qué exportarlos.
+    $EXPORTAR_GOOGLE_NATIVO = [
+        'application/vnd.google-apps.document'     => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.google-apps.spreadsheet'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.google-apps.presentation' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    $mimeOrigen = $meta['mimeType'] ?? '';
+    $esGoogleNativo = str_starts_with($mimeOrigen, 'application/vnd.google-apps.');
+
+    if ($esGoogleNativo) {
+        if (!isset($EXPORTAR_GOOGLE_NATIVO[$mimeOrigen])) {
+            volver_a_carpeta($rutaModulo, $carpetaId, 'drive_google_doc');
+        }
+        $mimeFinal = $EXPORTAR_GOOGLE_NATIVO[$mimeOrigen];
+    } else {
+        $mimeFinal = $mimeOrigen;
+        // El tamaño exportado de un nativo no se sabe de antemano (Drive
+        // lo genera al vuelo) — para esos se revisa DESPUÉS de exportar,
+        // más abajo; para un archivo real, Drive ya informa su tamaño acá.
+        if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
+            volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
+        }
     }
-    if (!isset($MIME_PERMITIDOS[$meta['mimeType'] ?? ''])) {
+    if (!isset($MIME_PERMITIDOS[$mimeFinal])) {
         volver_a_carpeta($rutaModulo, $carpetaId, 'formato');
-    }
-    if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
-        volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
     }
 
     if (!is_dir($carpetaStorage)) {
@@ -303,14 +330,25 @@ if ($accionCarpeta === 'importar-drive') {
     ]);
     $archivoId = (int) $pdo->lastInsertId();
 
-    $nombreArchivo = 'archivo_' . $archivoId . '.' . $MIME_PERMITIDOS[$meta['mimeType']];
-    if (!google_drive_descargar($fileId, $carpetaStorage . '/' . $nombreArchivo)) {
+    $nombreArchivo = 'archivo_' . $archivoId . '.' . $MIME_PERMITIDOS[$mimeFinal];
+    $rutaDestino = $carpetaStorage . '/' . $nombreArchivo;
+    $descargaOk = $esGoogleNativo
+        ? google_drive_exportar($fileId, $mimeFinal, $rutaDestino)
+        : google_drive_descargar($fileId, $rutaDestino);
+    if (!$descargaOk) {
         $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
         volver_a_carpeta($rutaModulo, $carpetaId, 'drive_no_encontrado');
     }
+    if ($esGoogleNativo && filesize($rutaDestino) > 15 * 1024 * 1024) {
+        unlink($rutaDestino);
+        $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
+        volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
+    }
 
-    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
-        ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
+    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo, peso_bytes = :peso WHERE id = :id')
+        ->execute([':archivo' => $nombreArchivo, ':peso' => filesize($rutaDestino), ':id' => $archivoId]);
+
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $rutaDestino, $nombreArchivo, $mimeFinal);
 
     volver_a_carpeta($rutaModulo, $carpetaId, 'importado');
 }

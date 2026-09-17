@@ -29,6 +29,11 @@ services:
       # Administrativa y Financiera (ver app/Helpers/GoogleDrive.php). Sin
       # ella, ese botón avisa que no está configurado.
       GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE: ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE:-}
+      # Cifra el refresh_token del Drive personal de cada usuario antes de
+      # guardarlo en la BD (ver app/Helpers/GoogleDrive.php). Sin ella,
+      # "Conectar mi Google Drive" avisa que no está configurado en vez de
+      # guardar el token sin cifrar.
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
     depends_on:
       db:
         condition: service_healthy

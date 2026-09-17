@@ -490,6 +490,62 @@ if ($uri === '/gestion-documental') {
         if (empty($areasPorDireccion[$dir['id']])) continue;
         $direccionesDoc[] = $dir;
     }
+
+    // ── Drive personal (ver DriveUsuarioController.php/GoogleDrive.php) ──
+    require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+    $miDriveOauthConfigurado = google_drive_oauth_configurado();
+    $miDriveConectado = false;
+    $misArchivosDrive = [];
+    $miDriveSiguientePagina = null;
+
+    $stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
+    $stmt->execute([':id' => $_SESSION['usuario_id']]);
+    $miDriveTokenGuardado = $stmt->fetchColumn();
+    $miDriveRefreshToken = google_drive_refresh_token_descifrar($miDriveTokenGuardado ?: null);
+    // "conectado" es tener una fila guardada, aunque no se pueda descifrar
+    // (clave rotada) — así el botón "Desconectar" sigue disponible para
+    // limpiar ese estado en vez de desaparecer sin explicación.
+    if ($miDriveTokenGuardado) {
+        $miDriveConectado = true;
+        $miDriveAccessToken = $miDriveRefreshToken ? google_drive_oauth_refrescar($miDriveRefreshToken) : null;
+        if ($miDriveAccessToken) {
+            $resultadoListado = google_drive_oauth_listar($miDriveAccessToken, $_GET['drive_token'] ?? null);
+            if ($resultadoListado) {
+                $misArchivosDrive = $resultadoListado['files'] ?? [];
+                $miDriveSiguientePagina = $resultadoListado['nextPageToken'] ?? null;
+            }
+        }
+    }
+
+    // A dónde puede ir un archivo importado — las carpetas REALES que ya
+    // administran Financiera/Talento Humano/etc. (direccion_carpetas, ver
+    // CarpetaController.php), no carpetas_documentales de arriba (nunca se
+    // llegó a usar de verdad, siempre vacía — ahí el selector no tenía
+    // ninguna opción). Solo se ofrecen las carpetas donde la persona puede
+    // administrar contenido (usuario_admin_de(), mismo criterio que crear/
+    // subir en esas carpetas desde su propio módulo) — llevar un archivo
+    // ahí es una acción administrativa, igual que subir uno cualquiera.
+    $carpetasDestinoDrive = [];
+    $todasLasCarpetasReales = $pdo->query('
+        SELECT c.id, c.parent_id, c.nombre, c.direccion_id, d.titulo AS direccion_titulo
+        FROM direccion_carpetas c
+        JOIN direcciones d ON d.id = c.direccion_id
+        ORDER BY d.titulo, c.nombre
+    ')->fetchAll();
+    $carpetasRealesPorId = [];
+    foreach ($todasLasCarpetasReales as $c) {
+        $carpetasRealesPorId[$c['id']] = $c;
+    }
+    foreach ($todasLasCarpetasReales as $c) {
+        if (!usuario_admin_de((int) $c['direccion_id'])) continue;
+        $ruta = [$c['nombre']];
+        $cursor = $c;
+        while ($cursor['parent_id'] && isset($carpetasRealesPorId[$cursor['parent_id']])) {
+            $cursor = $carpetasRealesPorId[$cursor['parent_id']];
+            array_unshift($ruta, $cursor['nombre']);
+        }
+        $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
+    }
 }
 
 require ROOT_PATH . '/app/Views/Portal/' . $modulo['vista'];

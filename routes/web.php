@@ -102,6 +102,15 @@ return [
     '/investigacion-innovacion/carpetas/descargar'     => 'CarpetaController.php',
     '/investigacion-innovacion/carpetas/eliminar'      => 'CarpetaController.php',
     '/gestion-documental'         => 'PortalController.php',
+
+    // Drive personal de cada usuario en Gestión Documental (distinto del
+    // "Traer de Drive" por link de arriba, que usa una cuenta de servicio
+    // compartida) — ver DriveUsuarioController.php.
+    '/gestion-documental/drive/conectar'    => 'DriveUsuarioController.php',
+    '/gestion-documental/drive/callback'    => 'DriveUsuarioController.php',
+    '/gestion-documental/drive/desconectar' => 'DriveUsuarioController.php',
+    '/gestion-documental/drive/importar'    => 'DriveUsuarioController.php',
+
     '/documentos/crear'           => 'DocumentoController.php',
     '/documentos/subir'           => 'DocumentoController.php',
     '/documentos/descargar'       => 'DocumentoController.php',

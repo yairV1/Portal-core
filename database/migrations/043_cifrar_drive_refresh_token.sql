@@ -1,0 +1,13 @@
+-- google_drive_refresh_token pasa a guardarse CIFRADO (ver
+-- app/Helpers/GoogleDrive.php, google_drive_refresh_token_cifrar()/
+-- _descifrar(), AES-256-GCM con APP_ENCRYPTION_KEY, ver .env.example) en
+-- vez de texto plano — un volcado de la BD ya no expone el refresh_token
+-- (acceso de lectura al Drive personal completo de cada usuario conectado)
+-- de nadie. Esta función es parte del mismo lote de cambios sin publicar
+-- que la creó (041_drive_personal_gestion_documental.sql), así que no hay
+-- tokens en texto plano en producción que migrar.
+--
+-- TEXT en vez de VARCHAR(512): el valor cifrado (IV de 12 bytes + tag de
+-- 16 bytes + el token, todo en base64) es más largo que el token original
+-- y no vale la pena calcular un límite ajustado.
+ALTER TABLE usuarios MODIFY COLUMN google_drive_refresh_token TEXT NULL;
