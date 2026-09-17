@@ -33,7 +33,21 @@
   Gestión Documental, Normatividad, Novedades, Aplicaciones, Mapa del portal
   ni Cuadro de Mando Integral) aunque migraciones posteriores (036, 040,
   041-043) sí están aplicadas — 035 quedó saltada al aplicar el resto a
-  mano. Reportado aparte para decidir si se aplica.
+  mano.
+- **Actualización 2026-09-17 — migración 035 aplicada en este contenedor:**
+  no se pudo correr el archivo tal cual por dos huecos previos de este mismo
+  volumen, ninguno causado por 035: (1) `nav_secciones` le faltaba la fila
+  `id=2` ('Direcciones') que `000_esquema_base.sql` ya define — sin ella,
+  cualquier `nav_items` con `seccion_id=2` viola la FK
+  `nav_items_seccion_fk`; (2) `nav_items` ya tenía la fila `id=6` (Inicio)
+  idéntica a la que 035 vuelve a insertar, lo que habría violado la PK. Se
+  aplicó un SQL adaptado (mismo contenido literal de 035, solo omitiendo lo
+  ya existente) directo contra el contenedor — el archivo de migración en
+  el repo no se tocó. Resultado verificado por conteo antes/después:
+  `nav_items` 5→20 filas, `nav_secciones` 2→3 filas; el sidebar completo
+  (Direcciones con sus 6 direcciones, Gestión Documental, Normatividad,
+  Novedades, Aplicaciones, Mapa del portal, Cuadro de Mando Integral con
+  sus 3 perspectivas) ya está confirmado por consulta directa a la tabla.
 
 ## Problema 4: Archivos sin trackear (GRUPO B)
 - `config/local.php.example` (modificado)
