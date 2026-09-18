@@ -31,6 +31,12 @@
         <span class="nombre">Postulaciones</span>
       </a>
     </article>
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL ?>/permisos-por-rol" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-shield-lock"></i></span>
+        <span class="nombre">Permisos por rol</span>
+      </a>
+    </article>
   </div>
 <?php endif; ?>
 

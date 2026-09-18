@@ -132,6 +132,46 @@ function usuario_area_asignada(): ?int {
     return $id !== null ? (int) $id : null;
 }
 
+// usuario_puede_ver_ruta(): ¿el rol de la sesión actual tiene vetado este
+// módulo? (ver PermisosController.php / migración 044_permisos_rol_nav_item.sql).
+// El admin global nunca se autolimitea. Modelo "solo excepciones": sin fila
+// en permisos_rol_negados, la ruta está permitida (comportamiento de
+// siempre) — esto solo puede QUITAR acceso, nunca dar uno que la propia
+// dirección/área ya no permitiera (usuario_area_asignada() sigue
+// aplicando aparte, en cada controlador). $uri sin ningún nav_item
+// (ej. /login, /perfil) nunca pasa por este mecanismo.
+function usuario_puede_ver_ruta(string $uri): bool {
+    global $pdo;
+    $rol = $_SESSION['usuario_rol'] ?? '';
+    if (!in_array($rol, ['admin_direccion', 'usuario'], true)) return true;
+
+    $navItems = $pdo->query("SELECT id, parent_id, ruta FROM nav_items WHERE ruta IS NOT NULL AND ruta != '/'")->fetchAll();
+    $masLargo = null;
+    foreach ($navItems as $item) {
+        $ruta = $item['ruta'];
+        if ($uri === $ruta || str_starts_with($uri, $ruta . '/')) {
+            if ($masLargo === null || strlen($ruta) > strlen($masLargo['ruta'])) {
+                $masLargo = $item;
+            }
+        }
+    }
+    if ($masLargo === null) return true;
+
+    // Solo los módulos de primer nivel (parent_id NULL) aparecen en el
+    // checklist de PermisosController.php — un hijo (ej. submenú del
+    // Cuadro de Mando Integral) hereda el permiso de su padre, así que se
+    // sube hasta la raíz antes de consultar.
+    $porId = array_column($navItems, null, 'id');
+    $raizId = $masLargo['id'];
+    while (!empty($porId[$raizId]['parent_id'])) {
+        $raizId = $porId[$raizId]['parent_id'];
+    }
+
+    $stmt = $pdo->prepare('SELECT 1 FROM permisos_rol_negados WHERE nav_item_id = :id AND rol = :rol');
+    $stmt->execute([':id' => $raizId, ':rol' => $rol]);
+    return !$stmt->fetchColumn();
+}
+
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)
 require ROOT_PATH . '/config/database.php';
 
@@ -160,6 +200,11 @@ if (BASE_URL !== '' && strpos($uri, BASE_URL) === 0) {
 }
 
 if (isset($rutas[$uri])) {
+    if (!empty($_SESSION['usuario_id']) && !usuario_puede_ver_ruta($uri)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
     require ROOT_PATH . '/app/Controllers/' . $rutas[$uri];
 } else {
     mostrar_error(404);

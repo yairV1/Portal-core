@@ -41,6 +41,11 @@ return [
     // solo ítem de sidebar (ver migración 039_nav_todos_los_modulos.sql)
     '/modulos' => 'ModulosController.php',
 
+    // Permisos por rol — solo admin global (ver migración
+    // 044_permisos_rol_nav_item.sql)
+    '/permisos-por-rol'          => 'PermisosController.php',
+    '/permisos-por-rol/guardar'  => 'PermisosController.php',
+
     // Panel de usuarios y roles — solo admin global (ver migración
     // 036_roles_por_direccion.sql)
     '/usuarios'         => 'UsuariosController.php',
