@@ -22,6 +22,13 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+// google_drive_oauth_sincronizar_archivo(): sube/actualiza una copia en el
+// Drive de quien sube/crea el archivo — decisión explícita del cliente,
+// aplica siempre que esa persona tenga su Drive conectado (ver
+// GoogleDrive.php y migración 042_drive_sync_automatica.sql). Si no lo
+// tiene conectado, no hace nada — nunca tumba la acción principal.
+require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+
 $carpetaStorage = ROOT_PATH . '/storage/direccion_carpetas';
 
 // Igual que TrabajoController.php/ContratacionController.php: se valida el
@@ -65,7 +72,7 @@ foreach ($pdo->query('SELECT id, slug FROM direcciones')->fetchAll() as $d) {
 $accionCarpeta = null;
 $rutaModuloDeUri = '/administrativa-financiera'; // respaldo si algo falla antes de conocer direccion_id
 foreach (array_values($mapaSlugRuta) as $prefijo) {
-    if (preg_match('#^' . preg_quote($prefijo, '#') . '/carpetas/(crear|subir|importar-drive|descargar|eliminar)$#', $uri, $m)) {
+    if (preg_match('#^' . preg_quote($prefijo, '#') . '/carpetas/(crear|crear-documento|subir|importar-drive|descargar|eliminar)$#', $uri, $m)) {
         $accionCarpeta = $m[1];
         $rutaModuloDeUri = $prefijo;
         break;
@@ -96,7 +103,15 @@ if ($accionCarpeta === 'crear') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    $slugModulo = array_search($rutaModuloDeUri, $mapaSlugRuta, true);
+    $stmt = $pdo->prepare('SELECT id FROM direcciones WHERE slug = :slug');
+    $stmt->execute([':slug' => $slugModulo]);
+    $direccion = $stmt->fetch();
+    if (!$direccion) {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
+        exit;
+    }
+    $direccionId = (int) $direccion['id'];
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -107,7 +122,11 @@ if ($accionCarpeta === 'crear') {
         exit;
     }
 
-    $parentId = ($_POST['carpeta_id'] ?? '') !== '' ? (int) $_POST['carpeta_id'] : null;
+    // "0" (lo que manda el formulario cuando no hay ninguna carpeta abierta,
+    // ver _explorador_documental.php) debe tratarse igual que vacío: raíz
+    // del módulo (parent_id NULL) — un id real de carpeta siempre es >0
+    // (AUTO_INCREMENT), así que empty() no puede confundirse con uno real.
+    $parentId = !empty($_POST['carpeta_id']) ? (int) $_POST['carpeta_id'] : null;
     $nombre = trim($_POST['nombre'] ?? '');
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
     $area = ($_POST['area'] ?? '') === 'finanzas' ? 'finanzas' : 'administracion';
@@ -141,7 +160,17 @@ if ($accionCarpeta === 'subir') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva de la carpeta real (no del POST) — mismo
+    // criterio que ya usa 'crear' más arriba: nunca confiar en qué
+    // dirección dice el formulario que es, sino en la que de verdad es
+    // dueña de la carpeta destino.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -152,14 +181,7 @@ if ($accionCarpeta === 'subir') {
         exit;
     }
 
-    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
-
-    $stmt = $pdo->prepare('SELECT id FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-    $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
-    if (!$stmt->fetch()) {
-        volver_a_carpeta($rutaModulo, null, 'error');
-    }
 
     $archivo = $_FILES['documento'] ?? null;
     if (empty($archivo['tmp_name']) || $archivo['error'] !== UPLOAD_ERR_OK) {
@@ -206,7 +228,88 @@ if ($accionCarpeta === 'subir') {
     $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
         ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
 
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $carpetaStorage . '/' . $nombreArchivo, $nombreArchivo, $mime);
+
     volver_a_carpeta($rutaModulo, $carpetaId, '1');
+}
+
+// ---- /administrativa-financiera/carpetas/crear-documento (POST) ----
+// Tercera forma de meter un archivo a una carpeta (junto a /subir e
+// /importar-drive): un Word/Excel/PowerPoint EN BLANCO para empezar a
+// escribir de una vez, sin tener ya un archivo hecho en el equipo. Copia
+// la plantilla vacía correspondiente (ver storage/plantillas_office/,
+// extraídas tal cual del propio OnlyOffice — no son plantillas
+// institucionales, son la hoja en blanco de siempre de Word/Excel/
+// PowerPoint) y manda derecho al editor ya en modo edición (ver
+// EditorController.php), no de vuelta a la carpeta.
+if ($accionCarpeta === 'crear-documento') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri);
+        exit;
+    }
+    // direccion_id se deriva de la carpeta real (no del POST) — ver el
+    // mismo criterio en 'subir' arriba.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
+    if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
+        exit;
+    }
+
+    $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
+
+    $PLANTILLAS_EN_BLANCO = ['docx' => 'blank.docx', 'xlsx' => 'blank.xlsx', 'pptx' => 'blank.pptx'];
+    $formato = $_POST['formato'] ?? '';
+    if (!isset($PLANTILLAS_EN_BLANCO[$formato])) {
+        volver_a_carpeta($rutaModulo, $carpetaId, 'formato');
+    }
+    $plantilla = ROOT_PATH . '/storage/plantillas_office/' . $PLANTILLAS_EN_BLANCO[$formato];
+    if (!is_file($plantilla)) {
+        volver_a_carpeta($rutaModulo, $carpetaId, 'error');
+    }
+
+    if (!is_dir($carpetaStorage)) {
+        mkdir($carpetaStorage, 0775, true);
+    }
+
+    $nombreOriginal = trim($_POST['nombre'] ?? '') ?: 'Documento sin título';
+    $stmt = $pdo->prepare('INSERT INTO direccion_carpeta_archivos (carpeta_id, nombre, archivo, peso_bytes) VALUES (:cid, :nombre, :archivo, :peso)');
+    $stmt->execute([
+        ':cid'     => $carpetaId,
+        ':nombre'  => mb_substr($nombreOriginal, 0, 150),
+        ':archivo' => '',
+        ':peso'    => filesize($plantilla),
+    ]);
+    $archivoId = (int) $pdo->lastInsertId();
+
+    $nombreArchivo = 'archivo_' . $archivoId . '.' . $formato;
+    if (!copy($plantilla, $carpetaStorage . '/' . $nombreArchivo)) {
+        $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
+        volver_a_carpeta($rutaModulo, $carpetaId, 'error');
+    }
+
+    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
+        ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
+
+    $MIME_POR_FORMATO_BLANCO = [
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $carpetaStorage . '/' . $nombreArchivo, $nombreArchivo, $MIME_POR_FORMATO_BLANCO[$formato]);
+
+    header('Location: ' . BASE_URL . '/editor?tipo=carpeta&id=' . $archivoId . '&volver=' . urlencode(BASE_URL . $rutaModulo . '?carpeta=' . $carpetaId));
+    exit;
 }
 
 // ---- /administrativa-financiera/carpetas/importar-drive (POST) ----
@@ -221,7 +324,15 @@ if ($accionCarpeta === 'importar-drive') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva de la carpeta real (no del POST) — ver el
+    // mismo criterio en 'subir' arriba.
+    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+    $stmt->execute([':id' => $carpetaId]);
+    $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -232,14 +343,7 @@ if ($accionCarpeta === 'importar-drive') {
         exit;
     }
 
-    $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     $rutaModulo = $rutaPorDireccionId[$direccionId] ?? $rutaModuloDeUri;
-
-    $stmt = $pdo->prepare('SELECT id FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-    $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
-    if (!$stmt->fetch()) {
-        volver_a_carpeta($rutaModulo, null, 'error');
-    }
 
     require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
 
@@ -259,18 +363,36 @@ if ($accionCarpeta === 'importar-drive') {
         // distinguir cuál de los dos fue, así que el aviso cubre ambos.
         volver_a_carpeta($rutaModulo, $carpetaId, 'drive_no_encontrado');
     }
-    if (str_starts_with($meta['mimeType'] ?? '', 'application/vnd.google-apps.')) {
-        // Documentos/Hojas/Presentaciones nativos de Google no tienen
-        // bytes descargables tal cual — habría que exportarlos primero
-        // (desde Drive: Archivo → Descargar → PDF/Word) y traer ese
-        // archivo ya exportado, no el original.
-        volver_a_carpeta($rutaModulo, $carpetaId, 'drive_google_doc');
+    // Un Doc/Sheet/Slide NATIVO de Google (mimeType "application/vnd.google-
+    // apps.*") no tiene bytes propios que bajar — hay que pedirle a Drive
+    // que lo CONVIERTA al vuelo a su equivalente de Office (ver
+    // google_drive_exportar() en GoogleDrive.php). Solo esos 3 tienen un
+    // equivalente razonable; Formularios/Dibujos/etc. siguen bloqueados,
+    // no hay a qué exportarlos.
+    $EXPORTAR_GOOGLE_NATIVO = [
+        'application/vnd.google-apps.document'     => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.google-apps.spreadsheet'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.google-apps.presentation' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    $mimeOrigen = $meta['mimeType'] ?? '';
+    $esGoogleNativo = str_starts_with($mimeOrigen, 'application/vnd.google-apps.');
+
+    if ($esGoogleNativo) {
+        if (!isset($EXPORTAR_GOOGLE_NATIVO[$mimeOrigen])) {
+            volver_a_carpeta($rutaModulo, $carpetaId, 'drive_google_doc');
+        }
+        $mimeFinal = $EXPORTAR_GOOGLE_NATIVO[$mimeOrigen];
+    } else {
+        $mimeFinal = $mimeOrigen;
+        // El tamaño exportado de un nativo no se sabe de antemano (Drive
+        // lo genera al vuelo) — para esos se revisa DESPUÉS de exportar,
+        // más abajo; para un archivo real, Drive ya informa su tamaño acá.
+        if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
+            volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
+        }
     }
-    if (!isset($MIME_PERMITIDOS[$meta['mimeType'] ?? ''])) {
+    if (!isset($MIME_PERMITIDOS[$mimeFinal])) {
         volver_a_carpeta($rutaModulo, $carpetaId, 'formato');
-    }
-    if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
-        volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
     }
 
     if (!is_dir($carpetaStorage)) {
@@ -287,14 +409,25 @@ if ($accionCarpeta === 'importar-drive') {
     ]);
     $archivoId = (int) $pdo->lastInsertId();
 
-    $nombreArchivo = 'archivo_' . $archivoId . '.' . $MIME_PERMITIDOS[$meta['mimeType']];
-    if (!google_drive_descargar($fileId, $carpetaStorage . '/' . $nombreArchivo)) {
+    $nombreArchivo = 'archivo_' . $archivoId . '.' . $MIME_PERMITIDOS[$mimeFinal];
+    $rutaDestino = $carpetaStorage . '/' . $nombreArchivo;
+    $descargaOk = $esGoogleNativo
+        ? google_drive_exportar($fileId, $mimeFinal, $rutaDestino)
+        : google_drive_descargar($fileId, $rutaDestino);
+    if (!$descargaOk) {
         $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
         volver_a_carpeta($rutaModulo, $carpetaId, 'drive_no_encontrado');
     }
+    if ($esGoogleNativo && filesize($rutaDestino) > 15 * 1024 * 1024) {
+        unlink($rutaDestino);
+        $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
+        volver_a_carpeta($rutaModulo, $carpetaId, 'tamano');
+    }
 
-    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo WHERE id = :id')
-        ->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
+    $pdo->prepare('UPDATE direccion_carpeta_archivos SET archivo = :archivo, peso_bytes = :peso WHERE id = :id')
+        ->execute([':archivo' => $nombreArchivo, ':peso' => filesize($rutaDestino), ':id' => $archivoId]);
+
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], 'direccion_carpeta_archivos', $archivoId, $rutaDestino, $nombreArchivo, $mimeFinal);
 
     volver_a_carpeta($rutaModulo, $carpetaId, 'importado');
 }
@@ -317,6 +450,16 @@ if ($accionCarpeta === 'descargar') {
     $fila = $stmt->fetch();
     if ($fila && !isset($rutaPorDireccionId[$fila['direccion_id']])) {
         $fila = false;
+    }
+    // Mismo bloqueo por área que PortalController.php (ver
+    // usuario_area_asignada()) — sin esto, alguien restringido a su propia
+    // dirección podría igual descargar un archivo de otra si adivina o
+    // guarda el id, sin pasar nunca por la página bloqueada.
+    if ($fila) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
+            $fila = false;
+        }
     }
 
     $ruta = $fila ? $carpetaStorage . '/' . $fila['archivo'] : null;
@@ -355,7 +498,25 @@ if ($accionCarpeta === 'eliminar') {
         header('Location: ' . BASE_URL . $rutaModuloDeUri);
         exit;
     }
-    $direccionId = (int) ($_POST['direccion_id'] ?? 0);
+    // direccion_id se deriva del archivo/carpeta real que se va a borrar
+    // (no del POST) — ver el mismo criterio en 'subir' arriba.
+    $direccionId = 0;
+    if (!empty($_POST['archivo_id'])) {
+        $stmt = $pdo->prepare('
+            SELECT c.direccion_id FROM direccion_carpeta_archivos a
+            JOIN direccion_carpetas c ON c.id = a.carpeta_id
+            WHERE a.id = :id
+        ');
+        $stmt->execute([':id' => (int) $_POST['archivo_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    } elseif (!empty($_POST['carpeta_id'])) {
+        $stmt = $pdo->prepare('SELECT direccion_id FROM direccion_carpetas WHERE id = :id');
+        $stmt->execute([':id' => (int) $_POST['carpeta_id']]);
+        $direccionId = (int) ($stmt->fetchColumn() ?: 0);
+    }
+    if (!$direccionId) {
+        volver_a_carpeta($rutaModuloDeUri, null, 'error');
+    }
     if (!usuario_admin_de($direccionId)) {
         http_response_code(403);
         mostrar_error(403);
@@ -370,12 +531,8 @@ if ($accionCarpeta === 'eliminar') {
 
     if (!empty($_POST['archivo_id'])) {
         $archivoId = (int) $_POST['archivo_id'];
-        $stmt = $pdo->prepare('
-            SELECT a.archivo, a.carpeta_id FROM direccion_carpeta_archivos a
-            JOIN direccion_carpetas c ON c.id = a.carpeta_id
-            WHERE a.id = :id AND c.direccion_id = :did
-        ');
-        $stmt->execute([':id' => $archivoId, ':did' => $direccionId]);
+        $stmt = $pdo->prepare('SELECT archivo, carpeta_id FROM direccion_carpeta_archivos WHERE id = :id');
+        $stmt->execute([':id' => $archivoId]);
         $fila = $stmt->fetch();
         if (!$fila) {
             volver_a_carpeta($rutaModulo, null, 'error');
@@ -390,8 +547,8 @@ if ($accionCarpeta === 'eliminar') {
 
     if (!empty($_POST['carpeta_id'])) {
         $carpetaId = (int) $_POST['carpeta_id'];
-        $stmt = $pdo->prepare('SELECT parent_id, area FROM direccion_carpetas WHERE id = :id AND direccion_id = :did');
-        $stmt->execute([':id' => $carpetaId, ':did' => $direccionId]);
+        $stmt = $pdo->prepare('SELECT parent_id, area FROM direccion_carpetas WHERE id = :id');
+        $stmt->execute([':id' => $carpetaId]);
         $fila = $stmt->fetch();
         if (!$fila) {
             volver_a_carpeta($rutaModulo, null, 'error');

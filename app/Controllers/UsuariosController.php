@@ -42,7 +42,13 @@ if ($uri === '/usuarios/crear') {
     $correo = trim(strtolower($_POST['correo'] ?? ''));
     $cargo = trim($_POST['cargo'] ?? '') ?: null;
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
-    $direccionId = $rol === 'admin_direccion' ? (int) ($_POST['direccion_id'] ?? 0) : null;
+    // Área de trabajo: obligatoria para admin_direccion (administra esa
+    // dirección), opcional para 'usuario' (si se la asignas, ve SOLO esa
+    // dirección — ver usuario_area_asignada() en public/index.php; sin
+    // asignar, sigue viendo todo el portal como siempre). 'admin' nunca
+    // queda atado a ninguna.
+    $direccionIdPedida = (int) ($_POST['direccion_id'] ?? 0);
+    $direccionId = in_array($rol, ['admin_direccion', 'usuario'], true) && $direccionIdPedida ? $direccionIdPedida : null;
     $password = $_POST['password'] ?? '';
 
     if ($nombre === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
@@ -50,6 +56,20 @@ if ($uri === '/usuarios/crear') {
     }
     if ($rol === 'admin_direccion' && !$direccionId) {
         usuarios_volver('direccion');
+    }
+    // La dirección tiene que existir de verdad — el <select> del formulario
+    // solo ofrece direcciones reales, pero nada impide un POST directo con
+    // un id inventado (mismo criterio que ya usa DocumentoController.php al
+    // crear un direccion_documentos). Sí existe usuarios_direccion_fk
+    // (migración 036), así que sin este chequeo un id inventado ya fallaba
+    // — pero como una PDOException sin capturar (error 500 en blanco) en
+    // vez de un aviso claro para quien administra usuarios.
+    if ($direccionId !== null) {
+        $stmt = $pdo->prepare('SELECT id FROM direcciones WHERE id = :id');
+        $stmt->execute([':id' => $direccionId]);
+        if (!$stmt->fetch()) {
+            usuarios_volver('direccion');
+        }
     }
 
     $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE correo = :correo');
@@ -81,7 +101,8 @@ if ($uri === '/usuarios/editar') {
     $correo = trim(strtolower($_POST['correo'] ?? ''));
     $cargo = trim($_POST['cargo'] ?? '') ?: null;
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
-    $direccionId = $rol === 'admin_direccion' ? (int) ($_POST['direccion_id'] ?? 0) : null;
+    $direccionIdPedida = (int) ($_POST['direccion_id'] ?? 0);
+    $direccionId = in_array($rol, ['admin_direccion', 'usuario'], true) && $direccionIdPedida ? $direccionIdPedida : null;
     $password = $_POST['password'] ?? ''; // vacío = no cambiar la contraseña
 
     if ($nombre === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
@@ -89,6 +110,14 @@ if ($uri === '/usuarios/editar') {
     }
     if ($rol === 'admin_direccion' && !$direccionId) {
         usuarios_volver('direccion');
+    }
+    // Misma validación que /usuarios/crear — ver el comentario ahí.
+    if ($direccionId !== null) {
+        $stmt = $pdo->prepare('SELECT id FROM direcciones WHERE id = :id');
+        $stmt->execute([':id' => $direccionId]);
+        if (!$stmt->fetch()) {
+            usuarios_volver('direccion');
+        }
     }
     if ($password !== '' && strlen($password) < 8) {
         usuarios_volver('datos');

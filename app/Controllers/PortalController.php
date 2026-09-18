@@ -11,6 +11,12 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+// onlyoffice_configurado()/onlyoffice_editable() — las vistas de este
+// controlador (Financiera.php/Tal_Humano.php/Documental.php...) los usan
+// para decidir si muestran el botón "Editar"/"Abrir" del editor de Office
+// (ver EditorController.php).
+require_once ROOT_PATH . '/app/Helpers/OnlyOffice.php';
+
 $modulos = [
     '/cuadro-mando-integral'      => ['titulo' => 'Cuadro de Mando Integral',    'vista' => 'Tablero_Estrategicos/Tablero.php'],
     // Perspectivas del CMI: rutas propias y vacías (sin fila en
@@ -34,6 +40,7 @@ $modulos = [
     '/aplicaciones'               => ['titulo' => 'Aplicaciones',                'vista' => 'Aplicaciones/Aplicaciones.php'],
     '/directorio'                 => ['titulo' => 'Directorio',                  'vista' => 'Directorio/Directorio.php'],
     '/calendario'                 => ['titulo' => 'Calendario',                  'vista' => 'Calendario/Calendario.php'],
+    '/trello'                     => ['titulo' => 'Trello',                      'vista' => 'Trello/Trello.php'],
 ];
 
 $modulo = $modulos[$uri] ?? null;
@@ -45,16 +52,56 @@ if (!$modulo) {
 
 $titulo = $modulo['titulo'];
 
+// Las vistas de los módulos documentales también deben poder renderizarse
+// cuando todavía no existe la fila de configuración de su dirección.
+$direccion = null;
+$moduloKicker = '';
+$moduloTitulo = $titulo;
+$moduloDesc = '';
+$moduloKpis = [];
+$moduloAreas = [];
+$moduloDocumentos = [];
+$moduloFormatos = [];
+$moduloResponsables = [];
+$moduloSoftware = [];
+$carpetaActual = null;
+$carpetaIdActual = null;
+$rutaCarpetas = [];
+$subcarpetas = [];
+$archivosCarpeta = [];
+$archivosRecientes = [];
+$terminoBusqueda = '';
+$resultadosBusqueda = null;
+
 // ── Módulo genérico de dirección (6 rutas comparten esta única consulta,
 //    parametrizada por slug — ver database/migrations/002_kpis_e_iconos.sql
 //    y las tablas direcciones/direccion_kpis/direccion_areas/
 //    direccion_documentos (ver 007_direccion_documentos.sql)). Responsables
 //    y software todavía no tienen tabla real (ver plan) y siguen viniendo
 //    del MODULO.responsables/software de cada *.js. ──
+// Direcciones reales (no las perspectivas del CMI, que son analítica
+// compartida, no un área de trabajo a la que se asigne gente) — un usuario
+// con área asignada (ver usuario_area_asignada() en public/index.php) solo
+// puede entrar a la suya; cualquier otra le devuelve 403, tanto por acá
+// como si intenta la URL directa. Sin fila en `direcciones` todavía
+// (institucional/sgi/academica/investigacion, ver roadmap) nadie puede
+// estar asignado a ellas, así que siguen abiertas para todos mientras
+// tanto.
+$DIRECCIONES_REALES = ['institucional', 'sgi', 'academica', 'financiera', 'talento-humano', 'investigacion'];
+
 if (!empty($modulo['slug'])) {
     $stmt = $pdo->prepare('SELECT id, kicker, titulo, descripcion FROM direcciones WHERE slug = :slug');
     $stmt->execute([':slug' => $modulo['slug']]);
     $direccion = $stmt->fetch();
+
+    if ($direccion && in_array($modulo['slug'], $DIRECCIONES_REALES, true)) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $direccion['id']) {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
+    }
 
     $moduloKicker = $direccion['kicker'] ?? '';
     $moduloTitulo = $direccion['titulo'] ?? $titulo;
@@ -308,17 +355,30 @@ if ($uri === '/cuadro-mando-integral') {
     $tableroEjecucion = $pdo->query('SELECT label, pct FROM ejecucion_presupuestal ORDER BY orden')->fetchAll();
     $tableroAlertas = $pdo->query('SELECT texto FROM alertas_indicador ORDER BY orden')->fetchAll();
 
-    // Enlaces a los 4 submódulos (Finanzas/Planeación/Vicerrectoría
-    // Académica/Investigación): misma fuente que ya arma el submenú del
-    // sidebar (nav_items.parent_id — ver migration 025), así que la
-    // página y el menú nunca quedan desincronizados.
-    $stmt = $pdo->prepare("SELECT ni.label, ni.ruta, ni.icono
-        FROM nav_items ni
-        JOIN nav_items padre ON padre.id = ni.parent_id
-        WHERE padre.slug = 'cuadro-mando-integral'
-        ORDER BY ni.orden");
-    $stmt->execute();
-    $tableroSubmodulos = $stmt->fetchAll();
+    // Antes se leía de nav_items.parent_id (migración 025) para no
+    // desincronizarse del submenú del sidebar — pero la migración 039 sacó
+    // "Cuadro de Mando Integral" del sidebar entero (absorbido por "Todos
+    // los módulos") y de paso borró esas filas hijas por
+    // nav_items_parent_fk ON DELETE CASCADE, dejando esta sección
+    // silenciosamente vacía aunque las 4 rutas siguen funcionando. Ya no
+    // hay ningún menú con el que sincronizarse, así que se arma directo
+    // desde $modulos (misma fuente de arriba, no una lista nueva) — con
+    // isset() por si el día de mañana $modulos deja de ser un array fijo:
+    // una entrada que falte se omite en silencio en vez de un
+    // "Undefined array key".
+    $ICONOS_SUBMODULOS_CMI = [
+        '/cuadro-mando-integral/finanzas'               => 'cash-coin',
+        '/cuadro-mando-integral/planeacion'              => 'bullseye',
+        '/cuadro-mando-integral/vicerrectoria-academica' => 'mortarboard',
+        '/cuadro-mando-integral/investigacion'           => 'stars',
+    ];
+    $tableroSubmodulos = [];
+    foreach ($ICONOS_SUBMODULOS_CMI as $ruta => $icono) {
+        if (!isset($modulos[$ruta])) {
+            continue;
+        }
+        $tableroSubmodulos[] = ['label' => $modulos[$ruta]['titulo'], 'ruta' => $ruta, 'icono' => $icono];
+    }
 }
 
 // ── Directorio (fase 4) ──
@@ -437,6 +497,69 @@ if ($uri === '/gestion-documental') {
         if (empty($areasPorDireccion[$dir['id']])) continue;
         $direccionesDoc[] = $dir;
     }
+
+    // ── Drive personal (ver DriveUsuarioController.php/GoogleDrive.php) ──
+    require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+    $miDriveOauthConfigurado = google_drive_oauth_configurado();
+    $miDriveConectado = false;
+    $misArchivosDrive = [];
+    $miDriveSiguientePagina = null;
+
+    $stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
+    $stmt->execute([':id' => $_SESSION['usuario_id']]);
+    $miDriveTokenGuardado = $stmt->fetchColumn();
+    $miDriveRefreshToken = google_drive_refresh_token_descifrar($miDriveTokenGuardado ?: null);
+    // "conectado" es tener una fila guardada, aunque no se pueda descifrar
+    // (clave rotada) — así el botón "Desconectar" sigue disponible para
+    // limpiar ese estado en vez de desaparecer sin explicación.
+    if ($miDriveTokenGuardado) {
+        $miDriveConectado = true;
+        $miDriveAccessToken = $miDriveRefreshToken ? google_drive_oauth_refrescar($miDriveRefreshToken) : null;
+        if ($miDriveAccessToken) {
+            $resultadoListado = google_drive_oauth_listar($miDriveAccessToken, $_GET['drive_token'] ?? null);
+            if ($resultadoListado) {
+                $misArchivosDrive = $resultadoListado['files'] ?? [];
+                $miDriveSiguientePagina = $resultadoListado['nextPageToken'] ?? null;
+            }
+        }
+    }
+
+    // A dónde puede ir un archivo importado — las carpetas REALES que ya
+    // administran Financiera/Talento Humano/etc. (direccion_carpetas, ver
+    // CarpetaController.php), no carpetas_documentales de arriba (nunca se
+    // llegó a usar de verdad, siempre vacía — ahí el selector no tenía
+    // ninguna opción). Solo se ofrecen las carpetas donde la persona puede
+    // administrar contenido (usuario_admin_de(), mismo criterio que crear/
+    // subir en esas carpetas desde su propio módulo) — llevar un archivo
+    // ahí es una acción administrativa, igual que subir uno cualquiera.
+    $carpetasDestinoDrive = [];
+    $todasLasCarpetasReales = $pdo->query('
+        SELECT c.id, c.parent_id, c.nombre, c.direccion_id, d.titulo AS direccion_titulo
+        FROM direccion_carpetas c
+        JOIN direcciones d ON d.id = c.direccion_id
+        ORDER BY d.titulo, c.nombre
+    ')->fetchAll();
+    $carpetasRealesPorId = [];
+    foreach ($todasLasCarpetasReales as $c) {
+        $carpetasRealesPorId[$c['id']] = $c;
+    }
+    foreach ($todasLasCarpetasReales as $c) {
+        if (!usuario_admin_de((int) $c['direccion_id'])) continue;
+        $ruta = [$c['nombre']];
+        $cursor = $c;
+        while ($cursor['parent_id'] && isset($carpetasRealesPorId[$cursor['parent_id']])) {
+            $cursor = $carpetasRealesPorId[$cursor['parent_id']];
+            array_unshift($ruta, $cursor['nombre']);
+        }
+        $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
+    }
+}
+
+// ── Trello (tablero externo de solo lectura, ver app/Helpers/Trello.php) ──
+if ($uri === '/trello') {
+    require_once ROOT_PATH . '/app/Helpers/Trello.php';
+    $trelloConfigurado = trello_configurado();
+    $trelloListas = $trelloConfigurado ? trello_listas_con_tarjetas() : null;
 }
 
 require ROOT_PATH . '/app/Views/Portal/' . $modulo['vista'];

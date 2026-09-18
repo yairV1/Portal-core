@@ -13,6 +13,10 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+// google_drive_oauth_sincronizar_archivo(): ver CarpetaController.php —
+// misma sincronización automática hacia el Drive de quien sube el archivo.
+require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+
 // Fuera de public/ a propósito: si viviera en public/uploads/, Apache lo
 // serviría directo con solo conocer la URL, sin pasar por el login (así
 // funcionan hoy el logo y las fotos de perfil, pero esos no son
@@ -195,15 +199,28 @@ if ($uri === '/documentos/subir') {
     $stmt = $pdo->prepare("UPDATE {$TABLA} SET archivo = :archivo WHERE id = :id");
     $stmt->execute([':archivo' => $nombreArchivo, ':id' => $archivoId]);
 
+    google_drive_oauth_sincronizar_archivo($pdo, (int) $_SESSION['usuario_id'], $TABLA, $archivoId, $carpetaArchivos . '/' . $nombreArchivo, $nombreArchivo, $mime);
+
     volver_documento($volver, '1', $area);
 }
 
 // ---- /documentos/descargar ----
 if ($uri === '/documentos/descargar') {
     $archivoId = (int) ($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT nombre, archivo FROM {$TABLA} WHERE id = :id");
+    $campoDireccion = $esDireccion ? ', direccion_id' : '';
+    $stmt = $pdo->prepare("SELECT nombre, archivo{$campoDireccion} FROM {$TABLA} WHERE id = :id");
     $stmt->execute([':id' => $archivoId]);
     $fila = $stmt->fetch();
+
+    // Mismo bloqueo por área que PortalController.php/CarpetaController.php
+    // (ver usuario_area_asignada()) — archivos_documentales (Gestión
+    // Documental) no tiene dirección, así que no aplica ahí.
+    if ($fila && $esDireccion) {
+        $areaAsignada = usuario_area_asignada();
+        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
+            $fila = false;
+        }
+    }
 
     if (!$fila || !$fila['archivo']) {
         http_response_code(404);

@@ -29,6 +29,24 @@ services:
       # Administrativa y Financiera (ver app/Helpers/GoogleDrive.php). Sin
       # ella, ese botón avisa que no está configurado.
       GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE: ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE:-}
+      # Cifra el refresh_token del Drive personal de cada usuario antes de
+      # guardarlo en la BD (ver app/Helpers/GoogleDrive.php). Sin ella,
+      # "Conectar mi Google Drive" avisa que no está configurado en vez de
+      # guardar el token sin cifrar.
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
+      # Editor de Word/Excel/PowerPoint dentro del portal (opcional, ver
+      # EditorController.php/OnlyOffice.php) — mismo secreto que el
+      # contenedor "onlyoffice" de más abajo, para firmar/verificar la
+      # comunicación entre ambos. Sin ONLYOFFICE_JWT_SECRET, el botón
+      # "Editar" de los documentos de Office simplemente no aparece.
+      ONLYOFFICE_JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
+      ONLYOFFICE_PORT: ${ONLYOFFICE_PORT:-8082}
+      # Tablero de Trello en "Todos los módulos" → Trello (opcional, ver
+      # app/Helpers/Trello.php). Sin ellas, ese módulo avisa que no está
+      # configurado.
+      TRELLO_API_KEY: ${TRELLO_API_KEY:-}
+      TRELLO_TOKEN: ${TRELLO_TOKEN:-}
+      TRELLO_BOARD_ID: ${TRELLO_BOARD_ID:-}
     depends_on:
       db:
         condition: service_healthy
@@ -64,5 +82,29 @@ services:
       - db
     restart: unless-stopped
 
+  # Editor de Word/Excel/PowerPoint dentro del portal (opcional, ver
+  # .env.example) — OnlyOffice Docs, autoalojado. "app" le pide el archivo
+  # y recibe los cambios guardados por acá mismo (red interna de Docker,
+  # nombre de servicio "app"); el navegador del usuario solo carga su
+  # interfaz de edición vía ONLYOFFICE_PORT (ver EditorController.php).
+  # JWT_SECRET firma esa comunicación para que nadie más pueda hablarle al
+  # contenedor ni hacerse pasar por él.
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    environment:
+      JWT_ENABLED: "true"
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
+      JWT_HEADER: Authorization
+    ports:
+      - "${ONLYOFFICE_PORT:-8082}:80"
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_log:/var/log/onlyoffice
+      - onlyoffice_cache:/var/lib/onlyoffice/documentserver/App_Data/cache/files
+    restart: unless-stopped
+
 volumes:
   db_data:
+  onlyoffice_data:
+  onlyoffice_log:
+  onlyoffice_cache:

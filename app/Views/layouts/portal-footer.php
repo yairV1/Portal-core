@@ -155,6 +155,32 @@
 </script>
 <?php endif; ?>
 
+<?php if (isset($_GET['drive_personal'])): ?>
+<script>
+  // Aviso del Drive personal en Gestión Documental (ver
+  // DriveUsuarioController.php, que agrega ?drive_personal=... al volver).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['drive_personal'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      'conectado': { icon: 'success', title: 'Tu Google Drive quedó conectado' },
+      'desconectado': { icon: 'success', title: 'Desconectaste tu Google Drive' },
+      'importado': { icon: 'success', title: 'Documento importado desde tu Drive' },
+      'no_configurado': { icon: 'error', title: 'Conectar Drive todavía no está configurado en este entorno' },
+      'sin_refresh': { icon: 'error', title: 'Google no autorizó el acceso — intenta conectar de nuevo' },
+      'no_conectado': { icon: 'error', title: 'Conecta tu Google Drive primero' },
+      'token_vencido': { icon: 'error', title: 'Tu conexión con Drive venció — conéctala de nuevo' },
+      'no_encontrado': { icon: 'error', title: 'No se pudo acceder a ese archivo' },
+      'formato': { icon: 'error', title: 'Ese archivo debe ser PDF, Word, Excel o PowerPoint (o un Doc/Sheet/Slide de Google)' },
+      'tamano': { icon: 'error', title: 'El archivo pesa más de 15 MB' },
+      'error': { icon: 'error', title: 'No se pudo completar la acción' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
 <?php if (isset($_GET['evento'])): ?>
 <script>
   // Aviso tras crear un evento (ver EventoController.php, que agrega

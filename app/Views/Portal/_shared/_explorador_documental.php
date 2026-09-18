@@ -14,6 +14,7 @@
  * — no hay banner propio acá.
  */
 $esAdminExplorador = usuario_admin_de($direccion['id'] ?? null);
+$urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpeta=' . (int) $carpetaActual['id'] : '');
 ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/explorador.css') ?>">
 
@@ -50,6 +51,9 @@ $esAdminExplorador = usuario_admin_de($direccion['id'] ?? null);
         <button type="button" class="doc-modal-tab-btn active" data-tab="carpeta"><i class="bi bi-folder-plus"></i> Carpeta</button>
         <button type="button" class="doc-modal-tab-btn" data-tab="subir"><i class="bi bi-upload"></i> Archivo</button>
         <button type="button" class="doc-modal-tab-btn" data-tab="drive"><i class="bi bi-google"></i> Drive</button>
+        <?php if (onlyoffice_configurado()): ?>
+          <button type="button" class="doc-modal-tab-btn" data-tab="nuevo"><i class="bi bi-file-earmark-plus"></i> Documento nuevo</button>
+        <?php endif; ?>
       </div>
 
       <form action="<?= BASE_URL . $rutaModuloActual ?>/carpetas/crear" method="post" class="doc-modal-section" data-section="carpeta">
@@ -88,6 +92,25 @@ $esAdminExplorador = usuario_admin_de($direccion['id'] ?? null);
           <button type="submit" class="doc-btn doc-btn--secondary"><i class="bi bi-google"></i> Traer de Drive</button>
         </div>
       </form>
+
+      <?php if (onlyoffice_configurado()): ?>
+      <!-- Tercera forma de agregar un documento: uno en blanco (Word/Excel/
+           PowerPoint) para escribir de una vez dentro del portal, sin tener
+           ya un archivo hecho — ver CarpetaController.php /crear-documento
+           y EditorController.php. Al enviar, manda derecho al editor. -->
+      <form action="<?= BASE_URL . $rutaModuloActual ?>/carpetas/crear-documento" method="post" class="doc-modal-section" data-section="nuevo" hidden>
+        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
+        <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActual['id'] ?>">
+        <input type="text" name="nombre" placeholder="Nombre del documento (opcional)" maxlength="150" class="doc-input">
+        <div class="doc-modal-actions doc-modal-actions--nuevo">
+          <button type="button" class="doc-btn doc-btn--secondary" onclick="this.closest('dialog').close()">Cancelar</button>
+          <button type="submit" name="formato" value="docx" class="doc-btn doc-btn--secondary"><i class="bi bi-file-earmark-word"></i> Word</button>
+          <button type="submit" name="formato" value="xlsx" class="doc-btn doc-btn--secondary"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+          <button type="submit" name="formato" value="pptx" class="doc-btn doc-btn--secondary"><i class="bi bi-file-earmark-ppt"></i> PowerPoint</button>
+        </div>
+      </form>
+      <?php endif; ?>
     </div>
   </dialog>
   <?php endif; ?>
@@ -122,6 +145,12 @@ $esAdminExplorador = usuario_admin_de($direccion['id'] ?? null);
             <span><?= e($a['nombre']) ?></span>
             <?php if (!empty($a['tipo'])): ?><span class="doc-tag-origen"><?= e($a['tipo']) ?></span><?php endif; ?>
           </a>
+          <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
+            <a href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode($urlVolverExplorador) ?>"
+               class="doc-btn doc-btn--secondary doc-btn--icon explorador-item-editar" aria-label="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal" title="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal">
+              <i class="bi <?= $esAdminExplorador ? 'bi-pencil-square' : 'bi-eye' ?>"></i>
+            </a>
+          <?php endif; ?>
           <?php if ($esAdminExplorador): ?>
             <form action="<?= BASE_URL . $rutaModuloActual ?>/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar este documento?')">
               <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
