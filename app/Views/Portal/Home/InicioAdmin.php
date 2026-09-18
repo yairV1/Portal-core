@@ -16,7 +16,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
   <div class="hero-main">
     <div class="kicker"><i class="bi bi-shield-check"></i> Centro de administración</div>
     <h1><?= e($nombre) ?>, esto es lo tuyo.</h1>
-    <p>Tu bitácora técnica y tus pendientes — el resto del portal lo administras desde <a href="<?= BASE_URL ?>/administracion">Administración</a>.</p>
+    <p>Tu bitácora técnica y tus pendientes — el resto del portal lo administras desde <a href="<?= BASE_URL ?>/modulos">Todos los módulos</a>.</p>
   </div>
 </div>
 
