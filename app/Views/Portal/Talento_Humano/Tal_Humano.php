@@ -5,6 +5,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/modulo-generico.css') ?>">
 <link rel="stylesheet" href="<?= v('/assets/portal/css/centro-documental.css') ?>">
+<link rel="stylesheet" href="<?= v('/assets/portal/css/tableros.css') ?>">
 
 <div class="doc-hero">
   <h1 class="doc-hero-titulo">Talento Humano</h1>
@@ -25,6 +26,31 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
       <input type="text" name="buscar" value="<?= e($terminoBusqueda) ?>" placeholder="Buscar hojas de vida, contratos, certificaciones...">
     </form>
   </div>
+
+  <?php if ($terminoBusqueda === ''): ?>
+    <div class="doc-section-head"><h4>Organigrama</h4></div>
+    <?php foreach ($organigrama as $nivel): ?>
+      <p class="section-title" style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:18px 0 10px"><?= e($nivel['label']) ?></p>
+      <div class="tile-grid" style="margin-bottom:8px">
+        <?php foreach ($nivel['cajas'] as $caja): ?>
+          <div class="tile" style="<?= $caja['destacado'] ? 'border-color:var(--color-accent)' : '' ?>">
+            <span style="font-weight:800"><?= e($caja['label']) ?></span>
+            <?php if ($caja['meta']): ?><span class="text-muted" style="font-size:12.5px"><?= e($caja['meta']) ?></span><?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endforeach; ?>
+
+    <div class="doc-section-head" style="margin-top:28px"><h4>Competencias institucionales</h4></div>
+    <div class="box-card box-card--flat" style="margin-bottom:28px">
+      <?php foreach ($competencias as $c): ?>
+        <div class="exec-row">
+          <div class="exec-head"><span><?= e($c['label']) ?></span><strong><?= (int) $c['pct'] ?>%</strong></div>
+          <div class="progress-track"><div class="progress-fill" style="width:<?= (int) $c['pct'] ?>%"></div></div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
 
   <?php if ($terminoBusqueda !== ''): ?>
 

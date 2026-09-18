@@ -178,6 +178,28 @@ if (!empty($modulo['slug'])) {
     }
 }
 
+// ── Organigrama y competencias de Talento Humano (migración 006) ──
+// `organigrama_niveles`/`organigrama_cajas`/`competencias` tienen datos
+// reales pero ninguna vista las consultaba desde que Tal_Humano.php se
+// rediseñó como centro documental — se reconectan acá, como una sección
+// más de esa misma página (no tocan el explorador de documentos).
+$organigrama = [];
+$competencias = [];
+if (!empty($modulo['slug']) && $modulo['slug'] === 'talento-humano') {
+    $nivelesPorId = [];
+    foreach ($pdo->query('SELECT id, label FROM organigrama_niveles ORDER BY orden') as $n) {
+        $nivelesPorId[$n['id']] = ['label' => $n['label'], 'cajas' => []];
+    }
+    foreach ($pdo->query('SELECT nivel_id, label, meta, destacado FROM organigrama_cajas ORDER BY orden') as $c) {
+        if (isset($nivelesPorId[$c['nivel_id']])) {
+            $nivelesPorId[$c['nivel_id']]['cajas'][] = $c;
+        }
+    }
+    $organigrama = array_values($nivelesPorId);
+
+    $competencias = $pdo->query('SELECT label, pct FROM competencias ORDER BY orden')->fetchAll();
+}
+
 // ── Centro documental (Financiera y Talento Humano comparten esta misma
 //    lógica) ── Ver CarpetaController.php (crear/subir/descargar/eliminar)
 // y las vistas de cada módulo (Financiera.php/Tal_Humano.php, ambas usan
