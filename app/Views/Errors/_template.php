@@ -13,7 +13,7 @@ $imagenFondo = BASE_URL . '/uploads/mascota/' . ($imagenesError[$codigo] ?? 'err
     <p class="error-400-label"><?= e($etiqueta) ?></p>
     <h1><?= e($titulo) ?></h1>
     <p class="error-400-message"><?= e($mensaje) ?></p>
-    <a class="error-400-link" href="<?= e($enlace) ?>"><?= e($textoEnlace) ?></a>
+    <a class="error-400-link" id="errorBackLink" href="<?= e($enlace) ?>"><?= e($textoEnlace) ?></a>
   </section>
 </main>
 <style>
@@ -104,4 +104,17 @@ $imagenFondo = BASE_URL . '/uploads/mascota/' . ($imagenesError[$codigo] ?? 'err
     }
   }
 </style>
+<script>
+  (function () {
+    var errorBackLink = document.getElementById('errorBackLink');
+    if (!errorBackLink) return;
+
+    errorBackLink.addEventListener('click', function (evento) {
+      if (window.history.length > 1) {
+        evento.preventDefault();
+        window.history.back();
+      }
+    });
+  })();
+</script>
 <?php require ROOT_PATH . '/app/Views/layouts/footer.php'; ?>

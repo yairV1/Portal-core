@@ -42,10 +42,10 @@
   --auth-bg-top: #f8f7fb;
   --auth-bg-bottom: #ece9f2;
 
-  /* Login — panel oscuro/tecnológico (mismos --pr/--sec, tonos profundos) */
-  --auth-dark-1: #150a24;
-  --auth-dark-2: #241333;
-  --auth-dark-3: #2c1030;
+  /* Login — panel oscuro/tecnológico (tonos más magenta/rosados en vez de morado oscuro) */
+  --auth-dark-1: #2a1122;
+  --auth-dark-2: #421532;
+  --auth-dark-3: #561841;
 }
 
 /* ---- Base ---- */
@@ -550,7 +550,7 @@ body[data-tema="oscuro"] .auth-theme-icon-oscuro {
 }
 
 body[data-tema="oscuro"] .auth-shell {
-  background: linear-gradient(160deg, #08050f 0%, #160b24 55%, #56210d 130%);
+  background: linear-gradient(160deg, #180914 0%, #301025 55%, #61220f 130%);
 }
 
 body[data-tema="oscuro"] .core-auth-form-panel {
@@ -1526,6 +1526,17 @@ body[data-tema="oscuro"] .core-auth-google:hover {
   margin-top: .3rem;
   min-height: 52px;
   font-size: 1rem;
+  background-color: #e6007e !important;
+  border-color: #e6007e !important;
+  color: #ffffff !important;
+}
+
+.core-auth-submit:hover,
+.core-auth-submit:focus {
+  background-color: #c9006b !important;
+  border-color: #c9006b !important;
+  box-shadow: 0 6px 16px rgba(230, 0, 126, 0.35) !important;
+  color: #ffffff !important;
 }
 
 /* Estados del botón "Ingresar": label normal vs. "Ingresando…" + spinner,

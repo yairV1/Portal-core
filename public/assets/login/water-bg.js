@@ -70,9 +70,9 @@
     ctx.clearRect(0, 0, W, H);
 
     var grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, '#150a24');
-    grad.addColorStop(0.55, '#7a1850');
-    grad.addColorStop(1, '#c9660f');
+    grad.addColorStop(0, '#2a1122');
+    grad.addColorStop(0.55, '#9E1F63');
+    grad.addColorStop(1, '#F4821F');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
