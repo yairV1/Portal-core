@@ -4,6 +4,36 @@
 <h1 class="page-title">Todos los módulos</h1>
 <p class="page-desc">Todo el Portal, agrupado en un solo lugar — cada tarjeta te lleva a su propia página.</p>
 
+<?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
+  <div class="section-head"><h4>Administración</h4></div>
+  <div class="doc-categorias">
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL ?>/usuarios" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-people-fill"></i></span>
+        <span class="nombre">Usuarios y roles</span>
+      </a>
+    </article>
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL ?>/contenido-landing" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-window-stack"></i></span>
+        <span class="nombre">Contenido landing</span>
+      </a>
+    </article>
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL ?>/contrataciones" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-file-earmark-person"></i></span>
+        <span class="nombre">Contrataciones</span>
+      </a>
+    </article>
+    <article class="doc-categoria-card">
+      <a href="<?= BASE_URL ?>/postulaciones" class="doc-categoria-link">
+        <span class="ic"><i class="bi bi-person-lines-fill"></i></span>
+        <span class="nombre">Postulaciones</span>
+      </a>
+    </article>
+  </div>
+<?php endif; ?>
+
 <?php
 // Si esta cuenta tiene un área de trabajo asignada (ver
 // usuario_area_asignada() en public/index.php), tacha del listado las

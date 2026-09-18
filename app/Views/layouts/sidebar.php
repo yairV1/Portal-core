@@ -53,6 +53,16 @@ if (isset($pdo)) {
     // áreas ($areasPorSlug, ver arriba) — mismo mecanismo de siempre, nada
     // nuevo inventado.
     $esAdminSidebar = ($_SESSION['usuario_rol'] ?? '') === 'admin';
+    // El admin global ya llega a TODO desde "Todos los módulos" (incluida
+    // ahora la sección "Administración" dentro de esa misma página, ver
+    // Modulos.php) — mostrarle además cada dirección/módulo suelto en el
+    // sidebar es puro ruido repetido. Para el admin, el menú se reduce a
+    // estos 3 (por ruta, no por id, para no depender de que nadie reordene
+    // nav_items): Inicio, Calendario y Todos los módulos. Los demás roles
+    // (admin_direccion/usuario) siguen viendo el menú completo — ellos no
+    // tienen una "Todos los módulos" tan directa (áreas no asignadas les
+    // dan 403) así que sí les sirve el acceso directo.
+    $RUTAS_SIDEBAR_ADMIN = ['/', '/calendario', '/modulos'];
     $navSecciones = $pdo->query('SELECT id, label, mostrar_titulo FROM nav_secciones ORDER BY orden')->fetchAll();
     $navItems = $pdo->query('SELECT id, seccion_id, parent_id, slug, ruta, label, icono, solo_admin FROM nav_items ORDER BY orden')->fetchAll();
     foreach ($navItems as $it) {
@@ -60,6 +70,7 @@ if (isset($pdo)) {
         // todavía no hay módulo real de áreas y permisos, así que por ahora
         // es un simple sí/no por rol.
         if ($it['solo_admin'] && !$esAdminSidebar) continue;
+        if ($esAdminSidebar && !in_array($it['ruta'], $RUTAS_SIDEBAR_ADMIN, true)) continue;
         if ($it['parent_id'] === null) {
             $navItemsPorSeccion[$it['seccion_id']][] = $it;
         } else {
@@ -110,15 +121,16 @@ if (isset($pdo)) {
 
   <div class="sidebar-scroll">
 
-    <?php foreach ($navSecciones as $si => $seccion): ?>
-      <?php if ($si > 0): ?><div class="sidebar-divider"></div><?php endif; ?>
+    <?php $sbSeccionesRenderizadas = 0; foreach ($navSecciones as $seccion): ?>
+      <?php $itemsSeccion = $navItemsPorSeccion[$seccion['id']] ?? []; if (!$itemsSeccion) continue; ?>
+      <?php if ($sbSeccionesRenderizadas++ > 0): ?><div class="sidebar-divider"></div><?php endif; ?>
       <?php if ($seccion['mostrar_titulo']): ?>
       <div class="sidebar-section-head">
         <span class="sidebar-section-title"><?= e($seccion['label']) ?></span>
       </div>
       <?php endif; ?>
       <div class="sidebar-nav">
-        <?php foreach ($navItemsPorSeccion[$seccion['id']] ?? [] as $item): ?>
+        <?php foreach ($itemsSeccion as $item): ?>
           <?php
           // Sub-ítems de este ítem: primero los propios del menú (nav_items
           // con parent_id = este ítem — hoy ninguno los usa, pero ya queda
