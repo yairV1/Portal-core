@@ -38,6 +38,24 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
     </select>
     <?php
 };
+// El cargo es un catálogo fijo (ver migración 046_catalogo_cargos.sql) para
+// poder usarlo como llave de permisos sin que un typo cree un grupo nuevo
+// sin querer — "+ Agregar nuevo cargo..." revela el campo de texto de al
+// lado (ver <script> más abajo) para darlo de alta sobre la marcha.
+$campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibles) {
+    ?>
+    <select name="cargo_id" class="usuarios-cargo-<?= e($sufijo) ?>"
+            style="flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
+      <option value="">— Sin cargo —</option>
+      <?php foreach ($cargosDisponibles as $c): ?>
+        <option value="<?= (int) $c['id'] ?>" <?= (int) $c['id'] === $valor ? 'selected' : '' ?>><?= e($c['nombre']) ?></option>
+      <?php endforeach; ?>
+      <option value="__nuevo__">+ Agregar nuevo cargo...</option>
+    </select>
+    <input type="text" name="cargo_nuevo" placeholder="Nombre del cargo nuevo" class="usuarios-cargo-nuevo-<?= e($sufijo) ?>"
+           style="display:none; flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
+    <?php
+};
 ?>
 
 <div class="section-head"><h4>Nuevo usuario</h4></div>
@@ -45,7 +63,7 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
   <?php $campoTexto('nombre', '', 'Nombre completo', 'text', true); ?>
   <?php $campoTexto('correo', '', 'correo@coreducacion.edu.co', 'email', true); ?>
-  <?php $campoTexto('cargo', '', 'Cargo (opcional)'); ?>
+  <?php $campoSelectCargo('nuevo', null); ?>
   <?php $campoTexto('password', '', 'Contraseña (mín. 8 caracteres)', 'password', true); ?>
   <?php $campoSelectRol('rol', 'usuario', 'usuarios-rol-nuevo'); ?>
   <?php $campoSelectDireccion('direccion_id', null, 'usuarios-direccion-nuevo'); ?>
@@ -67,7 +85,7 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
         <tr>
           <td><strong><?= e($u['nombre']) ?></strong><?= (int) $u['id'] === (int) $_SESSION['usuario_id'] ? ' <span class="text-muted">(tú)</span>' : '' ?></td>
           <td style="opacity:.75"><?= e($u['correo']) ?></td>
-          <td style="opacity:.75"><?= e($u['cargo'] ?? '—') ?></td>
+          <td style="opacity:.75"><?= e($u['cargo_nombre'] ?? '—') ?></td>
           <td>
             <span class="tag <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
             <?php if ($u['direccion_id'] !== null): ?>
@@ -83,7 +101,7 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
                 <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
                 <?php $campoTexto('nombre', $u['nombre'], 'Nombre completo', 'text', true); ?>
                 <?php $campoTexto('correo', $u['correo'], 'Correo', 'email', true); ?>
-                <?php $campoTexto('cargo', $u['cargo'] ?? '', 'Cargo (opcional)'); ?>
+                <?php $campoSelectCargo((int) $u['id'], $u['cargo_id'] !== null ? (int) $u['cargo_id'] : null); ?>
                 <?php $campoTexto('password', '', 'Nueva contraseña (déjalo vacío para no cambiarla)', 'password'); ?>
                 <?php $campoSelectRol('rol', $u['rol'], 'usuarios-rol-' . (int) $u['id']); ?>
                 <?php $campoSelectDireccion('direccion_id', $u['direccion_id'] !== null ? (int) $u['direccion_id'] : null, 'usuarios-direccion-' . (int) $u['id']); ?>
@@ -122,6 +140,21 @@ $campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) us
       actualizar();
     }
     document.querySelectorAll('[class*="usuarios-rol-"]').forEach(conectar);
+
+    // Select de cargo: "+ Agregar nuevo cargo..." revela el input de texto
+    // de al lado (ver $campoSelectCargo en este mismo archivo) — sin JS
+    // sigue funcional, solo queda visible todo el tiempo.
+    function conectarCargo(cargoSelect) {
+      var sufijo = cargoSelect.className.replace('usuarios-cargo-', '');
+      var nuevoInput = document.querySelector('.usuarios-cargo-nuevo-' + sufijo);
+      if (!nuevoInput) return;
+      function actualizar() {
+        nuevoInput.style.display = cargoSelect.value === '__nuevo__' ? '' : 'none';
+      }
+      cargoSelect.addEventListener('change', actualizar);
+      actualizar();
+    }
+    document.querySelectorAll('[class*="usuarios-cargo-"]:not([class*="usuarios-cargo-nuevo-"])').forEach(conectarCargo);
   });
 </script>
 

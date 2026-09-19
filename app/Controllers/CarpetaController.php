@@ -112,7 +112,7 @@ if ($accionCarpeta === 'crear') {
         exit;
     }
     $direccionId = (int) $direccion['id'];
-    if (!usuario_admin_de($direccionId)) {
+    if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.crear')) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -171,7 +171,7 @@ if ($accionCarpeta === 'subir') {
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
-    if (!usuario_admin_de($direccionId)) {
+    if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.subir')) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -256,7 +256,7 @@ if ($accionCarpeta === 'crear-documento') {
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
-    if (!usuario_admin_de($direccionId)) {
+    if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.crear_documento')) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -333,7 +333,7 @@ if ($accionCarpeta === 'importar-drive') {
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
-    if (!usuario_admin_de($direccionId)) {
+    if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.importar_drive')) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -517,7 +517,7 @@ if ($accionCarpeta === 'eliminar') {
     if (!$direccionId) {
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
-    if (!usuario_admin_de($direccionId)) {
+    if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.eliminar')) {
         http_response_code(403);
         mostrar_error(403);
         exit;

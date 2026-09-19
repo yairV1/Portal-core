@@ -63,6 +63,59 @@
       <a href="<?= BASE_URL ?>/gestion-documental?drive_token=<?= urlencode($miDriveSiguientePagina) ?>#" class="tag tag-neutral" style="border:none;text-decoration:none">Ver más archivos</a>
     <?php endif; ?>
   <?php endif; ?>
+
+  <?php if ($miDriveImportEstado !== 'completo'): ?>
+    <div id="drive-import-aviso" class="modulo-vacio" style="margin-top:18px">
+      <i class="bi bi-cloud-arrow-down"></i>
+      Trayendo automáticamente todo tu Drive a esta pantalla (carpetas y archivos), con calma — no hace falta que hagas nada.
+      <strong id="drive-import-contador"><?= (int) $miDriveImportTraidos ?></strong> archivo(s) traídos hasta ahora.
+    </div>
+    <script>
+      (function () {
+        var contador = document.getElementById('drive-import-contador');
+        var aviso = document.getElementById('drive-import-aviso');
+        function siguienteLote() {
+          fetch('<?= BASE_URL ?>/gestion-documental/drive/importar-todo/avanzar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'csrf_token=<?= urlencode($csrf) ?>',
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (datos) {
+              if (datos.traidos !== undefined) contador.textContent = datos.traidos;
+              if (datos.terminado) {
+                aviso.innerHTML = '<i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Listo, ya está todo tu Drive acá. <a href="' + window.location.pathname + '">Recargar para verlo</a>';
+                return;
+              }
+              setTimeout(siguienteLote, 1500);
+            })
+            .catch(function () { setTimeout(siguienteLote, 4000); }); // reintenta más despacio si Drive/la red fallaron un momento
+        }
+        siguienteLote();
+      })();
+    </script>
+  <?php elseif ($miDriveCarpetas || $miDriveArchivosPorCarpeta): ?>
+    <div class="section-head" style="margin:18px 0 10px"><h4>Mi Drive (copia local)</h4></div>
+    <?php
+      $miDriveHijosDe = [];
+      foreach ($miDriveCarpetas as $c) { $miDriveHijosDe[$c['parent_id']][] = $c; }
+      $pintarCarpetaDrive = function ($parentId, $nivel) use (&$pintarCarpetaDrive, $miDriveHijosDe, $miDriveArchivosPorCarpeta) {
+        foreach ($miDriveHijosDe[$parentId] ?? [] as $c) {
+          echo '<div style="margin:4px 0 4px ' . ($nivel * 18) . 'px"><i class="bi bi-folder2"></i> ' . e($c['nombre']) . '</div>';
+          foreach ($miDriveArchivosPorCarpeta[$c['id']] ?? [] as $a) {
+            echo '<div style="margin:2px 0 2px ' . (($nivel + 1) * 18) . 'px"><i class="bi bi-file-earmark"></i> <a href="' . BASE_URL . '/gestion-documental/drive/mi-drive/descargar?archivo_id=' . (int) $a['id'] . '">' . e($a['nombre']) . '</a></div>';
+          }
+          $pintarCarpetaDrive($c['id'], $nivel + 1);
+        }
+      };
+    ?>
+    <div style="max-height:360px;overflow-y:auto;padding:10px 4px">
+      <?php foreach ($miDriveArchivosPorCarpeta[null] ?? [] as $a): ?>
+        <div><i class="bi bi-file-earmark"></i> <a href="<?= BASE_URL ?>/gestion-documental/drive/mi-drive/descargar?archivo_id=<?= (int) $a['id'] ?>"><?= e($a['nombre']) ?></a></div>
+      <?php endforeach; ?>
+      <?php $pintarCarpetaDrive(null, 0); ?>
+    </div>
+  <?php endif; ?>
 <?php endif; ?>
 
 <div class="section-head" style="margin:26px 0 14px"><h4>Repositorio institucional</h4></div>

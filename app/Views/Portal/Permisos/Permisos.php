@@ -2,9 +2,12 @@
 
 <h1 class="page-title">Permisos por rol</h1>
 <p class="page-desc">
-  Decide qué módulos puede ver y usar cada rol. Un módulo desmarcado desaparece del menú de ese rol
-  y, si entra por la URL directa, le muestra "Acceso restringido" — igual que si no existiera para
-  esa cuenta. El <strong>administrador global</strong> siempre ve todo, no aparece acá.
+  Decide qué módulos puede ver y usar cada rol — y, si hace falta más detalle, cada
+  <strong>cargo</strong> (ver Panel de Usuarios). Un módulo/acción desmarcado se niega
+  igual si viene del rol o del cargo de la persona: basta con que UNO de los dos lo niegue
+  para que quede bloqueado. Un módulo desmarcado desaparece del menú y, si se entra por la
+  URL directa, muestra "Acceso restringido" — igual que si no existiera para esa cuenta.
+  El <strong>administrador global</strong> siempre ve todo, no aparece acá.
 </p>
 
 <?php if (isset($_GET['guardado'])): ?>
@@ -28,13 +31,16 @@
           <?php foreach (PERMISOS_ROLES as $rolLabel): ?>
             <th style="text-align:center"><?= e($rolLabel) ?></th>
           <?php endforeach; ?>
+          <?php foreach ($cargos as $c): ?>
+            <th style="text-align:center"><?= e($c['nombre']) ?></th>
+          <?php endforeach; ?>
         </tr>
       </thead>
       <tbody>
         <?php $seccionActual = null; foreach ($modulos as $m): ?>
           <?php if ($m['seccion'] !== $seccionActual): $seccionActual = $m['seccion']; ?>
             <tr>
-              <td colspan="<?= 1 + count(PERMISOS_ROLES) ?>" style="opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;background:var(--color-surface)">
+              <td colspan="<?= 1 + count(PERMISOS_ROLES) + count($cargos) ?>" style="opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;background:var(--color-surface)">
                 <?= e($seccionActual) ?>
               </td>
             </tr>
@@ -45,6 +51,54 @@
               <td style="text-align:center">
                 <input type="checkbox" name="permitido[<?= (int) $m['id'] ?>][<?= e($rol) ?>]" value="1"
                   <?= empty($negados[$m['id']][$rol]) ? 'checked' : '' ?>>
+              </td>
+            <?php endforeach; ?>
+            <?php foreach ($cargos as $c): ?>
+              <td style="text-align:center">
+                <input type="checkbox" name="permitido_cargo[<?= (int) $m['id'] ?>][<?= (int) $c['id'] ?>]" value="1"
+                  <?= empty($negadosCargo[$m['id']][$c['id']]) ? 'checked' : '' ?>>
+              </td>
+            <?php endforeach; ?>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="page-title" style="font-size:18px;margin-top:32px">Acciones por rol</h2>
+  <p class="page-desc">
+    Ajusta qué puede <strong>hacer</strong> cada rol dentro de un módulo al que ya tiene acceso
+    (crear, subir, importar, eliminar...). La dirección/área asignada a cada usuario sigue
+    aplicando igual; esto solo puede quitar una acción puntual, nunca dar acceso a otra dirección.
+  </p>
+
+  <div style="overflow-x:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <?php foreach (PERMISOS_ROLES as $rolLabel): ?>
+            <th style="text-align:center"><?= e($rolLabel) ?></th>
+          <?php endforeach; ?>
+          <?php foreach ($cargos as $c): ?>
+            <th style="text-align:center"><?= e($c['nombre']) ?></th>
+          <?php endforeach; ?>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach (ACCIONES_PERMISOS as $accionClave => $accionLabel): ?>
+          <tr>
+            <td><?= e($accionLabel) ?></td>
+            <?php foreach (array_keys(PERMISOS_ROLES) as $rol): ?>
+              <td style="text-align:center">
+                <input type="checkbox" name="accion_permitida[<?= e($accionClave) ?>][<?= e($rol) ?>]" value="1"
+                  <?= empty($accionesNegadas[$accionClave][$rol]) ? 'checked' : '' ?>>
+              </td>
+            <?php endforeach; ?>
+            <?php foreach ($cargos as $c): ?>
+              <td style="text-align:center">
+                <input type="checkbox" name="accion_permitida_cargo[<?= e($accionClave) ?>][<?= (int) $c['id'] ?>]" value="1"
+                  <?= empty($accionesNegadasCargo[$accionClave][$c['id']]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
           </tr>

@@ -90,7 +90,7 @@ if ($uri === '/documentos/crear') {
     // archivos_documentales (Gestión Documental) sigue solo para admin
     // global — no tiene direccion_id, así que usuario_admin_de(null) ya
     // exige 'admin' de por sí.
-    if (!usuario_admin_de($esDireccion ? (int) ($_POST['direccion_id'] ?? 0) : null)) {
+    if (!usuario_admin_de($esDireccion ? (int) ($_POST['direccion_id'] ?? 0) : null) || ($esDireccion && !usuario_puede_accion('documentos.crear'))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -156,7 +156,7 @@ if ($uri === '/documentos/subir') {
         volver_documento($volver, 'error');
     }
 
-    if (!usuario_admin_de($esDireccion ? (int) $filaDoc['direccion_id'] : null)) {
+    if (!usuario_admin_de($esDireccion ? (int) $filaDoc['direccion_id'] : null) || ($esDireccion && !usuario_puede_accion('documentos.subir'))) {
         http_response_code(403);
         mostrar_error(403);
         exit;

@@ -21,6 +21,22 @@ if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
 
 const PERMISOS_ROLES = ['admin_direccion' => 'Administrador de dirección', 'usuario' => 'Usuario'];
 
+// Acciones puntuales que se pueden quitar/dar por rol dentro de un módulo al
+// que el rol sí tiene acceso (ver usuario_puede_accion() en public/index.php
+// y migración 045_permisos_rol_acciones.sql). Complementa al checklist de
+// módulos de arriba: ese oculta la página completa, esto ajusta qué se
+// puede HACER dentro de ella — la dirección/área asignada al usuario sigue
+// aplicando igual, esto solo puede restar, nunca dar acceso a otra dirección.
+const ACCIONES_PERMISOS = [
+    'carpetas.crear'           => 'Carpetas: crear carpeta',
+    'carpetas.subir'           => 'Carpetas: subir archivo',
+    'carpetas.crear_documento' => 'Carpetas: crear documento en blanco (Word/Excel/PowerPoint)',
+    'carpetas.importar_drive'  => 'Carpetas: importar desde Google Drive',
+    'carpetas.eliminar'        => 'Carpetas: eliminar carpeta o archivo',
+    'documentos.crear'         => 'Documentos por dirección: crear documento',
+    'documentos.subir'         => 'Documentos por dirección: subir archivo',
+];
+
 if ($uri === '/permisos-por-rol/guardar') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header('Location: ' . BASE_URL . '/permisos-por-rol');
@@ -40,6 +56,11 @@ if ($uri === '/permisos-por-rol/guardar') {
     $permitidos = $_POST['permitido'] ?? [];
     $navItemIds = array_column($pdo->query('SELECT id FROM nav_items WHERE parent_id IS NULL AND ruta IS NOT NULL AND ruta != "/"')->fetchAll(), 'id');
 
+    // Mismo modelo de sync total para el checklist de acciones (ver
+    // ACCIONES_PERMISOS arriba) — "accion_permitida[<clave>][<rol>]=1" solo
+    // por los checkboxes marcados.
+    $accionesPermitidas = $_POST['accion_permitida'] ?? [];
+
     $pdo->beginTransaction();
     $pdo->exec('DELETE FROM permisos_rol_negados');
     $stmt = $pdo->prepare('INSERT INTO permisos_rol_negados (nav_item_id, rol) VALUES (:id, :rol)');
@@ -48,6 +69,45 @@ if ($uri === '/permisos-por-rol/guardar') {
             $marcado = !empty($permitidos[$navItemId][$rol]);
             if (!$marcado) {
                 $stmt->execute([':id' => $navItemId, ':rol' => $rol]);
+            }
+        }
+    }
+    $pdo->exec('DELETE FROM permisos_rol_acciones_negadas');
+    $stmtAccion = $pdo->prepare('INSERT INTO permisos_rol_acciones_negadas (accion_clave, rol) VALUES (:accion, :rol)');
+    foreach (array_keys(ACCIONES_PERMISOS) as $accionClave) {
+        foreach (array_keys(PERMISOS_ROLES) as $rol) {
+            $marcado = !empty($accionesPermitidas[$accionClave][$rol]);
+            if (!$marcado) {
+                $stmtAccion->execute([':accion' => $accionClave, ':rol' => $rol]);
+            }
+        }
+    }
+
+    // Mismo sync total, pero por cargo (ver migración 046_catalogo_cargos.sql)
+    // en vez de por rol — "permitido_cargo[<nav_item_id>][<cargo_id>]=1" /
+    // "accion_permitida_cargo[<clave>][<cargo_id>]=1". La lista de cargos es
+    // dinámica (viene de la BD, no de una constante PHP como PERMISOS_ROLES).
+    $permitidosCargo = $_POST['permitido_cargo'] ?? [];
+    $accionesPermitidasCargo = $_POST['accion_permitida_cargo'] ?? [];
+    $cargoIds = array_column($pdo->query('SELECT id FROM catalogo_cargos')->fetchAll(), 'id');
+
+    $pdo->exec('DELETE FROM permisos_cargo_negados');
+    $stmtCargo = $pdo->prepare('INSERT INTO permisos_cargo_negados (nav_item_id, cargo_id) VALUES (:id, :cargo)');
+    foreach ($navItemIds as $navItemId) {
+        foreach ($cargoIds as $cargoId) {
+            $marcado = !empty($permitidosCargo[$navItemId][$cargoId]);
+            if (!$marcado) {
+                $stmtCargo->execute([':id' => $navItemId, ':cargo' => $cargoId]);
+            }
+        }
+    }
+    $pdo->exec('DELETE FROM permisos_cargo_acciones_negadas');
+    $stmtAccionCargo = $pdo->prepare('INSERT INTO permisos_cargo_acciones_negadas (accion_clave, cargo_id) VALUES (:accion, :cargo)');
+    foreach (array_keys(ACCIONES_PERMISOS) as $accionClave) {
+        foreach ($cargoIds as $cargoId) {
+            $marcado = !empty($accionesPermitidasCargo[$accionClave][$cargoId]);
+            if (!$marcado) {
+                $stmtAccionCargo->execute([':accion' => $accionClave, ':cargo' => $cargoId]);
             }
         }
     }
@@ -69,6 +129,23 @@ $modulos = $pdo->query("
 $negados = [];
 foreach ($pdo->query('SELECT nav_item_id, rol FROM permisos_rol_negados')->fetchAll() as $n) {
     $negados[$n['nav_item_id']][$n['rol']] = true;
+}
+
+$accionesNegadas = [];
+foreach ($pdo->query('SELECT accion_clave, rol FROM permisos_rol_acciones_negadas')->fetchAll() as $n) {
+    $accionesNegadas[$n['accion_clave']][$n['rol']] = true;
+}
+
+$cargos = $pdo->query('SELECT id, nombre FROM catalogo_cargos ORDER BY nombre')->fetchAll();
+
+$negadosCargo = [];
+foreach ($pdo->query('SELECT nav_item_id, cargo_id FROM permisos_cargo_negados')->fetchAll() as $n) {
+    $negadosCargo[$n['nav_item_id']][$n['cargo_id']] = true;
+}
+
+$accionesNegadasCargo = [];
+foreach ($pdo->query('SELECT accion_clave, cargo_id FROM permisos_cargo_acciones_negadas')->fetchAll() as $n) {
+    $accionesNegadasCargo[$n['accion_clave']][$n['cargo_id']] = true;
 }
 
 require ROOT_PATH . '/app/Views/Portal/Permisos/Permisos.php';

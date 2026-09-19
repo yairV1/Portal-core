@@ -130,7 +130,12 @@ if ($uri === '/auth/google/callback') {
 
     $correo = trim(strtolower($perfil['email']));
 
-    $stmt = $pdo->prepare('SELECT id, nombre, correo, cargo, rol, direccion_id, foto FROM usuarios WHERE correo = :correo');
+    $stmt = $pdo->prepare('
+        SELECT u.id, u.nombre, u.correo, u.cargo_id, cc.nombre AS cargo_nombre, u.rol, u.direccion_id, u.foto
+        FROM usuarios u
+        LEFT JOIN catalogo_cargos cc ON cc.id = u.cargo_id
+        WHERE u.correo = :correo
+    ');
     $stmt->execute([':correo' => $correo]);
     $usuario = $stmt->fetch();
 
@@ -143,7 +148,8 @@ if ($uri === '/auth/google/callback') {
     $_SESSION['usuario_id']          = $usuario['id'];
     $_SESSION['usuario_nombre']      = $usuario['nombre'];
     $_SESSION['usuario_correo']      = $usuario['correo'];
-    $_SESSION['usuario_cargo']       = $usuario['cargo'];
+    $_SESSION['usuario_cargo']       = $usuario['cargo_nombre'];
+    $_SESSION['usuario_cargo_id']    = $usuario['cargo_id'];
     $_SESSION['usuario_rol']         = $usuario['rol'];
     $_SESSION['usuario_direccion_id'] = $usuario['direccion_id'];
     $_SESSION['usuario_foto']        = $usuario['foto'];
@@ -181,7 +187,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $correo   = trim(strtolower($_POST['correo'] ?? ''));
         $password = $_POST['password'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT id, nombre, correo, password_hash, cargo, rol, direccion_id, foto FROM usuarios WHERE correo = :correo");
+        $stmt = $pdo->prepare("
+            SELECT u.id, u.nombre, u.correo, u.password_hash, u.cargo_id, cc.nombre AS cargo_nombre, u.rol, u.direccion_id, u.foto
+            FROM usuarios u
+            LEFT JOIN catalogo_cargos cc ON cc.id = u.cargo_id
+            WHERE u.correo = :correo
+        ");
         $stmt->execute([':correo' => $correo]);
         $usuario = $stmt->fetch();
 
@@ -211,7 +222,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_id']          = $usuario['id'];
             $_SESSION['usuario_nombre']      = $usuario['nombre'];
             $_SESSION['usuario_correo']      = $usuario['correo'];
-            $_SESSION['usuario_cargo']       = $usuario['cargo'];
+            $_SESSION['usuario_cargo']       = $usuario['cargo_nombre'];
+            $_SESSION['usuario_cargo_id']    = $usuario['cargo_id'];
             $_SESSION['usuario_rol']         = $usuario['rol'];
             $_SESSION['usuario_direccion_id'] = $usuario['direccion_id'];
             $_SESSION['usuario_foto']        = $usuario['foto'];

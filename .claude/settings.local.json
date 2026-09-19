@@ -25,7 +25,8 @@
       "Bash(mysql -u portal_user -p'Portal2026!' portal_core -e \"DESCRIBE usuarios;\")",
       "Bash(php -r 'echo password_hash\\(\"TestQA2026!\", PASSWORD_DEFAULT\\);')",
       "Bash(mysql -u portal_user -pPortal2026! portal_core -e ' *)",
-      "Bash(mysql -u portal_user -p'Portal2026!' portal_core -e \"SELECT id, nombre, correo FROM usuarios WHERE correo='qa-test-temp@coreducacion.edu.co';\")"
+      "Bash(mysql -u portal_user -p'Portal2026!' portal_core -e \"SELECT id, nombre, correo FROM usuarios WHERE correo='qa-test-temp@coreducacion.edu.co';\")",
+      "Bash(docker exec portal-core-app-1 php -r ' *)"
     ]
   }
 }
