@@ -121,6 +121,8 @@ return [
     '/gestion-documental/drive/callback'    => 'DriveUsuarioController.php',
     '/gestion-documental/drive/desconectar' => 'DriveUsuarioController.php',
     '/gestion-documental/drive/importar'    => 'DriveUsuarioController.php',
+    '/gestion-documental/drive/importar-todo/avanzar' => 'DriveUsuarioController.php',
+    '/gestion-documental/drive/mi-drive/descargar'    => 'DriveUsuarioController.php',
 
     '/documentos/crear'           => 'DocumentoController.php',
     '/documentos/subir'           => 'DocumentoController.php',

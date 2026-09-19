@@ -527,9 +527,12 @@ if ($uri === '/gestion-documental') {
     $misArchivosDrive = [];
     $miDriveSiguientePagina = null;
 
-    $stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
+    $stmt = $pdo->prepare('SELECT google_drive_refresh_token, google_drive_import_estado, google_drive_import_traidos FROM usuarios WHERE id = :id');
     $stmt->execute([':id' => $_SESSION['usuario_id']]);
-    $miDriveTokenGuardado = $stmt->fetchColumn();
+    $filaDriveUsuario = $stmt->fetch();
+    $miDriveTokenGuardado = $filaDriveUsuario['google_drive_refresh_token'] ?? null;
+    $miDriveImportEstado = $filaDriveUsuario['google_drive_import_estado'] ?? 'no_iniciado';
+    $miDriveImportTraidos = (int) ($filaDriveUsuario['google_drive_import_traidos'] ?? 0);
     $miDriveRefreshToken = google_drive_refresh_token_descifrar($miDriveTokenGuardado ?: null);
     // "conectado" es tener una fila guardada, aunque no se pueda descifrar
     // (clave rotada) — así el botón "Desconectar" sigue disponible para
@@ -574,6 +577,25 @@ if ($uri === '/gestion-documental') {
             array_unshift($ruta, $cursor['nombre']);
         }
         $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
+    }
+
+    // Espejo ya importado del Drive personal (ver migración
+    // 047_drive_personal_import_masivo.sql y
+    // /gestion-documental/drive/importar-todo/avanzar en
+    // DriveUsuarioController.php) — 100% privado, siempre filtrado por el
+    // usuario en sesión.
+    $miDriveCarpetas = [];
+    $miDriveArchivosPorCarpeta = [];
+    if ($miDriveImportEstado === 'completo') {
+        $stmtCarpetasDrive = $pdo->prepare('SELECT id, parent_id, nombre FROM drive_personal_carpetas WHERE usuario_id = :uid ORDER BY nombre');
+        $stmtCarpetasDrive->execute([':uid' => $_SESSION['usuario_id']]);
+        $miDriveCarpetas = $stmtCarpetasDrive->fetchAll();
+
+        $stmtArchivosDrive = $pdo->prepare('SELECT id, carpeta_id, nombre, tipo, peso_bytes FROM drive_personal_archivos WHERE usuario_id = :uid ORDER BY nombre');
+        $stmtArchivosDrive->execute([':uid' => $_SESSION['usuario_id']]);
+        foreach ($stmtArchivosDrive->fetchAll() as $a) {
+            $miDriveArchivosPorCarpeta[$a['carpeta_id']][] = $a;
+        }
     }
 }
 

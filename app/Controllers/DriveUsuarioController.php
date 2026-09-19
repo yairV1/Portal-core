@@ -169,45 +169,17 @@ if ($uri === '/gestion-documental/drive/importar') {
     // Un Doc/Sheet/Slide NATIVO de Google se exporta a su equivalente de
     // Office al vuelo (mismo mecanismo que CarpetaController.php) — el
     // resto de tipos nativos (Formularios, Dibujos...) no tienen a qué
-    // exportarlos, siguen bloqueados.
-    $EXPORTAR_GOOGLE_NATIVO = [
-        'application/vnd.google-apps.document'     => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.google-apps.spreadsheet'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.google-apps.presentation' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    ];
-    // Mismos 7 tipos que ya acepta DocumentoController.php para Gestión
-    // Documental (sin imágenes — esas no encajan en este repositorio).
-    $MIME_A_EXTENSION = [
-        'application/pdf'                                                           => 'pdf',
-        'application/msword'                                                        => 'doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'   => 'docx',
-        'application/vnd.ms-excel'                                                  => 'xls',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'         => 'xlsx',
-        'application/vnd.ms-powerpoint'                                             => 'ppt',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
-    ];
-
-    $mimeOrigen = $meta['mimeType'] ?? '';
-    $esGoogleNativo = str_starts_with($mimeOrigen, 'application/vnd.google-apps.');
-    if ($esGoogleNativo) {
-        if (!isset($EXPORTAR_GOOGLE_NATIVO[$mimeOrigen])) {
-            header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=formato');
-            exit;
-        }
-        $mimeFinal = $EXPORTAR_GOOGLE_NATIVO[$mimeOrigen];
-    } else {
-        $mimeFinal = $mimeOrigen;
-        // El tamaño exportado de un nativo no se sabe de antemano (Drive lo
-        // genera al vuelo) — para esos se revisa DESPUÉS, más abajo.
-        if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
-            header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=tamano');
-            exit;
-        }
-    }
-    if (!isset($MIME_A_EXTENSION[$mimeFinal])) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=formato');
+    // exportarlos, siguen bloqueados. Ver google_drive_oauth_resolver_descarga()
+    // en GoogleDrive.php — misma función que usa el import masivo, para no
+    // mantener la tabla de mimes en dos lugares.
+    $resuelto = google_drive_oauth_resolver_descarga($meta);
+    if (!$resuelto) {
+        $motivo = ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) ? 'tamano' : 'formato';
+        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=' . $motivo);
         exit;
     }
+    $mimeFinal = $resuelto['mime_final'];
+    $esGoogleNativo = $resuelto['es_google_nativo'];
 
     $carpetaArchivos = ROOT_PATH . '/storage/direccion_carpetas';
     if (!is_dir($carpetaArchivos)) {
@@ -225,7 +197,7 @@ if ($uri === '/gestion-documental/drive/importar') {
     ]);
     $archivoId = (int) $pdo->lastInsertId();
 
-    $nombreArchivo = 'archivo_' . $archivoId . '.' . $MIME_A_EXTENSION[$mimeFinal];
+    $nombreArchivo = 'archivo_' . $archivoId . '.' . $resuelto['extension'];
     $rutaDestino = $carpetaArchivos . '/' . $nombreArchivo;
     $descargaOk = $esGoogleNativo
         ? google_drive_oauth_exportar($accessToken, $fileId, $mimeFinal, $rutaDestino)
@@ -252,5 +224,211 @@ if ($uri === '/gestion-documental/drive/importar') {
     // así la persona ve de una que el archivo sí llegó, en la misma vista
     // donde vive el resto de esa carpeta.
     header('Location: ' . $urlVolverCarpeta . '&drive_personal=importado');
+    exit;
+}
+
+// Cuántos items pedir a Drive por lote en la importación masiva — chico a
+// propósito (ver migración 047_drive_personal_import_masivo.sql): la idea
+// es traer TODO el Drive de la persona, pero de a poco, sin una petición
+// larga que bloquee nada; el ritmo real lo pone el JS de Documental.php
+// llamando a este endpoint cada rato mientras la pantalla está abierta.
+const DRIVE_IMPORT_MASIVO_QUERY_CARPETAS = "mimeType='application/vnd.google-apps.folder' and trashed=false";
+const DRIVE_IMPORT_MASIVO_QUERY_ARCHIVOS = "mimeType!='application/vnd.google-apps.folder' and trashed=false";
+
+// ---- /gestion-documental/drive/importar-todo/avanzar ----
+// Un lote de la importación completa del Drive personal — se llama
+// repetidas veces (ver <script> en Documental.php) hasta que la respuesta
+// diga "terminado". No exige ningún rol especial: es una acción sobre el
+// propio Drive de quien la pide, igual que conectar/desconectar arriba.
+if ($uri === '/gestion-documental/drive/importar-todo/avanzar') {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        http_response_code(400);
+        echo json_encode(['error' => 'csrf']);
+        exit;
+    }
+
+    $usuarioId = (int) $_SESSION['usuario_id'];
+    $stmt = $pdo->prepare('SELECT google_drive_refresh_token, google_drive_import_estado, google_drive_import_fase, google_drive_import_page_token, google_drive_import_traidos FROM usuarios WHERE id = :id');
+    $stmt->execute([':id' => $usuarioId]);
+    $fila = $stmt->fetch();
+    $refreshToken = google_drive_refresh_token_descifrar($fila['google_drive_refresh_token'] ?? null);
+    if (!$refreshToken) {
+        http_response_code(400);
+        echo json_encode(['error' => 'no_conectado']);
+        exit;
+    }
+    $accessToken = google_drive_oauth_refrescar($refreshToken);
+    if (!$accessToken) {
+        http_response_code(400);
+        echo json_encode(['error' => 'token_vencido']);
+        exit;
+    }
+
+    if ($fila['google_drive_import_estado'] === 'completo') {
+        echo json_encode(['estado' => 'completo', 'fase' => null, 'traidos' => (int) $fila['google_drive_import_traidos'], 'terminado' => true]);
+        exit;
+    }
+
+    // Primer lote de todos: arranca la máquina de estados.
+    $fase = $fila['google_drive_import_fase'] ?? 'carpetas';
+    $pageToken = $fila['google_drive_import_page_token'];
+    if ($fila['google_drive_import_estado'] === 'no_iniciado') {
+        $fase = 'carpetas';
+        $pageToken = null;
+        $pdo->prepare("UPDATE usuarios SET google_drive_import_estado = 'en_progreso', google_drive_import_fase = 'carpetas', google_drive_import_page_token = NULL WHERE id = :id")
+            ->execute([':id' => $usuarioId]);
+    }
+
+    if ($fase === 'carpetas') {
+        $resultado = google_drive_oauth_listar_todo($accessToken, DRIVE_IMPORT_MASIVO_QUERY_CARPETAS, $pageToken);
+        if ($resultado === null) {
+            http_response_code(502);
+            echo json_encode(['error' => 'drive']);
+            exit;
+        }
+        $stmtUpsert = $pdo->prepare('
+            INSERT INTO drive_personal_carpetas (usuario_id, drive_folder_id, drive_parent_folder_id, nombre)
+            VALUES (:uid, :fid, :pid, :nombre)
+            ON DUPLICATE KEY UPDATE drive_parent_folder_id = VALUES(drive_parent_folder_id), nombre = VALUES(nombre)
+        ');
+        foreach ($resultado['files'] ?? [] as $carpeta) {
+            $stmtUpsert->execute([
+                ':uid'    => $usuarioId,
+                ':fid'    => $carpeta['id'],
+                ':pid'    => $carpeta['parents'][0] ?? null,
+                ':nombre' => mb_substr($carpeta['name'] ?? 'Sin nombre', 0, 255),
+            ]);
+        }
+        $siguientePagina = $resultado['nextPageToken'] ?? null;
+        if ($siguientePagina) {
+            $pdo->prepare('UPDATE usuarios SET google_drive_import_page_token = :token WHERE id = :id')
+                ->execute([':token' => $siguientePagina, ':id' => $usuarioId]);
+        } else {
+            // Ya se trajeron todas las carpetas — ahora sí se puede resolver
+            // parent_id de verdad (antes no se podía confiar en el orden:
+            // Drive no garantiza que una carpeta llegue después de su padre).
+            $pdo->prepare('
+                UPDATE drive_personal_carpetas hijo
+                JOIN drive_personal_carpetas padre
+                  ON padre.usuario_id = hijo.usuario_id AND padre.drive_folder_id = hijo.drive_parent_folder_id
+                SET hijo.parent_id = padre.id
+                WHERE hijo.usuario_id = :uid
+            ')->execute([':uid' => $usuarioId]);
+            $pdo->prepare("UPDATE usuarios SET google_drive_import_fase = 'archivos', google_drive_import_page_token = NULL WHERE id = :id")
+                ->execute([':id' => $usuarioId]);
+            $fase = 'archivos';
+        }
+
+        $traidos = (int) $pdo->query('SELECT google_drive_import_traidos FROM usuarios WHERE id = ' . $usuarioId)->fetchColumn();
+        echo json_encode(['estado' => 'en_progreso', 'fase' => $fase, 'traidos' => $traidos, 'terminado' => false]);
+        exit;
+    }
+
+    // $fase === 'archivos'
+    $resultado = google_drive_oauth_listar_todo($accessToken, DRIVE_IMPORT_MASIVO_QUERY_ARCHIVOS, $pageToken);
+    if ($resultado === null) {
+        http_response_code(502);
+        echo json_encode(['error' => 'drive']);
+        exit;
+    }
+
+    $carpetaStorage = ROOT_PATH . '/storage/drive_personal/' . $usuarioId;
+    if (!is_dir($carpetaStorage)) {
+        mkdir($carpetaStorage, 0775, true);
+    }
+    $stmtCarpetaLocal = $pdo->prepare('SELECT id FROM drive_personal_carpetas WHERE usuario_id = :uid AND drive_folder_id = :fid');
+    $stmtInsertar = $pdo->prepare('INSERT IGNORE INTO drive_personal_archivos (usuario_id, carpeta_id, drive_file_id, nombre, tipo, archivo, peso_bytes) VALUES (:uid, :cid, :fid, :nombre, :tipo, :archivo, :peso)');
+    $traidosEnEsteLote = 0;
+    foreach ($resultado['files'] ?? [] as $archivoDrive) {
+        // Formato no soportado o > 15MB: se omite y sigue con el siguiente,
+        // no se aborta el lote completo por un solo archivo.
+        $resuelto = google_drive_oauth_resolver_descarga($archivoDrive);
+        if (!$resuelto) {
+            continue;
+        }
+        $parentDriveId = $archivoDrive['parents'][0] ?? null;
+        $carpetaLocalId = null;
+        if ($parentDriveId) {
+            $stmtCarpetaLocal->execute([':uid' => $usuarioId, ':fid' => $parentDriveId]);
+            $carpetaLocalId = $stmtCarpetaLocal->fetchColumn() ?: null;
+        }
+
+        // Nombre de archivo temporal único por drive_file_id — se sabe el
+        // id real recién tras el INSERT, pero necesitamos escribir a disco
+        // antes para poder confirmar el tamaño real de los nativos
+        // exportados (mismo orden que /gestion-documental/drive/importar).
+        $nombreArchivoTmp = 'tmp_' . bin2hex(random_bytes(8)) . '.' . $resuelto['extension'];
+        $rutaTmp = $carpetaStorage . '/' . $nombreArchivoTmp;
+        $descargaOk = $resuelto['es_google_nativo']
+            ? google_drive_oauth_exportar($accessToken, $archivoDrive['id'], $resuelto['mime_final'], $rutaTmp)
+            : google_drive_oauth_descargar($accessToken, $archivoDrive['id'], $rutaTmp);
+        if (!$descargaOk) {
+            continue;
+        }
+        if (filesize($rutaTmp) > 15 * 1024 * 1024) {
+            unlink($rutaTmp);
+            continue;
+        }
+
+        $stmtInsertar->execute([
+            ':uid'     => $usuarioId,
+            ':cid'     => $carpetaLocalId,
+            ':fid'     => $archivoDrive['id'],
+            ':nombre'  => mb_substr($archivoDrive['name'] ?? 'Sin nombre', 0, 255),
+            ':tipo'    => $resuelto['extension'],
+            ':archivo' => $nombreArchivoTmp,
+            ':peso'    => filesize($rutaTmp),
+        ]);
+        // rowCount(), no lastInsertId(): con INSERT IGNORE, lastInsertId()
+        // NO vuelve a 0 cuando la fila se ignora por duplicado — conserva
+        // el id del último insert que sí tuvo éxito en esta conexión, así
+        // que con el mismo $stmtInsertar reutilizado en todo el foreach,
+        // un duplicado que venga después de un insert real leería un id
+        // "viejo" como si fuera propio. rowCount() sí es 0 cuando el
+        // IGNORE descartó la fila.
+        if ($stmtInsertar->rowCount() > 0) {
+            $traidosEnEsteLote++;
+        } else {
+            // Ya se había importado antes (UNIQUE usuario_id+drive_file_id)
+            // — no queremos un archivo huérfano duplicado en disco.
+            unlink($rutaTmp);
+        }
+    }
+
+    $siguientePagina = $resultado['nextPageToken'] ?? null;
+    $terminado = !$siguientePagina;
+    $pdo->prepare('UPDATE usuarios SET google_drive_import_page_token = :token, google_drive_import_traidos = google_drive_import_traidos + :n' . ($terminado ? ", google_drive_import_estado = 'completo', google_drive_import_fase = NULL" : '') . ' WHERE id = :id')
+        ->execute([':token' => $siguientePagina, ':n' => $traidosEnEsteLote, ':id' => $usuarioId]);
+
+    $traidos = (int) $pdo->query('SELECT google_drive_import_traidos FROM usuarios WHERE id = ' . $usuarioId)->fetchColumn();
+    echo json_encode(['estado' => $terminado ? 'completo' : 'en_progreso', 'fase' => 'archivos', 'traidos' => $traidos, 'terminado' => $terminado]);
+    exit;
+}
+
+// ---- /gestion-documental/drive/mi-drive/descargar ----
+// Descarga un archivo ya importado del espejo personal — siempre filtrado
+// por usuario_id de la sesión, nadie más puede ver el Drive personal de
+// otra persona (no hay dirección/área de por medio acá, es 100% privado).
+if ($uri === '/gestion-documental/drive/mi-drive/descargar') {
+    $archivoId = (int) ($_GET['archivo_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT nombre, archivo FROM drive_personal_archivos WHERE id = :id AND usuario_id = :uid');
+    $stmt->execute([':id' => $archivoId, ':uid' => $_SESSION['usuario_id']]);
+    $fila = $stmt->fetch();
+    if (!$fila) {
+        http_response_code(404);
+        mostrar_error(404);
+        exit;
+    }
+    $ruta = ROOT_PATH . '/storage/drive_personal/' . (int) $_SESSION['usuario_id'] . '/' . $fila['archivo'];
+    if (!is_file($ruta)) {
+        http_response_code(404);
+        mostrar_error(404);
+        exit;
+    }
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="' . rawurlencode($fila['nombre']) . '.' . pathinfo($fila['archivo'], PATHINFO_EXTENSION) . '"');
+    header('Content-Length: ' . filesize($ruta));
+    readfile($ruta);
     exit;
 }

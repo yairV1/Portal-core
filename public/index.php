@@ -169,7 +169,49 @@ function usuario_puede_ver_ruta(string $uri): bool {
 
     $stmt = $pdo->prepare('SELECT 1 FROM permisos_rol_negados WHERE nav_item_id = :id AND rol = :rol');
     $stmt->execute([':id' => $raizId, ':rol' => $rol]);
-    return !$stmt->fetchColumn();
+    if ($stmt->fetchColumn()) return false;
+
+    // Tercer eje de permisos, además del rol: el cargo de la persona (ver
+    // migración 046_catalogo_cargos.sql). Cualquiera de los dos que niegue
+    // gana — esto solo puede QUITAR acceso encima de lo que el rol ya
+    // permite, nunca dar uno que el rol no tuviera.
+    $cargoId = $_SESSION['usuario_cargo_id'] ?? null;
+    if ($cargoId !== null) {
+        $stmt = $pdo->prepare('SELECT 1 FROM permisos_cargo_negados WHERE nav_item_id = :id AND cargo_id = :cargo');
+        $stmt->execute([':id' => $raizId, ':cargo' => $cargoId]);
+        if ($stmt->fetchColumn()) return false;
+    }
+
+    return true;
+}
+
+// usuario_puede_accion(): ¿el rol de la sesión actual tiene vetada esta
+// acción puntual (crear/subir/importar/eliminar...)? Ver PermisosController.php
+// / migración 045_permisos_rol_acciones.sql. Complementa a
+// usuario_puede_ver_ruta() (que solo oculta módulos completos) para poder
+// ajustar qué puede HACER cada rol dentro de un módulo al que sí tiene
+// acceso — esto se suma a usuario_admin_de()/usuario_area_asignada(), que
+// siguen aplicando primero (la dirección/área asignada nunca se salta).
+// Mismo modelo "solo excepciones": sin fila, la acción está permitida. El
+// admin global nunca se autolimitea.
+function usuario_puede_accion(string $accionClave): bool {
+    global $pdo;
+    $rol = $_SESSION['usuario_rol'] ?? '';
+    if ($rol === 'admin') return true;
+    $stmt = $pdo->prepare('SELECT 1 FROM permisos_rol_acciones_negadas WHERE rol = :rol AND accion_clave = :accion');
+    $stmt->execute([':rol' => $rol, ':accion' => $accionClave]);
+    if ($stmt->fetchColumn()) return false;
+
+    // Mismo criterio que usuario_puede_ver_ruta(): el cargo también puede
+    // negar una acción encima del rol (ver migración 046_catalogo_cargos.sql).
+    $cargoId = $_SESSION['usuario_cargo_id'] ?? null;
+    if ($cargoId !== null) {
+        $stmt = $pdo->prepare('SELECT 1 FROM permisos_cargo_acciones_negadas WHERE cargo_id = :cargo AND accion_clave = :accion');
+        $stmt->execute([':cargo' => $cargoId, ':accion' => $accionClave]);
+        if ($stmt->fetchColumn()) return false;
+    }
+
+    return true;
 }
 
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)

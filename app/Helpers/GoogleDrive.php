@@ -377,6 +377,83 @@ function google_drive_oauth_listar(string $accessToken, ?string $pageToken = nul
     return $codigo === 200 ? json_decode((string) $respuesta, true) : null;
 }
 
+// Mismo endpoint que google_drive_oauth_listar() de arriba, pero con la
+// query y los campos parametrizables — la separo en vez de tocar esa
+// función para no arriesgar el listado que ya funciona en la pantalla
+// actual de "Mi Google Drive". La usa la importación masiva
+// (DriveUsuarioController.php, /gestion-documental/drive/importar-todo/avanzar)
+// para pedir primero solo carpetas y después solo archivos, trayendo
+// también "parents" (a qué carpeta pertenece cada cosa), que el listado
+// de siempre no necesita.
+function google_drive_oauth_listar_todo(string $accessToken, string $queryExtra, ?string $pageToken): ?array
+{
+    $parametros = [
+        'q'        => $queryExtra,
+        'fields'   => 'nextPageToken,files(id,name,mimeType,size,parents)',
+        'pageSize' => 50,
+        'spaces'   => 'drive',
+    ];
+    if ($pageToken) {
+        $parametros['pageToken'] = $pageToken;
+    }
+    $ch = curl_init('https://www.googleapis.com/drive/v3/files?' . http_build_query($parametros));
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $accessToken],
+        CURLOPT_TIMEOUT        => 15,
+    ]);
+    $respuesta = curl_exec($ch);
+    $codigo = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return $codigo === 200 ? json_decode((string) $respuesta, true) : null;
+}
+
+// Resuelve a qué mime/extensión final debe quedar un archivo de Drive antes
+// de descargarlo — mismo criterio que ya usaba en línea
+// DriveUsuarioController.php en /gestion-documental/drive/importar: un
+// Doc/Sheet/Slide NATIVO de Google se exporta a su equivalente de Office;
+// el resto de nativos (Formularios, Dibujos...) y cualquier mime fuera de
+// los 7 que acepta Gestión Documental quedan sin soportar. Se extrae acá
+// para que la use tanto ese import de un archivo puntual como el masivo,
+// sin duplicar la tabla de mimes dos veces.
+function google_drive_oauth_resolver_descarga(array $meta): ?array
+{
+    $EXPORTAR_GOOGLE_NATIVO = [
+        'application/vnd.google-apps.document'     => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.google-apps.spreadsheet'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.google-apps.presentation' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    $MIME_A_EXTENSION = [
+        'application/pdf'                                                           => 'pdf',
+        'application/msword'                                                        => 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'   => 'docx',
+        'application/vnd.ms-excel'                                                  => 'xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'         => 'xlsx',
+        'application/vnd.ms-powerpoint'                                             => 'ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+    ];
+
+    $mimeOrigen = $meta['mimeType'] ?? '';
+    $esGoogleNativo = str_starts_with($mimeOrigen, 'application/vnd.google-apps.');
+    if ($esGoogleNativo) {
+        if (!isset($EXPORTAR_GOOGLE_NATIVO[$mimeOrigen])) {
+            return null;
+        }
+        $mimeFinal = $EXPORTAR_GOOGLE_NATIVO[$mimeOrigen];
+    } else {
+        $mimeFinal = $mimeOrigen;
+        if ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) {
+            return null;
+        }
+    }
+    if (!isset($MIME_A_EXTENSION[$mimeFinal])) {
+        return null;
+    }
+
+    return ['mime_final' => $mimeFinal, 'extension' => $MIME_A_EXTENSION[$mimeFinal], 'es_google_nativo' => $esGoogleNativo];
+}
+
 // Metadatos de UN archivo puntual — se vuelve a pedir server-side antes de
 // importar (nunca se confía en el nombre/mimeType/tamaño que mande el
 // formulario, mismo criterio que el resto del portal).

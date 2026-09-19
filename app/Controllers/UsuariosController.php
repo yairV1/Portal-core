@@ -21,6 +21,27 @@ if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
 
 const ROLES_VALIDOS = ['usuario', 'admin_direccion', 'admin'];
 
+// Resuelve a qué catalogo_cargos.id corresponde lo que mandó el formulario:
+// '__nuevo__' + texto -> crea el cargo si no existía (o reusa el que ya
+// existe con ese nombre exacto) y devuelve su id; un id existente -> se
+// castea tal cual; vacío ("Sin cargo") -> null. Ver migración
+// 046_catalogo_cargos.sql — cargo dejó de ser texto libre en `usuarios`
+// justamente para poder usarlo como llave de permisos sin typos.
+function resolver_cargo_id(PDO $pdo, string $cargoIdPost, string $cargoNuevo): ?int
+{
+    if ($cargoIdPost === '__nuevo__') {
+        $nombre = trim($cargoNuevo);
+        if ($nombre === '') {
+            return null;
+        }
+        $pdo->prepare('INSERT IGNORE INTO catalogo_cargos (nombre) VALUES (:nombre)')->execute([':nombre' => $nombre]);
+        $stmt = $pdo->prepare('SELECT id FROM catalogo_cargos WHERE nombre = :nombre');
+        $stmt->execute([':nombre' => $nombre]);
+        return (int) $stmt->fetchColumn();
+    }
+    return $cargoIdPost !== '' ? (int) $cargoIdPost : null;
+}
+
 function usuarios_volver(string $resultado): void
 {
     header('Location: ' . BASE_URL . '/usuarios?usuarios=' . $resultado);
@@ -40,7 +61,7 @@ if ($uri === '/usuarios/crear') {
 
     $nombre = trim($_POST['nombre'] ?? '');
     $correo = trim(strtolower($_POST['correo'] ?? ''));
-    $cargo = trim($_POST['cargo'] ?? '') ?: null;
+    $cargoId = resolver_cargo_id($pdo, $_POST['cargo_id'] ?? '', $_POST['cargo_nuevo'] ?? '');
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
     // Área de trabajo: obligatoria para admin_direccion (administra esa
     // dirección), opcional para 'usuario' (si se la asignas, ve SOLO esa
@@ -71,6 +92,19 @@ if ($uri === '/usuarios/crear') {
             usuarios_volver('direccion');
         }
     }
+    // Mismo criterio que direccion_id arriba: resolver_cargo_id() ya
+    // garantiza un id válido cuando viene de "+ Agregar nuevo cargo..."
+    // (lo acaba de crear/reusar), pero un id existente pedido por el
+    // <select> puede haberse borrado justo antes del submit — sin este
+    // chequeo, usuarios_cargo_fk (migración 046) igual lo hubiera evitado,
+    // pero como una PDOException sin capturar en vez de un aviso claro.
+    if ($cargoId !== null) {
+        $stmt = $pdo->prepare('SELECT id FROM catalogo_cargos WHERE id = :id');
+        $stmt->execute([':id' => $cargoId]);
+        if (!$stmt->fetch()) {
+            usuarios_volver('cargo');
+        }
+    }
 
     $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE correo = :correo');
     $stmt->execute([':correo' => $correo]);
@@ -78,10 +112,10 @@ if ($uri === '/usuarios/crear') {
         usuarios_volver('correo_existente');
     }
 
-    $pdo->prepare('INSERT INTO usuarios (nombre, correo, password_hash, cargo, rol, direccion_id) VALUES (:nombre, :correo, :hash, :cargo, :rol, :did)')
+    $pdo->prepare('INSERT INTO usuarios (nombre, correo, password_hash, cargo_id, rol, direccion_id) VALUES (:nombre, :correo, :hash, :cargo, :rol, :did)')
         ->execute([
             ':nombre' => $nombre, ':correo' => $correo, ':hash' => password_hash($password, PASSWORD_DEFAULT),
-            ':cargo' => $cargo, ':rol' => $rol, ':did' => $direccionId,
+            ':cargo' => $cargoId, ':rol' => $rol, ':did' => $direccionId,
         ]);
 
     usuarios_volver('creado');
@@ -99,7 +133,7 @@ if ($uri === '/usuarios/editar') {
 
     $nombre = trim($_POST['nombre'] ?? '');
     $correo = trim(strtolower($_POST['correo'] ?? ''));
-    $cargo = trim($_POST['cargo'] ?? '') ?: null;
+    $cargoId = resolver_cargo_id($pdo, $_POST['cargo_id'] ?? '', $_POST['cargo_nuevo'] ?? '');
     $rol = in_array($_POST['rol'] ?? '', ROLES_VALIDOS, true) ? $_POST['rol'] : 'usuario';
     $direccionIdPedida = (int) ($_POST['direccion_id'] ?? 0);
     $direccionId = in_array($rol, ['admin_direccion', 'usuario'], true) && $direccionIdPedida ? $direccionIdPedida : null;
@@ -119,6 +153,13 @@ if ($uri === '/usuarios/editar') {
             usuarios_volver('direccion');
         }
     }
+    if ($cargoId !== null) {
+        $stmt = $pdo->prepare('SELECT id FROM catalogo_cargos WHERE id = :id');
+        $stmt->execute([':id' => $cargoId]);
+        if (!$stmt->fetch()) {
+            usuarios_volver('cargo');
+        }
+    }
     if ($password !== '' && strlen($password) < 8) {
         usuarios_volver('datos');
     }
@@ -134,8 +175,8 @@ if ($uri === '/usuarios/editar') {
         usuarios_volver('correo_existente');
     }
 
-    $campos = 'nombre = :nombre, correo = :correo, cargo = :cargo, rol = :rol, direccion_id = :did';
-    $params = [':nombre' => $nombre, ':correo' => $correo, ':cargo' => $cargo, ':rol' => $rol, ':did' => $direccionId, ':id' => $id];
+    $campos = 'nombre = :nombre, correo = :correo, cargo_id = :cargo, rol = :rol, direccion_id = :did';
+    $params = [':nombre' => $nombre, ':correo' => $correo, ':cargo' => $cargoId, ':rol' => $rol, ':did' => $direccionId, ':id' => $id];
     if ($password !== '') {
         $campos .= ', password_hash = :hash';
         $params[':hash'] = password_hash($password, PASSWORD_DEFAULT);
@@ -168,12 +209,14 @@ if ($uri === '/usuarios/eliminar') {
 
 // ---- /usuarios (panel) ----
 $usuarios = $pdo->query('
-    SELECT u.id, u.nombre, u.correo, u.cargo, u.rol, u.direccion_id, u.creado_en, d.titulo AS direccion_titulo
+    SELECT u.id, u.nombre, u.correo, u.cargo_id, cc.nombre AS cargo_nombre, u.rol, u.direccion_id, u.creado_en, d.titulo AS direccion_titulo
     FROM usuarios u
     LEFT JOIN direcciones d ON d.id = u.direccion_id
+    LEFT JOIN catalogo_cargos cc ON cc.id = u.cargo_id
     ORDER BY u.nombre
 ')->fetchAll();
 
 $direccionesDisponibles = $pdo->query('SELECT id, titulo FROM direcciones ORDER BY titulo')->fetchAll();
+$cargosDisponibles = $pdo->query('SELECT id, nombre FROM catalogo_cargos ORDER BY nombre')->fetchAll();
 
 require ROOT_PATH . '/app/Views/Portal/Usuarios/Usuarios.php';
