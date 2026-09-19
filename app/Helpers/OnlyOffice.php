@@ -15,9 +15,16 @@
 //      tiene cookie de sesión — la firma es lo único que las protege.
 // ══════════════════════════════════════════════════════════
 
+// El secreto se lee siempre con trim(): un valor de solo espacios ("   ")
+// cuenta como vacío, igual que en onlyoffice_jwt_firmar()/_verificar().
+function onlyoffice_secreto(): string
+{
+    return trim((string) getenv('ONLYOFFICE_JWT_SECRET'));
+}
+
 function onlyoffice_configurado(): bool
 {
-    return !empty(getenv('ONLYOFFICE_JWT_SECRET'));
+    return onlyoffice_secreto() !== '';
 }
 
 // ¿Este archivo se puede abrir con el editor de Office (ver
@@ -45,7 +52,7 @@ function onlyoffice_base64url_decodificar(string $datos): string
 // tratar null como "editor no configurado".
 function onlyoffice_jwt_firmar(array $payload): ?string
 {
-    $secreto = getenv('ONLYOFFICE_JWT_SECRET') ?: '';
+    $secreto = onlyoffice_secreto();
     if ($secreto === '') {
         return null;
     }
@@ -60,7 +67,7 @@ function onlyoffice_jwt_firmar(array $payload): ?string
 // una comparación normal filtre por timing cuánto de la firma acertó.
 function onlyoffice_jwt_verificar(string $jwt): ?array
 {
-    $secreto = getenv('ONLYOFFICE_JWT_SECRET') ?: '';
+    $secreto = onlyoffice_secreto();
     if ($secreto === '') {
         return null;
     }
