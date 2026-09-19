@@ -94,6 +94,12 @@ $carpetaFisica = $fuente ? ROOT_PATH . '/storage/' . $fuente['storage'] : null;
 
 // ---- GET /editor/archivo — lo pide el contenedor OnlyOffice, sin sesión ----
 if ($uri === '/editor/archivo') {
+    // Sin secreto configurado no hay forma de validar la "clave" — se corta
+    // antes de leer nada, en vez de dejar que una firma trivial la acepte.
+    if (!onlyoffice_configurado()) {
+        http_response_code(503);
+        exit;
+    }
     $id = (int) ($_GET['id'] ?? 0);
     $clave = $_GET['clave'] ?? '';
     if (!$fuente || !onlyoffice_token_interno_valido($clave, $tipo, $id, 'archivo')) {
@@ -124,6 +130,11 @@ if ($uri === '/editor/archivo') {
 // para que OnlyOffice no reintente, sin tocar nada en disco.
 if ($uri === '/editor/callback') {
     header('Content-Type: application/json');
+    if (!onlyoffice_configurado()) {
+        http_response_code(503);
+        echo json_encode(['error' => 1]);
+        exit;
+    }
     $id = (int) ($_GET['id'] ?? 0);
     $clave = $_GET['clave'] ?? '';
     // onlyoffice_token_interno_editable() (no _valido()): además de que la
@@ -281,6 +292,13 @@ $tokenArchivo = onlyoffice_token_interno($tipo, $id, 'archivo');
 // en modo solo lectura nunca tiene en sus manos una "clave" de callback
 // que pase esa validación, sin importar qué Authorization mande.
 $tokenCallback = onlyoffice_token_interno($tipo, $id, 'callback', 6 * 3600, $puedeEditar);
+// null = sin secreto (ya filtrado arriba por onlyoffice_configurado(), pero
+// no se asume: urlencode(null) armaría una URL con "clave=" vacía).
+if ($tokenArchivo === null || $tokenCallback === null) {
+    http_response_code(503);
+    mostrar_error(500);
+    exit;
+}
 
 // "app" es el nombre del servicio dentro de la red de Docker (ver
 // docker-compose.yml) — estas dos URLs las llama el CONTENEDOR de
@@ -318,6 +336,11 @@ $configEditor = [
     ],
 ];
 $configEditor['token'] = onlyoffice_jwt_firmar($configEditor);
+if ($configEditor['token'] === null) {
+    http_response_code(503);
+    mostrar_error(500);
+    exit;
+}
 
 // El navegador SÍ necesita la URL pública de OnlyOffice (con el puerto que
 // mapeaste en tu .env) — ese script lo carga el navegador del usuario, no

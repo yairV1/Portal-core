@@ -39,9 +39,16 @@ function onlyoffice_base64url_decodificar(string $datos): string
     return base64_decode(strtr($datos, '-_', '+/'));
 }
 
-function onlyoffice_jwt_firmar(array $payload): string
+// Devuelve null (no firma nada) si ONLYOFFICE_JWT_SECRET está vacío: un HMAC
+// con clave "" lo puede calcular cualquiera, así que firmar o validar sin
+// secreto equivaldría a no proteger las URLs internas — quien llama debe
+// tratar null como "editor no configurado".
+function onlyoffice_jwt_firmar(array $payload): ?string
 {
     $secreto = getenv('ONLYOFFICE_JWT_SECRET') ?: '';
+    if ($secreto === '') {
+        return null;
+    }
     $header = onlyoffice_base64url_codificar(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
     $cuerpo = onlyoffice_base64url_codificar(json_encode($payload));
     $firma = onlyoffice_base64url_codificar(hash_hmac('sha256', "{$header}.{$cuerpo}", $secreto, true));
@@ -54,6 +61,9 @@ function onlyoffice_jwt_firmar(array $payload): string
 function onlyoffice_jwt_verificar(string $jwt): ?array
 {
     $secreto = getenv('ONLYOFFICE_JWT_SECRET') ?: '';
+    if ($secreto === '') {
+        return null;
+    }
     $partes = explode('.', $jwt);
     if (count($partes) !== 3) {
         return null;
@@ -83,7 +93,7 @@ function onlyoffice_jwt_verificar(string $jwt): ?array
 // por su propio diseño, solo para ESE documento) para forjar un callback y
 // sobrescribirlo igual, porque nada distinguía "esta clave se emitió para
 // alguien que solo podía ver" de "para alguien que podía editar".
-function onlyoffice_token_interno(string $tipo, int $id, string $accion, int $vigenciaSeg = 6 * 3600, ?bool $editable = null): string
+function onlyoffice_token_interno(string $tipo, int $id, string $accion, int $vigenciaSeg = 6 * 3600, ?bool $editable = null): ?string
 {
     $payload = ['tipo' => $tipo, 'id' => $id, 'accion' => $accion, 'exp' => time() + $vigenciaSeg];
     if ($editable !== null) {

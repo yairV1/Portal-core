@@ -37,9 +37,11 @@ services:
       # Editor de Word/Excel/PowerPoint dentro del portal (opcional, ver
       # EditorController.php/OnlyOffice.php) — mismo secreto que el
       # contenedor "onlyoffice" de más abajo, para firmar/verificar la
-      # comunicación entre ambos. Sin ONLYOFFICE_JWT_SECRET, el botón
-      # "Editar" de los documentos de Office simplemente no aparece.
-      ONLYOFFICE_JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
+      # comunicación entre ambos. OBLIGATORIO con Docker: si falta, compose
+      # no arranca (un secreto vacío dejaría las URLs internas del editor
+      # sin protección real). Sin Docker, sin este valor el editor queda
+      # apagado (503 en /editor/archivo y /editor/callback).
+      ONLYOFFICE_JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:?falta el secreto}
       ONLYOFFICE_PORT: ${ONLYOFFICE_PORT:-8082}
       # Tablero de Trello en "Todos los módulos" → Trello (opcional, ver
       # app/Helpers/Trello.php). Sin ellas, ese módulo avisa que no está
@@ -93,7 +95,7 @@ services:
     image: onlyoffice/documentserver:latest
     environment:
       JWT_ENABLED: "true"
-      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:?falta el secreto}
       JWT_HEADER: Authorization
     ports:
       - "${ONLYOFFICE_PORT:-8082}:80"
