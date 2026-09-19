@@ -132,44 +132,73 @@ function usuario_area_asignada(): ?int {
     return $id !== null ? (int) $id : null;
 }
 
-// usuario_puede_ver_ruta(): ¿el rol de la sesión actual tiene vetado este
-// módulo? (ver PermisosController.php / migración 044_permisos_rol_nav_item.sql).
-// El admin global nunca se autolimitea. Modelo "solo excepciones": sin fila
-// en permisos_rol_negados, la ruta está permitida (comportamiento de
-// siempre) — esto solo puede QUITAR acceso, nunca dar uno que la propia
-// dirección/área ya no permitiera (usuario_area_asignada() sigue
-// aplicando aparte, en cada controlador). $uri sin ningún nav_item
-// (ej. /login, /perfil) nunca pasa por este mecanismo.
-function usuario_puede_ver_ruta(string $uri): bool {
-    global $pdo;
-    $rol = $_SESSION['usuario_rol'] ?? '';
-    if (!in_array($rol, ['admin_direccion', 'usuario'], true)) return true;
+// ── Permisos por rol (ver PermisosController.php y config/modulos.php) ──
+// La lista de módulos vetables vive en config/modulos.php y los vetos en
+// permisos_rol_modulo (migración 045 — DEBE aplicarse ANTES que este código:
+// sin esa tabla, los roles admin_direccion/usuario quedan sin acceso a los
+// módulos, ver usuario_modulos_vetados()).
+function modulos_config(): array {
+    static $config = null;
+    return $config ??= require ROOT_PATH . '/config/modulos.php';
+}
 
-    $navItems = $pdo->query("SELECT id, parent_id, ruta FROM nav_items WHERE ruta IS NOT NULL AND ruta != '/'")->fetchAll();
-    $masLargo = null;
-    foreach ($navItems as $item) {
-        $ruta = $item['ruta'];
-        if ($uri === $ruta || str_starts_with($uri, $ruta . '/')) {
-            if ($masLargo === null || strlen($ruta) > strlen($masLargo['ruta'])) {
-                $masLargo = $item;
+// ¿A qué módulo vetable pertenece esta URL? Prefijo más largo, respetando el
+// límite de segmento: '/sgi' y '/sgi/carpetas/descargar' son del módulo 'sgi',
+// '/sgix' no. null = la URL no es de ningún módulo vetable (/, /perfil,
+// /usuarios, /administracion, /permisos-por-rol, /documentos, /editor...).
+function modulo_de_ruta(string $uri): ?string {
+    $mejor = null;
+    $largo = -1;
+    foreach (modulos_config() as $clave => $modulo) {
+        foreach ($modulo['rutas'] as $ruta) {
+            if (($uri === $ruta || str_starts_with($uri, $ruta . '/')) && strlen($ruta) > $largo) {
+                $mejor = $clave;
+                $largo = strlen($ruta);
             }
         }
     }
-    if ($masLargo === null) return true;
+    return $mejor;
+}
 
-    // Solo los módulos de primer nivel (parent_id NULL) aparecen en el
-    // checklist de PermisosController.php — un hijo (ej. submenú del
-    // Cuadro de Mando Integral) hereda el permiso de su padre, así que se
-    // sube hasta la raíz antes de consultar.
-    $porId = array_column($navItems, null, 'id');
-    $raizId = $masLargo['id'];
-    while (!empty($porId[$raizId]['parent_id'])) {
-        $raizId = $porId[$raizId]['parent_id'];
+// Claves de los módulos vetados al rol de la sesión. Solo para admin_direccion
+// y usuario (el admin global nunca se veta: devuelve []). Falla CERRADO: si la
+// consulta no se puede hacer (p. ej. falta la migración 045) se registra con
+// error_log y se devuelve null, y quien llama trata null como "todo vetado" —
+// nunca como "nada vetado".
+function usuario_modulos_vetados(): ?array {
+    global $pdo;
+    static $cache = [];
+    $rol = $_SESSION['usuario_rol'] ?? '';
+    if (!in_array($rol, ['admin_direccion', 'usuario'], true)) return [];
+    if (!array_key_exists($rol, $cache)) {
+        try {
+            $stmt = $pdo->prepare('SELECT modulo FROM permisos_rol_modulo WHERE rol = :rol');
+            $stmt->execute([':rol' => $rol]);
+            $cache[$rol] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        } catch (PDOException $e) {
+            error_log('Permisos por rol: no se pudo leer permisos_rol_modulo (¿falta aplicar la migración 045?): ' . $e->getMessage());
+            $cache[$rol] = null;
+        }
     }
+    return $cache[$rol];
+}
 
-    $stmt = $pdo->prepare('SELECT 1 FROM permisos_rol_negados WHERE nav_item_id = :id AND rol = :rol');
-    $stmt->execute([':id' => $raizId, ':rol' => $rol]);
-    return !$stmt->fetchColumn();
+// ¿El rol de la sesión puede ver este módulo (clave de config/modulos.php)?
+// Modelo "solo excepciones": sin fila en permisos_rol_modulo está permitido;
+// esto solo puede QUITAR acceso, nunca dar uno que la propia dirección/área ya
+// no permitiera (usuario_area_asignada() sigue aplicando aparte).
+function usuario_puede_ver_modulo(string $clave): bool {
+    $vetados = usuario_modulos_vetados();
+    if ($vetados === null) return false;
+    return !in_array($clave, $vetados, true);
+}
+
+// ¿Puede el rol de la sesión abrir esta URL? Las que no son de ningún módulo
+// vetable (ver modulo_de_ruta()) siempre pasan.
+function usuario_puede_ver_ruta(string $uri): bool {
+    $modulo = modulo_de_ruta($uri);
+    if ($modulo === null) return true;
+    return usuario_puede_ver_modulo($modulo);
 }
 
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)

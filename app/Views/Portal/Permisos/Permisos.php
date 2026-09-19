@@ -12,8 +12,18 @@
     <p style="margin:0"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Permisos guardados.</p>
   </div>
 <?php elseif (isset($_GET['error'])): ?>
+  <?php
+  $mensajesError = [
+      'modulo'  => 'No se guardó nada: el formulario incluía un módulo que no existe.',
+      'rol'     => 'No se guardó nada: el formulario incluía un rol que no se puede configurar (solo Administrador de dirección y Usuario).',
+      'datos'   => 'No se guardó nada: los datos del formulario no son válidos.',
+      'csrf'    => 'Tu sesión de formulario expiró, recarga la página e intenta de nuevo.',
+      'guardar' => 'No se pudo guardar en la base de datos (¿falta aplicar la migración 045?). No se cambió nada.',
+  ];
+  $textoError = $mensajesError[$_GET['error']] ?? 'No se pudo guardar, intenta de nuevo.';
+  ?>
   <div class="empty-state" style="margin:0 0 24px;padding:16px;text-align:left;max-width:none">
-    <p style="margin:0"><i class="bi bi-exclamation-triangle-fill" style="color:var(--color-accent-2)"></i> No se pudo guardar, intenta de nuevo.</p>
+    <p style="margin:0"><i class="bi bi-exclamation-triangle-fill" style="color:var(--color-accent-2)"></i> <?= e($textoError) ?></p>
   </div>
 <?php endif; ?>
 
@@ -31,7 +41,7 @@
         </tr>
       </thead>
       <tbody>
-        <?php $seccionActual = null; foreach ($modulos as $m): ?>
+        <?php $seccionActual = null; foreach ($modulos as $clave => $m): ?>
           <?php if ($m['seccion'] !== $seccionActual): $seccionActual = $m['seccion']; ?>
             <tr>
               <td colspan="<?= 1 + count(PERMISOS_ROLES) ?>" style="opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;background:var(--color-surface)">
@@ -43,8 +53,8 @@
             <td><i class="bi bi-<?= e($m['icono'] ?: 'dot') ?>" style="opacity:.6;margin-right:8px"></i><?= e($m['label']) ?></td>
             <?php foreach (array_keys(PERMISOS_ROLES) as $rol): ?>
               <td style="text-align:center">
-                <input type="checkbox" name="permitido[<?= (int) $m['id'] ?>][<?= e($rol) ?>]" value="1"
-                  <?= empty($negados[$m['id']][$rol]) ? 'checked' : '' ?>>
+                <input type="checkbox" name="permitido[<?= e($clave) ?>][<?= e($rol) ?>]" value="1"
+                  <?= empty($negados[$clave][$rol]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
           </tr>
