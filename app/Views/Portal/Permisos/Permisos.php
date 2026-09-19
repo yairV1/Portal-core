@@ -11,7 +11,7 @@
   <div class="empty-state" style="margin:0 0 24px;padding:16px;text-align:left;max-width:none">
     <p style="margin:0"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Permisos guardados.</p>
   </div>
-<?php elseif (isset($_GET['error'])): ?>
+<?php elseif (is_string($_GET['error'] ?? null)): ?>
   <?php
   $mensajesError = [
       'modulo'  => 'No se guardó nada: el formulario incluía un módulo que no existe.',
