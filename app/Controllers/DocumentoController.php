@@ -95,6 +95,13 @@ if ($uri === '/documentos/crear') {
         mostrar_error(403);
         exit;
     }
+    // Además de ser admin de esa dirección (arriba, sin cambios), su módulo no
+    // puede estar vetado para este rol (Permisos por rol): el veto se suma.
+    if (!usuario_puede_ver_archivo_de($esDireccion ? modulo_de_direccion((int) ($_POST['direccion_id'] ?? 0)) : 'gestion-documental')) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
         volver_documento($volver, 'error', $area);
     }
@@ -153,10 +160,25 @@ if ($uri === '/documentos/subir') {
     $stmt->execute([':id' => $archivoId]);
     $filaDoc = $stmt->fetch();
     if (!$filaDoc) {
+        // Para quien no es admin global un id inexistente da el mismo 403 que
+        // uno al que no tiene derecho (no revela qué ids existen); el admin
+        // global sí recibe el aviso de error de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_documento($volver, 'error');
     }
 
     if (!usuario_admin_de($esDireccion ? (int) $filaDoc['direccion_id'] : null)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // ESTE documento no puede estar vetado para este rol: el veto se suma.
+    if (!usuario_puede_ver_archivo_de($esDireccion ? modulo_de_direccion((int) $filaDoc['direccion_id']) : 'gestion-documental')) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -212,13 +234,22 @@ if ($uri === '/documentos/descargar') {
     $stmt->execute([':id' => $archivoId]);
     $fila = $stmt->fetch();
 
-    // Mismo bloqueo por área que PortalController.php/CarpetaController.php
-    // (ver usuario_area_asignada()) — archivos_documentales (Gestión
-    // Documental) no tiene dirección, así que no aplica ahí.
-    if ($fila && $esDireccion) {
+    // Quien no es admin global necesita permiso sobre el módulo DEL ARCHIVO:
+    // la dirección de la fila (direccion_documentos) o 'gestion-documental'
+    // (archivos_documentales, que no tiene dirección) — no sobre la URL. Más el
+    // bloqueo por área de PortalController.php/CarpetaController.php (ver
+    // usuario_area_asignada(), solo aplica a direccion_documentos). Todo
+    // deniego —no existe, módulo sin resolver, vetado, otra área— da el mismo
+    // 403, para no revelar qué ids existen.
+    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
         $areaAsignada = usuario_area_asignada();
-        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
-            $fila = false;
+        $moduloArchivo = !$fila ? null : ($esDireccion ? modulo_de_direccion((int) $fila['direccion_id']) : 'gestion-documental');
+        if (!$fila
+            || !usuario_puede_ver_archivo_de($moduloArchivo)
+            || ($esDireccion && $areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id'])) {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
         }
     }
 

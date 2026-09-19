@@ -451,14 +451,22 @@ if ($accionCarpeta === 'descargar') {
     if ($fila && !isset($rutaPorDireccionId[$fila['direccion_id']])) {
         $fila = false;
     }
-    // Mismo bloqueo por área que PortalController.php (ver
-    // usuario_area_asignada()) — sin esto, alguien restringido a su propia
-    // dirección podría igual descargar un archivo de otra si adivina o
-    // guarda el id, sin pasar nunca por la página bloqueada.
-    if ($fila) {
+    // Quien no es admin global necesita permiso sobre el módulo DEL ARCHIVO
+    // (resuelto desde la fila, ver modulo_de_direccion()), NO sobre el prefijo
+    // de la URL con que llegó: con /sgi vetado, /talento-humano/carpetas/
+    // descargar?id=<archivo de SGI> no lo entrega aunque /talento-humano esté
+    // permitido. Más el bloqueo por área de siempre (usuario_area_asignada():
+    // alguien restringido a su dirección no baja archivos de otra por id). Todo
+    // deniego —no existe, módulo sin resolver, vetado, otra área— da el mismo
+    // 403, para no revelar qué ids existen.
+    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
         $areaAsignada = usuario_area_asignada();
-        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
-            $fila = false;
+        if (!$fila
+            || !usuario_puede_ver_archivo_de(modulo_de_direccion((int) $fila['direccion_id']))
+            || ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id'])) {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
         }
     }
 

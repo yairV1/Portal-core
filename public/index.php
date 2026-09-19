@@ -201,6 +201,39 @@ function usuario_puede_ver_ruta(string $uri): bool {
     return usuario_puede_ver_modulo($modulo);
 }
 
+// Módulo (clave de config/modulos.php) al que pertenece una dirección, según
+// direcciones.slug y el 'slugs_direccion' de cada módulo. null si la dirección
+// no existe o su slug no está en ningún módulo.
+function modulo_de_direccion(?int $direccionId): ?string {
+    global $pdo;
+    static $slugPorId = null;
+    if ($direccionId === null) return null;
+    if ($slugPorId === null) {
+        $slugPorId = [];
+        foreach ($pdo->query('SELECT id, slug FROM direcciones')->fetchAll() as $d) {
+            $slugPorId[(int) $d['id']] = $d['slug'];
+        }
+    }
+    $slug = $slugPorId[$direccionId] ?? null;
+    if ($slug === null) return null;
+    foreach (modulos_config() as $clave => $modulo) {
+        if (in_array($slug, $modulo['slugs_direccion'] ?? [], true)) return $clave;
+    }
+    return null;
+}
+
+// ¿Puede el usuario de la sesión ver/descargar/editar un archivo de ESTE
+// módulo? Se decide por el módulo DEL ARCHIVO (resuelto desde su fila), no por
+// el prefijo de la URL con que se pidió: un rol con /sgi vetado no puede bajar
+// un archivo de SGI por /talento-humano/carpetas/descargar. El admin global
+// siempre; el resto falla CERRADO: si el módulo no se pudo resolver (null) o
+// está vetado, no. Quien llama debe dar la MISMA respuesta (403) a un archivo
+// que no existe que a uno vetado, para no revelar qué ids existen.
+function usuario_puede_ver_archivo_de(?string $modulo): bool {
+    if (($_SESSION['usuario_rol'] ?? '') === 'admin') return true;
+    return $modulo !== null && usuario_puede_ver_modulo($modulo);
+}
+
 // Conexión a la base de datos (deja $pdo listo para todo el proyecto)
 require ROOT_PATH . '/config/database.php';
 

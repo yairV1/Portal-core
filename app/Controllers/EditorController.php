@@ -245,16 +245,25 @@ if (!onlyoffice_configurado()) {
 
 $id = (int) ($_GET['id'] ?? 0);
 $fila = $fuente ? editor_fila($pdo, $fuente, $id) : null;
+$direccionId = $fila && $fila['direccion_id'] !== null ? (int) $fila['direccion_id'] : null;
+
+// Permiso por el módulo DEL ARCHIVO (no por la URL): Gestión Documental
+// ('documental') es su propio módulo; el resto sale de la dirección de la fila.
+// Para quien no es admin global, "no existe", "tipo desconocido", "módulo sin
+// resolver", "módulo vetado" y "otra área" dan TODOS el mismo 403 — así no se
+// puede averiguar qué ids existen. El admin global siempre pasa.
+if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $moduloArchivo = !$fila ? null : ($tipo === 'documental' ? 'gestion-documental' : modulo_de_direccion($direccionId));
+    if (!$fila || !usuario_puede_ver_archivo_de($moduloArchivo) || !editor_area_permitida($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+}
+
 if (!$fila || !$fila['archivo']) {
     http_response_code(404);
     mostrar_error(404);
-    exit;
-}
-
-$direccionId = $fila['direccion_id'] !== null ? (int) $fila['direccion_id'] : null;
-if (!editor_area_permitida($direccionId)) {
-    http_response_code(403);
-    mostrar_error(403);
     exit;
 }
 
