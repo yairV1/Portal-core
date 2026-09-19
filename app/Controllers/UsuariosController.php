@@ -32,6 +32,22 @@ function usuarios_csrf_ok(): bool
     return hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '');
 }
 
+// Ids de los admin GLOBALES (rol 'admin', no 'admin_direccion'). FOR UPDATE:
+// bloquea esas filas hasta el commit, así que dos peticiones simultáneas (un
+// admin degradando al otro y viceversa) no pueden leer "queda otro" las dos a
+// la vez — hay que llamarla dentro de una transacción.
+function usuarios_ids_admin(PDO $pdo): array
+{
+    return array_map('intval', $pdo->query("SELECT id FROM usuarios WHERE rol = 'admin' FOR UPDATE")->fetchAll(PDO::FETCH_COLUMN));
+}
+
+// ¿$id es el ÚNICO admin global que queda? (dejar el portal sin ninguno no
+// tiene vuelta atrás desde la interfaz).
+function usuarios_es_ultimo_admin(int $id, array $idsAdmin): bool
+{
+    return in_array($id, $idsAdmin, true) && count(array_diff($idsAdmin, [$id])) === 0;
+}
+
 // ---- /usuarios/crear ----
 if ($uri === '/usuarios/crear') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !usuarios_csrf_ok()) {
@@ -140,13 +156,23 @@ if ($uri === '/usuarios/editar') {
         $campos .= ', password_hash = :hash';
         $params[':hash'] = password_hash($password, PASSWORD_DEFAULT);
     }
+    // Nunca dejar el portal sin admin global (aparte del chequeo de arriba, que
+    // solo cubre "te quitas a ti mismo"): si el editado es el último 'admin' y
+    // el rol nuevo no es 'admin', se corta. En transacción para que el conteo
+    // y el UPDATE no se crucen con otra petición.
+    $pdo->beginTransaction();
+    $stmt = $pdo->prepare('SELECT rol FROM usuarios WHERE id = :id FOR UPDATE');
+    $stmt->execute([':id' => $id]);
+    $rolActual = $stmt->fetchColumn();
+    if ($rolActual === 'admin' && $rol !== 'admin' && usuarios_es_ultimo_admin($id, usuarios_ids_admin($pdo))) {
+        $pdo->rollBack();
+        usuarios_volver('ultimo_admin_rol');
+    }
     $pdo->prepare("UPDATE usuarios SET {$campos} WHERE id = :id")->execute($params);
+    $pdo->commit();
 
-    // Si el usuario editado tiene una sesión activa en este mismo servidor
-    // (PHP sessions en disco), no la vamos a invalidar a mitad de camino —
-    // el próximo login ya toma el rol/dirección nuevos, mismo criterio que
-    // el resto del portal (ver public/index.php, no hay invalidación
-    // remota de sesiones todavía).
+    // El usuario editado (si tiene sesión abierta) toma el rol/dirección nuevos
+    // en su próxima petición: public/index.php los relee de la BD cada vez.
 
     usuarios_volver('actualizado');
 }
@@ -161,7 +187,16 @@ if ($uri === '/usuarios/eliminar') {
         usuarios_volver('auto_eliminar'); // no te puedes borrar a ti mismo
     }
     if ($id > 0) {
+        // Mismo guard que /usuarios/editar: no se elimina al último admin global.
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('SELECT rol FROM usuarios WHERE id = :id FOR UPDATE');
+        $stmt->execute([':id' => $id]);
+        if ($stmt->fetchColumn() === 'admin' && usuarios_es_ultimo_admin($id, usuarios_ids_admin($pdo))) {
+            $pdo->rollBack();
+            usuarios_volver('ultimo_admin_eliminar');
+        }
         $pdo->prepare('DELETE FROM usuarios WHERE id = :id')->execute([':id' => $id]);
+        $pdo->commit();
     }
     usuarios_volver('eliminado');
 }

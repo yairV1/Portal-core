@@ -98,6 +98,8 @@
       'correo_existente': { icon: 'error', title: 'Ya existe un usuario con ese correo' },
       'auto_rol': { icon: 'error', title: 'No puedes quitarte a ti mismo el rol de administrador global' },
       'auto_eliminar': { icon: 'error', title: 'No puedes eliminar tu propio usuario' },
+      'ultimo_admin_rol': { icon: 'error', title: 'No se pudo cambiar el rol: es el único administrador global que queda' },
+      'ultimo_admin_eliminar': { icon: 'error', title: 'No se pudo eliminar: es el único administrador global que queda' },
       'error': { icon: 'error', title: 'No se pudo completar la acción' }
     };
     var t = textos[resultado] || textos['error'];

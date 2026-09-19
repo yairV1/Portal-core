@@ -181,6 +181,28 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf = $_SESSION['csrf_token'];
 
+// Rol y dirección vigentes: AuthController.php los copia a la sesión al
+// iniciar sesión, y sin esto un admin que le baja el rol a alguien (o lo
+// elimina) no surte efecto hasta que esa persona cierre sesión o pase 30
+// minutos inactiva. Se relee de la BD (una consulta por clave primaria) en
+// cada petición CON sesión — las públicas y las que llama OnlyOffice sin
+// cookie (/editor/archivo, /editor/callback) no pasan por acá. Si el
+// usuario ya no existe, se trata igual que una sesión expirada. (usuarios no
+// tiene columna de estado/activo, así que "existe" es la única condición.)
+if (!empty($_SESSION['usuario_id'])) {
+    $stmt = $pdo->prepare('SELECT rol, direccion_id FROM usuarios WHERE id = :id');
+    $stmt->execute([':id' => $_SESSION['usuario_id']]);
+    $usuarioVigente = $stmt->fetch();
+    if (!$usuarioVigente) {
+        $_SESSION = [];
+        session_destroy();
+        header('Location: ' . BASE_URL . '/login?expirada=1');
+        exit;
+    }
+    $_SESSION['usuario_rol']          = $usuarioVigente['rol'];
+    $_SESSION['usuario_direccion_id'] = $usuarioVigente['direccion_id'];
+}
+
 // ── Enrutamiento ──
 // routes/web.php debe devolver un arreglo ['/ruta' => 'ArchivoControlador.php']
 $rutas = require ROOT_PATH . '/routes/web.php';
