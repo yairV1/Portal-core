@@ -30,11 +30,15 @@ CREATE TABLE IF NOT EXISTS permisos_rol_sin_modulo (
 -- nav_items.ruta (la de cada módulo cuando era un ítem del sidebar) → clave
 -- de config/modulos.php. Solo sirve para esta copia; el resto del sistema ya
 -- no lee nav_items para permisos.
+-- Charset y collation EXPLÍCITOS (los mismos de nav_items y de las tablas de
+-- arriba): sin ellos la tabla temporal hereda el default de la BD, que en
+-- MySQL 8.0 (docker-compose.yml) es utf8mb4_0900_ai_ci, y el JOIN con
+-- nav_items.ruta (utf8mb4_unicode_ci) falla con "Illegal mix of collations".
 DROP TEMPORARY TABLE IF EXISTS tmp_mapa_modulos;
 CREATE TEMPORARY TABLE tmp_mapa_modulos (
-  ruta VARCHAR(255) NOT NULL PRIMARY KEY,
-  modulo VARCHAR(60) NOT NULL
-);
+  ruta VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL PRIMARY KEY,
+  modulo VARCHAR(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT INTO tmp_mapa_modulos (ruta, modulo) VALUES
   ('/gestion-institucional', 'institucional'),
   ('/sgi', 'sgi'),
