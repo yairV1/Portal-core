@@ -117,6 +117,14 @@ if ($accionCarpeta === 'crear') {
         mostrar_error(403);
         exit;
     }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
         header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
         exit;
@@ -169,9 +177,24 @@ if ($accionCarpeta === 'subir') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -254,9 +277,24 @@ if ($accionCarpeta === 'crear-documento') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -331,9 +369,24 @@ if ($accionCarpeta === 'importar-drive') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -523,9 +576,24 @@ if ($accionCarpeta === 'eliminar') {
         $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     }
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
