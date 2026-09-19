@@ -350,6 +350,33 @@ $hostSinPuerto = explode(':', $_SERVER['HTTP_HOST'] ?? 'localhost')[0];
 $onlyofficePuerto = getenv('ONLYOFFICE_PORT') ?: '8082';
 $onlyofficeUrlPublica = ($porHttps ? 'https' : 'http') . '://' . $hostSinPuerto . ':' . $onlyofficePuerto;
 
-$volverA = $_GET['volver'] ?? null;
+// ¿$ruta es una ruta LOCAL de este sitio? e() escapa HTML pero no impide que
+// un href sea "javascript:..." ni una URL externa — así que "volver" solo se
+// acepta si empieza con "/", no con "//" (protocol-relative), no lleva "\" ni
+// caracteres de control (los navegadores quitan tabs/saltos de línea, así que
+// "/\t/evil.com" terminaría siendo "//evil.com") y no trae esquema ni host.
+function editor_ruta_local_segura(string $ruta): bool
+{
+    if ($ruta === '' || $ruta[0] !== '/') {
+        return false;
+    }
+    if (isset($ruta[1]) && ($ruta[1] === '/' || $ruta[1] === '\\')) {
+        return false;
+    }
+    if (preg_match('/[\x00-\x1f\x7f\\\\]/', $ruta)) {
+        return false;
+    }
+    $partes = parse_url($ruta);
+    return $partes !== false && !isset($partes['scheme']) && !isset($partes['host']);
+}
+
+// Sin "volver" no hay botón (como siempre); con uno inválido se cae al
+// listado de Gestión Documental en vez de armar un enlace peligroso.
+$volverA = null;
+if (isset($_GET['volver'])) {
+    $volverA = (is_string($_GET['volver']) && editor_ruta_local_segura($_GET['volver']))
+        ? $_GET['volver']
+        : BASE_URL . '/gestion-documental';
+}
 
 require ROOT_PATH . '/app/Views/Portal/Editor/Editor.php';
