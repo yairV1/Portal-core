@@ -94,6 +94,12 @@ $carpetaFisica = $fuente ? ROOT_PATH . '/storage/' . $fuente['storage'] : null;
 
 // ---- GET /editor/archivo — lo pide el contenedor OnlyOffice, sin sesión ----
 if ($uri === '/editor/archivo') {
+    // Sin secreto configurado no hay forma de validar la "clave" — se corta
+    // antes de leer nada, en vez de dejar que una firma trivial la acepte.
+    if (!onlyoffice_configurado()) {
+        http_response_code(503);
+        exit;
+    }
     $id = (int) ($_GET['id'] ?? 0);
     $clave = $_GET['clave'] ?? '';
     if (!$fuente || !onlyoffice_token_interno_valido($clave, $tipo, $id, 'archivo')) {
@@ -124,6 +130,11 @@ if ($uri === '/editor/archivo') {
 // para que OnlyOffice no reintente, sin tocar nada en disco.
 if ($uri === '/editor/callback') {
     header('Content-Type: application/json');
+    if (!onlyoffice_configurado()) {
+        http_response_code(503);
+        echo json_encode(['error' => 1]);
+        exit;
+    }
     $id = (int) ($_GET['id'] ?? 0);
     $clave = $_GET['clave'] ?? '';
     // onlyoffice_token_interno_editable() (no _valido()): además de que la
@@ -234,16 +245,25 @@ if (!onlyoffice_configurado()) {
 
 $id = (int) ($_GET['id'] ?? 0);
 $fila = $fuente ? editor_fila($pdo, $fuente, $id) : null;
+$direccionId = $fila && $fila['direccion_id'] !== null ? (int) $fila['direccion_id'] : null;
+
+// Permiso por el módulo DEL ARCHIVO (no por la URL): Gestión Documental
+// ('documental') es su propio módulo; el resto sale de la dirección de la fila.
+// Para quien no es admin global, "no existe", "tipo desconocido", "módulo sin
+// resolver", "módulo vetado" y "otra área" dan TODOS el mismo 403 — así no se
+// puede averiguar qué ids existen. El admin global siempre pasa.
+if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $moduloArchivo = !$fila ? null : ($tipo === 'documental' ? 'gestion-documental' : modulo_de_direccion($direccionId));
+    if (!$fila || !usuario_puede_ver_archivo_de($moduloArchivo) || !editor_area_permitida($direccionId)) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+}
+
 if (!$fila || !$fila['archivo']) {
     http_response_code(404);
     mostrar_error(404);
-    exit;
-}
-
-$direccionId = $fila['direccion_id'] !== null ? (int) $fila['direccion_id'] : null;
-if (!editor_area_permitida($direccionId)) {
-    http_response_code(403);
-    mostrar_error(403);
     exit;
 }
 
@@ -281,6 +301,13 @@ $tokenArchivo = onlyoffice_token_interno($tipo, $id, 'archivo');
 // en modo solo lectura nunca tiene en sus manos una "clave" de callback
 // que pase esa validación, sin importar qué Authorization mande.
 $tokenCallback = onlyoffice_token_interno($tipo, $id, 'callback', 6 * 3600, $puedeEditar);
+// null = sin secreto (ya filtrado arriba por onlyoffice_configurado(), pero
+// no se asume: urlencode(null) armaría una URL con "clave=" vacía).
+if ($tokenArchivo === null || $tokenCallback === null) {
+    http_response_code(503);
+    mostrar_error(500);
+    exit;
+}
 
 // "app" es el nombre del servicio dentro de la red de Docker (ver
 // docker-compose.yml) — estas dos URLs las llama el CONTENEDOR de
@@ -318,6 +345,11 @@ $configEditor = [
     ],
 ];
 $configEditor['token'] = onlyoffice_jwt_firmar($configEditor);
+if ($configEditor['token'] === null) {
+    http_response_code(503);
+    mostrar_error(500);
+    exit;
+}
 
 // El navegador SÍ necesita la URL pública de OnlyOffice (con el puerto que
 // mapeaste en tu .env) — ese script lo carga el navegador del usuario, no
@@ -327,6 +359,33 @@ $hostSinPuerto = explode(':', $_SERVER['HTTP_HOST'] ?? 'localhost')[0];
 $onlyofficePuerto = getenv('ONLYOFFICE_PORT') ?: '8082';
 $onlyofficeUrlPublica = ($porHttps ? 'https' : 'http') . '://' . $hostSinPuerto . ':' . $onlyofficePuerto;
 
-$volverA = $_GET['volver'] ?? null;
+// ¿$ruta es una ruta LOCAL de este sitio? e() escapa HTML pero no impide que
+// un href sea "javascript:..." ni una URL externa — así que "volver" solo se
+// acepta si empieza con "/", no con "//" (protocol-relative), no lleva "\" ni
+// caracteres de control (los navegadores quitan tabs/saltos de línea, así que
+// "/\t/evil.com" terminaría siendo "//evil.com") y no trae esquema ni host.
+function editor_ruta_local_segura(string $ruta): bool
+{
+    if ($ruta === '' || $ruta[0] !== '/') {
+        return false;
+    }
+    if (isset($ruta[1]) && ($ruta[1] === '/' || $ruta[1] === '\\')) {
+        return false;
+    }
+    if (preg_match('/[\x00-\x1f\x7f\\\\]/', $ruta)) {
+        return false;
+    }
+    $partes = parse_url($ruta);
+    return $partes !== false && !isset($partes['scheme']) && !isset($partes['host']);
+}
+
+// Sin "volver" no hay botón (como siempre); con uno inválido se cae al
+// listado de Gestión Documental en vez de armar un enlace peligroso.
+$volverA = null;
+if (isset($_GET['volver'])) {
+    $volverA = (is_string($_GET['volver']) && editor_ruta_local_segura($_GET['volver']))
+        ? $_GET['volver']
+        : BASE_URL . '/gestion-documental';
+}
 
 require ROOT_PATH . '/app/Views/Portal/Editor/Editor.php';

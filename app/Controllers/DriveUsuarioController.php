@@ -142,6 +142,14 @@ if ($uri === '/gestion-documental/drive/importar') {
         mostrar_error(403);
         exit;
     }
+    // Esta acción cuelga de /gestion-documental pero ESCRIBE en una carpeta de
+    // otro módulo (la de $carpetaDestino, por id): el módulo de esa carpeta no
+    // puede estar vetado para este rol — el veto se suma a usuario_admin_de.
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion((int) $carpetaDestino['direccion_id']))) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
     // A dónde volver tras importar — a la carpeta real donde quedó el
     // archivo (mismo mapa de slug→ruta que ya usa CarpetaController.php),
     // para que la persona vea de una que sí llegó, en vez de quedarse en

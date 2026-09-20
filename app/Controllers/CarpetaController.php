@@ -117,6 +117,14 @@ if ($accionCarpeta === 'crear') {
         mostrar_error(403);
         exit;
     }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
         header('Location: ' . BASE_URL . $rutaModuloDeUri . '?drive=error');
         exit;
@@ -169,9 +177,24 @@ if ($accionCarpeta === 'subir') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.subir')) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -254,9 +277,24 @@ if ($accionCarpeta === 'crear-documento') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.crear_documento')) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -331,9 +369,24 @@ if ($accionCarpeta === 'importar-drive') {
     $stmt->execute([':id' => $carpetaId]);
     $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.importar_drive')) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;
@@ -451,14 +504,22 @@ if ($accionCarpeta === 'descargar') {
     if ($fila && !isset($rutaPorDireccionId[$fila['direccion_id']])) {
         $fila = false;
     }
-    // Mismo bloqueo por área que PortalController.php (ver
-    // usuario_area_asignada()) — sin esto, alguien restringido a su propia
-    // dirección podría igual descargar un archivo de otra si adivina o
-    // guarda el id, sin pasar nunca por la página bloqueada.
-    if ($fila) {
+    // Quien no es admin global necesita permiso sobre el módulo DEL ARCHIVO
+    // (resuelto desde la fila, ver modulo_de_direccion()), NO sobre el prefijo
+    // de la URL con que llegó: con /sgi vetado, /talento-humano/carpetas/
+    // descargar?id=<archivo de SGI> no lo entrega aunque /talento-humano esté
+    // permitido. Más el bloqueo por área de siempre (usuario_area_asignada():
+    // alguien restringido a su dirección no baja archivos de otra por id). Todo
+    // deniego —no existe, módulo sin resolver, vetado, otra área— da el mismo
+    // 403, para no revelar qué ids existen.
+    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
         $areaAsignada = usuario_area_asignada();
-        if ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id']) {
-            $fila = false;
+        if (!$fila
+            || !usuario_puede_ver_archivo_de(modulo_de_direccion((int) $fila['direccion_id']))
+            || ($areaAsignada !== null && $areaAsignada !== (int) $fila['direccion_id'])) {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
         }
     }
 
@@ -515,9 +576,24 @@ if ($accionCarpeta === 'eliminar') {
         $direccionId = (int) ($stmt->fetchColumn() ?: 0);
     }
     if (!$direccionId) {
+        // Quien no es admin global recibe el mismo 403 que ante un id ajeno
+        // (no revela qué ids existen); el admin global, el aviso de siempre.
+        if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+            http_response_code(403);
+            mostrar_error(403);
+            exit;
+        }
         volver_a_carpeta($rutaModuloDeUri, null, 'error');
     }
     if (!usuario_admin_de($direccionId) || !usuario_puede_accion('carpetas.eliminar')) {
+        http_response_code(403);
+        mostrar_error(403);
+        exit;
+    }
+    // Además de ser admin de esa dirección (arriba, sin cambios), el módulo de
+    // la dirección DE LA FILA (no el de la URL) no puede estar vetado para este
+    // rol (Permisos por rol): el veto se suma. Falla cerrado (H4).
+    if (!usuario_puede_ver_archivo_de(modulo_de_direccion($direccionId))) {
         http_response_code(403);
         mostrar_error(403);
         exit;

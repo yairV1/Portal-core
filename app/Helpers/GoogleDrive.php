@@ -643,38 +643,45 @@ function google_drive_oauth_sincronizar_archivo(PDO $pdo, int $usuarioId, string
         return;
     }
 
-    $stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
-    $stmt->execute([':id' => $usuarioId]);
-    $refreshToken = google_drive_refresh_token_descifrar($stmt->fetchColumn() ?: null);
-    if (!$refreshToken) {
-        return;
-    }
-    $accessToken = google_drive_oauth_refrescar($refreshToken);
-    if (!$accessToken) {
-        return;
-    }
-
-    $stmt = $pdo->prepare("SELECT google_drive_file_id FROM {$tabla} WHERE id = :id");
-    $stmt->execute([':id' => $filaId]);
-    $driveFileId = $stmt->fetchColumn();
-
-    if ($driveFileId) {
-        if (google_drive_oauth_actualizar_contenido($accessToken, $driveFileId, $rutaLocal, $mimeType)) {
+    // Toda consulta de acá (usuarios/google_drive_file_id) puede fallar si la
+    // BD está desactualizada (migraciones 041/042 sin aplicar) — eso nunca
+    // debe tumbar la subida que ya se completó, así que se traga y se registra.
+    try {
+        $stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
+        $stmt->execute([':id' => $usuarioId]);
+        $refreshToken = google_drive_refresh_token_descifrar($stmt->fetchColumn() ?: null);
+        if (!$refreshToken) {
             return;
         }
-        // El archivo pudo haberse borrado del lado de Drive sin que el
-        // portal se enterara — si actualizar falla, se intenta crear uno
-        // nuevo en vez de dejar la sincronización rota para siempre.
-        $driveFileId = null;
-    }
+        $accessToken = google_drive_oauth_refrescar($refreshToken);
+        if (!$accessToken) {
+            return;
+        }
 
-    $carpetaDriveId = google_drive_oauth_carpeta_portal($accessToken);
-    if (!$carpetaDriveId) {
-        return;
-    }
-    $nuevoId = google_drive_oauth_crear($accessToken, $carpetaDriveId, $rutaLocal, $nombreArchivo, $mimeType);
-    if ($nuevoId) {
-        $pdo->prepare("UPDATE {$tabla} SET google_drive_file_id = :fid WHERE id = :id")
-            ->execute([':fid' => $nuevoId, ':id' => $filaId]);
+        $stmt = $pdo->prepare("SELECT google_drive_file_id FROM {$tabla} WHERE id = :id");
+        $stmt->execute([':id' => $filaId]);
+        $driveFileId = $stmt->fetchColumn();
+
+        if ($driveFileId) {
+            if (google_drive_oauth_actualizar_contenido($accessToken, $driveFileId, $rutaLocal, $mimeType)) {
+                return;
+            }
+            // El archivo pudo haberse borrado del lado de Drive sin que el
+            // portal se enterara — si actualizar falla, se intenta crear uno
+            // nuevo en vez de dejar la sincronización rota para siempre.
+            $driveFileId = null;
+        }
+
+        $carpetaDriveId = google_drive_oauth_carpeta_portal($accessToken);
+        if (!$carpetaDriveId) {
+            return;
+        }
+        $nuevoId = google_drive_oauth_crear($accessToken, $carpetaDriveId, $rutaLocal, $nombreArchivo, $mimeType);
+        if ($nuevoId) {
+            $pdo->prepare("UPDATE {$tabla} SET google_drive_file_id = :fid WHERE id = :id")
+                ->execute([':fid' => $nuevoId, ':id' => $filaId]);
+        }
+    } catch (PDOException $e) {
+        error_log('Sincronización con Drive omitida (' . $tabla . ' #' . $filaId . '): ' . $e->getMessage());
     }
 }

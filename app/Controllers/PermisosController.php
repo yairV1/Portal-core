@@ -2,10 +2,11 @@
 // ══════════════════════════════════════════════════════════
 //  app/Controllers/PermisosController.php
 //  "Permisos por rol" — panel para que el admin global le quite acceso a
-//  módulos puntuales del sidebar a admin_direccion/usuario (ver migración
-//  044_permisos_rol_nav_item.sql y usuario_puede_ver_ruta() en
-//  public/index.php, que hace cumplir esto en CADA ruta, no solo en el
-//  sidebar). El admin global nunca aparece acá — no se autolimitea.
+//  módulos puntuales a admin_direccion/usuario. Los módulos vetables salen de
+//  config/modulos.php y los vetos se guardan en permisos_rol_modulo (migración
+//  045_permisos_rol_modulo.sql); usuario_puede_ver_ruta() en public/index.php
+//  hace cumplir esto en CADA ruta, no solo en el menú. El admin global nunca
+//  aparece acá — no se autolimitea.
 //  $pdo, $csrf, $uri, e() ya vienen listos desde public/index.php
 // ══════════════════════════════════════════════════════════
 
@@ -36,6 +37,30 @@ const ACCIONES_PERMISOS = [
     'documentos.crear'         => 'Documentos por dirección: crear documento',
     'documentos.subir'         => 'Documentos por dirección: subir archivo',
 ];
+$modulos = modulos_config();
+
+// Los permisos por cargo siguen usando nav_item_id por compatibilidad con la
+// migración 046; los permisos por rol usan las claves estables de config.
+$navItemsPorRuta = [];
+foreach ($pdo->query("SELECT id, ruta FROM nav_items WHERE parent_id IS NULL AND ruta IS NOT NULL AND ruta != '/'")->fetchAll() as $navItem) {
+    $navItemsPorRuta[$navItem['ruta']] = (int) $navItem['id'];
+}
+foreach ($modulos as $clave => &$modulo) {
+    $modulo['id'] = 0;
+    foreach ($modulo['rutas'] as $ruta) {
+        if (isset($navItemsPorRuta[$ruta])) {
+            $modulo['id'] = $navItemsPorRuta[$ruta];
+            break;
+        }
+    }
+}
+unset($modulo);
+
+function permisos_rechazar(string $motivo): void
+{
+    header('Location: ' . BASE_URL . '/permisos-por-rol?error=' . $motivo);
+    exit;
+}
 
 if ($uri === '/permisos-por-rol/guardar') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -43,35 +68,49 @@ if ($uri === '/permisos-por-rol/guardar') {
         exit;
     }
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        header('Location: ' . BASE_URL . '/permisos-por-rol?error=1');
-        exit;
+        permisos_rechazar('csrf');
     }
 
-    // El checklist manda "permitido[<nav_item_id>][<rol>]=1" solo por los
-    // checkboxes que quedaron MARCADOS — los que faltan (sin marcar) son
-    // los que hay que denegar. Se reconstruye la tabla completa en cada
-    // guardado (sync total, no altas/bajas sueltas) para que un checkbox
-    // que el navegador no mande por lo que sea nunca deje una fila vieja
-    // sin actualizar.
+    // El checklist manda "permitido[<clave del módulo>][<rol>]=1" solo por los
+    // checkboxes que quedaron MARCADOS — los que faltan (sin marcar) son los
+    // que hay que denegar. Antes de tocar nada se valida TODO lo recibido: solo
+    // claves que existan en config/modulos.php y solo los roles del panel
+    // (admin_direccion/usuario) — cualquier otra cosa rechaza el guardado
+    // completo, sin guardar a medias.
     $permitidos = $_POST['permitido'] ?? [];
-    $navItemIds = array_column($pdo->query('SELECT id FROM nav_items WHERE parent_id IS NULL AND ruta IS NOT NULL AND ruta != "/"')->fetchAll(), 'id');
-
+    if (!is_array($permitidos)) {
+        permisos_rechazar('datos');
+    }
+    foreach ($permitidos as $clave => $roles) {
+        if (!isset($modulos[$clave])) {
+            permisos_rechazar('modulo');
+        }
+        if (!is_array($roles)) {
+            permisos_rechazar('datos');
+        }
+        foreach ($roles as $rol => $valor) {
+            if (!isset(PERMISOS_ROLES[$rol])) {
+                permisos_rechazar('rol');
+            }
+        }
+    }
     // Mismo modelo de sync total para el checklist de acciones (ver
     // ACCIONES_PERMISOS arriba) — "accion_permitida[<clave>][<rol>]=1" solo
     // por los checkboxes marcados.
     $accionesPermitidas = $_POST['accion_permitida'] ?? [];
 
-    $pdo->beginTransaction();
-    $pdo->exec('DELETE FROM permisos_rol_negados');
-    $stmt = $pdo->prepare('INSERT INTO permisos_rol_negados (nav_item_id, rol) VALUES (:id, :rol)');
-    foreach ($navItemIds as $navItemId) {
-        foreach (array_keys(PERMISOS_ROLES) as $rol) {
-            $marcado = !empty($permitidos[$navItemId][$rol]);
-            if (!$marcado) {
-                $stmt->execute([':id' => $navItemId, ':rol' => $rol]);
+    try {
+        $pdo->beginTransaction();
+        $pdo->exec('DELETE FROM permisos_rol_modulo');
+        $stmtModulo = $pdo->prepare('INSERT INTO permisos_rol_modulo (modulo, rol) VALUES (:modulo, :rol)');
+        foreach (array_keys($modulos) as $clave) {
+            foreach (array_keys(PERMISOS_ROLES) as $rol) {
+                if (empty($permitidos[$clave][$rol])) {
+                    $stmtModulo->execute([':modulo' => $clave, ':rol' => $rol]);
+                }
             }
         }
-    }
+
     $pdo->exec('DELETE FROM permisos_rol_acciones_negadas');
     $stmtAccion = $pdo->prepare('INSERT INTO permisos_rol_acciones_negadas (accion_clave, rol) VALUES (:accion, :rol)');
     foreach (array_keys(ACCIONES_PERMISOS) as $accionClave) {
@@ -90,6 +129,7 @@ if ($uri === '/permisos-por-rol/guardar') {
     $permitidosCargo = $_POST['permitido_cargo'] ?? [];
     $accionesPermitidasCargo = $_POST['accion_permitida_cargo'] ?? [];
     $cargoIds = array_column($pdo->query('SELECT id FROM catalogo_cargos')->fetchAll(), 'id');
+    $navItemIds = array_values($navItemsPorRuta);
 
     $pdo->exec('DELETE FROM permisos_cargo_negados');
     $stmtCargo = $pdo->prepare('INSERT INTO permisos_cargo_negados (nav_item_id, cargo_id) VALUES (:id, :cargo)');
@@ -111,24 +151,30 @@ if ($uri === '/permisos-por-rol/guardar') {
             }
         }
     }
-    $pdo->commit();
+        $pdo->commit();
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log('Permisos por rol: no se pudo guardar (¿falta aplicar la migración 045?): ' . $e->getMessage());
+        permisos_rechazar('guardar');
+    }
 
     header('Location: ' . BASE_URL . '/permisos-por-rol?guardado=1');
     exit;
 }
 
 // ---- /permisos-por-rol (GET) ----
-$modulos = $pdo->query("
-    SELECT ni.id, ni.label, ni.icono, ns.label AS seccion
-    FROM nav_items ni
-    JOIN nav_secciones ns ON ns.id = ni.seccion_id
-    WHERE ni.parent_id IS NULL AND ni.ruta IS NOT NULL AND ni.ruta != '/'
-    ORDER BY ns.orden, ni.orden
-")->fetchAll();
-
 $negados = [];
-foreach ($pdo->query('SELECT nav_item_id, rol FROM permisos_rol_negados')->fetchAll() as $n) {
-    $negados[$n['nav_item_id']][$n['rol']] = true;
+try {
+    foreach ($pdo->query('SELECT modulo, rol FROM permisos_rol_modulo')->fetchAll() as $n) {
+        $negados[$n['modulo']][$n['rol']] = true;
+    }
+} catch (PDOException $e) {
+    error_log('Permisos por rol: no se pudo leer permisos_rol_modulo (¿falta aplicar la migración 045?): ' . $e->getMessage());
+    http_response_code(500);
+    mostrar_error(500);
+    exit;
 }
 
 $accionesNegadas = [];

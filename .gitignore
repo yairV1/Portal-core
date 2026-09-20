@@ -40,3 +40,7 @@ $RECYCLE.BIN/
 
 docs/*
 !docs/docker.md
+
+# Permisos locales de Claude Code: pueden incluir comandos con credenciales
+# pegadas (ya pasó con la contraseña de BD) — es config de cada máquina, no del repo.
+/.claude/settings.local.json

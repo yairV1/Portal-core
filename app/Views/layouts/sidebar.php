@@ -63,20 +63,14 @@ if (isset($pdo)) {
     // tienen una "Todos los módulos" tan directa (áreas no asignadas les
     // dan 403) así que sí les sirve el acceso directo.
     $RUTAS_SIDEBAR_ADMIN = ['/', '/calendario', '/modulos'];
-    // Permisos por rol (ver PermisosController.php / migración
-    // 044_permisos_rol_nav_item.sql) — mismo criterio que
-    // usuario_puede_ver_ruta() en public/index.php: un módulo vetado para
-    // este rol ni aparece acá (y aunque alguien tenga el link guardado, esa
-    // otra función igual le da 403 al entrar). Un hijo (ej. submenú del
-    // Cuadro de Mando Integral) nunca se lista solo porque su padre ya
-    // quedó afuera del array por este mismo filtro.
-    $rolSidebar = $_SESSION['usuario_rol'] ?? '';
-    $modulosNegados = [];
-    if (in_array($rolSidebar, ['admin_direccion', 'usuario'], true)) {
-        $stmt = $pdo->prepare('SELECT nav_item_id FROM permisos_rol_negados WHERE rol = :rol');
-        $stmt->execute([':rol' => $rolSidebar]);
-        $modulosNegados = array_column($stmt->fetchAll(), 'nav_item_id');
-    }
+    // Permisos por rol (ver PermisosController.php y config/modulos.php) —
+    // mismo criterio que usuario_puede_ver_ruta() en public/index.php: un
+    // módulo vetado para este rol ni aparece acá (y aunque alguien tenga el
+    // link guardado, esa otra función igual le da 403 al entrar). Un hijo
+    // (ej. submenú del Cuadro de Mando Integral) es del mismo módulo que su
+    // ruta (modulo_de_ruta()), así que tampoco se lista si el módulo está
+    // vetado. Si no se puede leer permisos_rol_modulo, falla cerrado: los
+    // ítems de módulos vetables se ocultan (ver usuario_modulos_vetados()).
     $navSecciones = $pdo->query('SELECT id, label, mostrar_titulo FROM nav_secciones ORDER BY orden')->fetchAll();
     $navItems = $pdo->query('SELECT id, seccion_id, parent_id, slug, ruta, label, icono, solo_admin FROM nav_items ORDER BY orden')->fetchAll();
     foreach ($navItems as $it) {
@@ -85,7 +79,8 @@ if (isset($pdo)) {
         // es un simple sí/no por rol.
         if ($it['solo_admin'] && !$esAdminSidebar) continue;
         if ($esAdminSidebar && !in_array($it['ruta'], $RUTAS_SIDEBAR_ADMIN, true)) continue;
-        if (in_array($it['id'], $modulosNegados, true)) continue;
+        $moduloDelItem = modulo_de_ruta($it['ruta'] ?? '');
+        if ($moduloDelItem !== null && !usuario_puede_ver_modulo($moduloDelItem)) continue;
         if ($it['parent_id'] === null) {
             $navItemsPorSeccion[$it['seccion_id']][] = $it;
         } else {

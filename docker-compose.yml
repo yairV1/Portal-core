@@ -34,11 +34,8 @@ services:
       # "Conectar mi Google Drive" avisa que no está configurado en vez de
       # guardar el token sin cifrar.
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
-      # Editor de Word/Excel/PowerPoint dentro del portal (opcional, ver
-      # EditorController.php/OnlyOffice.php) — mismo secreto que el
-      # contenedor "onlyoffice" de más abajo, para firmar/verificar la
-      # comunicación entre ambos. Sin ONLYOFFICE_JWT_SECRET, el botón
-      # "Editar" de los documentos de Office simplemente no aparece.
+      # Editor de Word/Excel/PowerPoint opcional. Se activa con el perfil
+      # "onlyoffice" y requiere ONLYOFFICE_JWT_SECRET en ese caso.
       ONLYOFFICE_JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
       ONLYOFFICE_PORT: ${ONLYOFFICE_PORT:-8082}
       # Tablero de Trello en "Todos los módulos" → Trello (opcional, ver
@@ -90,10 +87,11 @@ services:
   # JWT_SECRET firma esa comunicación para que nadie más pueda hablarle al
   # contenedor ni hacerse pasar por él.
   onlyoffice:
+    profiles: ["onlyoffice"]
     image: onlyoffice/documentserver:latest
     environment:
       JWT_ENABLED: "true"
-      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:?falta el secreto}
       JWT_HEADER: Authorization
     ports:
       - "${ONLYOFFICE_PORT:-8082}:80"

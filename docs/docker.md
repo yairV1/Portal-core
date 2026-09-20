@@ -123,3 +123,18 @@ docker compose up -d --build
 
 Configura `.env` con credenciales seguras y conserva el volumen `db_data` y
 los montajes de `storage/` y `public/uploads/`.
+
+OnlyOffice es opcional. Para levantarlo, define `ONLYOFFICE_JWT_SECRET` en
+`.env` y activa su perfil:
+
+```sh
+docker compose --profile onlyoffice up -d --build
+```
+
+La migración 045 es necesaria antes de desplegar el código de permisos por
+módulo en una base existente:
+
+```sh
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+   < database/migrations/045_permisos_rol_modulo.sql
+```
