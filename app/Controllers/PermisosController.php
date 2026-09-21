@@ -41,8 +41,14 @@ $modulos = modulos_config();
 
 // Los permisos por cargo siguen usando nav_item_id por compatibilidad con la
 // migración 046; los permisos por rol usan las claves estables de config.
+// Sin filtrar por parent_id IS NULL: los 3 submódulos de Talento Humano
+// (migración 048) son hijos de nav_items y si no, quedarían con id=0 acá
+// (la vista los salta, sin casilla de "permisos por cargo" — bug real
+// encontrado 2026-09-21). La `ruta` de cada nav_item sigue siendo única
+// sin importar si es de primer nivel o un hijo, así que el mapeo es igual
+// de seguro.
 $navItemsPorRuta = [];
-foreach ($pdo->query("SELECT id, ruta FROM nav_items WHERE parent_id IS NULL AND ruta IS NOT NULL AND ruta != '/'")->fetchAll() as $navItem) {
+foreach ($pdo->query("SELECT id, ruta FROM nav_items WHERE ruta IS NOT NULL AND ruta != '/'")->fetchAll() as $navItem) {
     $navItemsPorRuta[$navItem['ruta']] = (int) $navItem['id'];
 }
 foreach ($modulos as $clave => &$modulo) {

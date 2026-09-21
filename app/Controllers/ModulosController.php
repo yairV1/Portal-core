@@ -24,6 +24,21 @@ $direccionIdPorSlug = [];
 foreach ($pdo->query("SELECT id, slug FROM direcciones")->fetchAll() as $d) {
     $direccionIdPorSlug[$d['slug']] = (int) $d['id'];
 }
+// Los 4 submódulos nuevos de Talento Humano (Hojas de vida/Contratos/
+// Certificaciones laborales/Contrataciones, ver config/modulos.php,
+// migraciones 048/049) rompen la regla "clave de módulo = slug de
+// dirección" que Modulos.php asume para tachar del listado lo que no es
+// de tu área — sin este mapeo quedaban ocultos para cualquier cuenta con
+// área asignada a Talento Humano, aunque sí pudiera entrar a esas 4
+// páginas (bug real encontrado 2026-09-21). Se mapean a mano al mismo id
+// que 'talento-humano', sin tocar slugs_direccion (esa lista sí es
+// sensible: la usan CarpetaController.php/DocumentoController.php para
+// H4 y ahí SÍ debe haber una sola dirección dueña de cada módulo).
+if (isset($direccionIdPorSlug['talento-humano'])) {
+    foreach (['talento-humano-hojas-de-vida', 'talento-humano-contratos', 'talento-humano-certificaciones-laborales', 'contrataciones'] as $claveHija) {
+        $direccionIdPorSlug[$claveHija] = $direccionIdPorSlug['talento-humano'];
+    }
+}
 $areaAsignada = usuario_area_asignada();
 
 require ROOT_PATH . '/app/Views/Portal/Modulos/Modulos.php';

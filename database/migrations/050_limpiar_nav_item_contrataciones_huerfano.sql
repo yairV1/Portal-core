@@ -1,0 +1,16 @@
+-- 050_limpiar_nav_item_contrataciones_huerfano.sql
+-- El entorno nativo (portal-core.local) tenía un nav_item huérfano para
+-- /contrataciones (slug='contrataciones', de primer nivel, solo_admin=1)
+-- que Docker nunca tuvo — no viene de ninguna migración versionada, quedó
+-- de algún ajuste manual anterior a esta sesión. Confirmado que está
+-- muerto en el código actual: sidebar.php restringe el menú del admin
+-- global a solo ['/','/calendario','/modulos'] sin importar solo_admin, y
+-- a cualquier otro rol un ítem solo_admin=1 lo salta por completo — así
+-- que esta fila nunca se pudo renderizar.
+--
+-- La migración 049 agregó la fila correcta y viva (slug=
+-- 'talento-contrataciones', hija de Talento Humano) — con la vieja
+-- presente, el entorno nativo quedó con DOS filas apuntando a la misma
+-- ruta. Se borra la vieja por slug exacto (nunca por ruta, para no tocar
+-- por accidente la nueva si algún día compartieran el mismo slug).
+DELETE FROM nav_items WHERE slug = 'contrataciones' AND parent_id IS NULL;

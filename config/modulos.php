@@ -22,11 +22,12 @@
 //
 //  NO están acá, a propósito, y por eso NO se pueden vetar: '/', '/perfil',
 //  '/administracion', '/usuarios', '/permisos-por-rol', '/contenido-landing',
-//  '/contrataciones', '/postulaciones', '/pendientes', '/soportes' (todas de
-//  admin o propias de cada cuenta) ni '/documentos' y '/editor' (no son un
-//  módulo: pertenecen al de la dirección del archivo, ver H4). El admin
-//  global tampoco se veta nunca: usuario_puede_ver_ruta() lo deja pasar antes
-//  de mirar esta lista.
+//  '/postulaciones', '/pendientes', '/soportes' (todas de admin o propias de
+//  cada cuenta) ni '/documentos' y '/editor' (no son un módulo: pertenecen al
+//  de la dirección del archivo, ver H4). El admin global tampoco se veta
+//  nunca: usuario_puede_ver_ruta() lo deja pasar antes de mirar esta lista.
+//  '/contrataciones' SÍ está (a diferencia de la lista de arriba) pero solo
+//  como restricción adicional sobre usuario_admin_de() — ver esa clave abajo.
 //
 //  Agregar un módulo nuevo = una entrada acá (y su ruta en routes/web.php).
 // ══════════════════════════════════════════════════════════
@@ -38,6 +39,24 @@ return [
     'academica'      => ['label' => 'Vicerrectoría Académica',      'icono' => 'mortarboard',  'seccion' => 'Direcciones', 'rutas' => ['/vicerrectoria-academica'],   'slugs_direccion' => ['academica']],
     'financiera'     => ['label' => 'Administrativa y Financiera',  'icono' => 'cash-coin',    'seccion' => 'Direcciones', 'rutas' => ['/administrativa-financiera'], 'slugs_direccion' => ['financiera']],
     'talento-humano' => ['label' => 'Talento Humano',               'icono' => 'people',       'seccion' => 'Direcciones', 'rutas' => ['/talento-humano'],            'slugs_direccion' => ['talento-humano']],
+    // 3 submódulos de Talento Humano (migración 048) con clave propia para
+    // poder vetarlos por separado en "Permisos por rol" — son más sensibles
+    // (datos personales de empleados) que el resto del módulo. Sin
+    // 'slugs_direccion': no cuelgan de una fila de `direcciones` (cuelgan de
+    // `empleados`), el módulo de cada request se sabe por el prefijo de URL.
+    'talento-humano-hojas-de-vida' => ['label' => 'Hojas de vida', 'icono' => 'person-vcard', 'seccion' => 'Direcciones', 'rutas' => ['/talento-humano/hojas-de-vida']],
+    'talento-humano-contratos'     => ['label' => 'Contratos',     'icono' => 'file-earmark-ruled', 'seccion' => 'Direcciones', 'rutas' => ['/talento-humano/contratos']],
+    'talento-humano-certificaciones-laborales' => ['label' => 'Certificaciones laborales', 'icono' => 'award', 'seccion' => 'Direcciones', 'rutas' => ['/talento-humano/certificaciones-laborales']],
+    // Contrataciones (ContratacionController.php) — genera el enlace del
+    // formulario para candidatos. NO es un módulo genérico de dirección (no
+    // tiene 'slugs_direccion', esa clave solo sirve para resolver archivos
+    // por direccion_id): el acceso base sigue siendo usuario_admin_de() de
+    // Talento Humano (admin global o admin_direccion de esa dirección
+    // exacta) — este checkbox solo puede RESTRINGIR más ese acceso ya
+    // existente (ver ContratacionController.php), nunca dárselo a otra
+    // dirección ni al rol 'usuario' (que estructuralmente nunca pasa
+    // usuario_admin_de(), sin importar este checkbox).
+    'contrataciones' => ['label' => 'Contrataciones', 'icono' => 'file-earmark-person', 'seccion' => 'Direcciones', 'rutas' => ['/contrataciones']],
     'investigacion'  => ['label' => 'Investigación e Innovación',   'icono' => 'stars',        'seccion' => 'Direcciones', 'rutas' => ['/investigacion-innovacion'],  'slugs_direccion' => ['investigacion']],
 
     // ── Recursos ──

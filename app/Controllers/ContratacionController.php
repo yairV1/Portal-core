@@ -176,12 +176,24 @@ if ($uri === '/contratacion/enviar') {
 }
 
 // ---- /contrataciones y demás rutas admin ----
+// Además del admin global, el admin_direccion de Talento Humano administra
+// esto completo (generar enlaces, ver candidatos, descargar sus documentos)
+// — es quien de verdad hace la contratación del personal. Mismo criterio
+// que los módulos de dirección (usuario_admin_de()). Encima de eso, "Permisos
+// por rol" (clave 'contrataciones' en config/modulos.php) deja al admin
+// global mostrar/ocultar el acceso de Talento Humano desde ese panel sin
+// tener que editar la cuenta — es solo una restricción ADICIONAL: nunca
+// puede darle acceso a otra dirección ni al rol 'usuario' (que nunca pasa
+// usuario_admin_de(), sin importar este checkbox).
 if (in_array($uri, ['/contrataciones', '/contrataciones/generar', '/contrataciones/eliminar', '/contrataciones/descargar'], true)) {
     if (empty($_SESSION['usuario_id'])) {
         header('Location: ' . BASE_URL . '/login');
         exit;
     }
-    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    $stmt = $pdo->prepare('SELECT id FROM direcciones WHERE slug = :slug');
+    $stmt->execute([':slug' => 'talento-humano']);
+    $direccionTalentoHumanoId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!usuario_admin_de($direccionTalentoHumanoId ?: null) || !usuario_puede_ver_archivo_de('contrataciones')) {
         http_response_code(403);
         mostrar_error(403);
         exit;

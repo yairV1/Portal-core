@@ -33,6 +33,11 @@ $RECYCLE.BIN/
 /storage/direccion_carpetas/*
 !/storage/direccion_carpetas/.gitkeep
 
+# Hojas de vida, contratos y certificaciones laborales de empleados (ver
+# EmpleadoDocumentoController.php, migración 048) — datos personales, no código.
+/storage/talento_humano_documentos/*
+!/storage/talento_humano_documentos/.gitkeep
+
 # Clave de la cuenta de servicio de Google (ver GoogleDrive.php/.env.example)
 # — es una credencial real, nunca va al repo.
 /storage/google/*

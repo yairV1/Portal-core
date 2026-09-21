@@ -118,13 +118,36 @@
     var textos = {
       '1': { icon: 'success', title: 'Documento subido correctamente' },
       'creado': { icon: 'success', title: 'Documento creado — ya puedes subirle el archivo' },
+      'eliminado': { icon: 'success', title: 'Documento eliminado' },
       'nombre': { icon: 'error', title: 'Escribe un nombre y una fecha válida' },
       'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
       'tamano': { icon: 'error', title: 'El archivo pesa más de 20 MB' },
+      'duplicado': { icon: 'error', title: 'Este empleado ya tiene un documento de este tipo — elimínalo antes de subir otro' },
       'error': { icon: 'error', title: 'No se pudo subir el documento' }
     };
     var t = textos[resultado] || textos['error'];
     SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['empleado'])): ?>
+<script>
+  // Aviso tras crear/editar/eliminar un empleado (ver EmpleadoController.php,
+  // que agrega ?empleado=... al volver a Hojas de vida/Contratos/Certificaciones).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['empleado'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      'creado': { icon: 'success', title: 'Empleado agregado' },
+      'actualizado': { icon: 'success', title: 'Empleado actualizado' },
+      'eliminado': { icon: 'success', title: 'Empleado eliminado' },
+      'datos': { icon: 'error', title: 'Revisa el nombre, el documento y la fecha' },
+      'documento_existe': { icon: 'error', title: 'Ya existe un empleado con ese número de documento' },
+      'error': { icon: 'error', title: 'No se pudo completar la acción' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
   });
 </script>
 <?php endif; ?>
