@@ -34,7 +34,8 @@ if ($uri === '/gestion-documental/drive/conectar') {
         header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=no_configurado');
         exit;
     }
-    // state anti-CSRF, mismo criterio que /auth/google en AuthController.php.
+    // state anti-CSRF: se genera acá y se guarda en sesión para compararlo
+    // en el callback (mismo criterio que cualquier flujo OAuth del portal).
     $state = bin2hex(random_bytes(16));
     $_SESSION['drive_oauth_state'] = $state;
     header('Location: ' . google_drive_oauth_url(drive_usuario_redirect_uri(), $state));

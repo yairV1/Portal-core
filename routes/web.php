@@ -9,6 +9,9 @@ return [
     '/error/500'            => 'ErrorController.php',
     '/login'                => 'AuthController.php',
     '/logout'               => 'AuthController.php',
+    // Botón "Continuar con Google" — flujo por redirección: /auth/google
+    // arma el consentimiento de Google y /auth/google/callback intercambia
+    // el code por la sesión (ver AuthController.php).
     '/auth/google'          => 'AuthController.php',
     '/auth/google/callback' => 'AuthController.php',
     '/'                     => 'HomeController.php',

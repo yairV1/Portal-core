@@ -22,12 +22,16 @@ if ($uri === '/logout') {
 }
 
 // ---- /auth/google ----
-// Inicia el flujo: arma la URL de consentimiento de Google y redirige.
-// El client_secret NUNCA viaja acá — solo se usa en el intercambio
-// servidor-a-servidor de /auth/google/callback.
+// Inicia el flujo del botón "Continuar con Google": arma la URL de
+// consentimiento de Google y redirige. El client_secret NUNCA viaja acá —
+// solo se usa en el intercambio servidor-a-servidor de /auth/google/callback.
+// Las credenciales salen de config/google.php (variable de entorno o
+// config/google.local.php, ver GoogleDrive.php::google_oauth_credenciales).
 if ($uri === '/auth/google') {
-    $googleClientId = getenv('GOOGLE_CLIENT_ID') ?: '';
-    if ($googleClientId === '') {
+    require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+    $credenciales = google_oauth_credenciales();
+
+    if ($credenciales['client_id'] === '' || $credenciales['client_secret'] === '') {
         header('Location: ' . BASE_URL . '/login?google_error=no_configurado');
         exit;
     }
@@ -42,7 +46,7 @@ if ($uri === '/auth/google') {
     $redirectUri = ($porHttps ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . BASE_URL . '/auth/google/callback';
 
     $parametros = http_build_query([
-        'client_id'     => $googleClientId,
+        'client_id'     => $credenciales['client_id'],
         'redirect_uri'  => $redirectUri,
         'response_type' => 'code',
         'scope'         => 'openid email profile',
@@ -56,9 +60,9 @@ if ($uri === '/auth/google') {
 
 // ---- /auth/google/callback ----
 // Google trae de vuelta ?code=...&state=...: acá se cambia ese code por un
-// access_token (llamada servidor-a-servidor) y se busca la cuenta por
-// correo — no se crean usuarios nuevos desde acá, el alta la sigue
-// haciendo un administrador (mismo modelo que el login con contraseña).
+// access_token (llamada servidor-a-servidor), se busca la cuenta por correo
+// y —si no existe— se crea para que entre solo por Google (misma lógica que
+// el login con Google anterior). El correo ya viene verificado por Google.
 if ($uri === '/auth/google/callback') {
     if (!empty($_GET['error'])) {
         // El usuario canceló el consentimiento en Google — no es un error real.
@@ -75,11 +79,11 @@ if ($uri === '/auth/google/callback') {
         exit;
     }
 
-    $googleClientId     = getenv('GOOGLE_CLIENT_ID') ?: '';
-    $googleClientSecret = getenv('GOOGLE_CLIENT_SECRET') ?: '';
+    require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+    $credenciales = google_oauth_credenciales();
     $code = $_GET['code'] ?? '';
 
-    if ($googleClientId === '' || $googleClientSecret === '' || $code === '') {
+    if ($credenciales['client_id'] === '' || $credenciales['client_secret'] === '' || $code === '') {
         header('Location: ' . BASE_URL . '/login?google_error=1');
         exit;
     }
@@ -93,8 +97,8 @@ if ($uri === '/auth/google/callback') {
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => http_build_query([
             'code'          => $code,
-            'client_id'     => $googleClientId,
-            'client_secret' => $googleClientSecret,
+            'client_id'     => $credenciales['client_id'],
+            'client_secret' => $credenciales['client_secret'],
             'redirect_uri'  => $redirectUri,
             'grant_type'    => 'authorization_code',
         ]),
@@ -111,7 +115,8 @@ if ($uri === '/auth/google/callback') {
     }
 
     // Con el access_token pedimos los datos básicos de la cuenta de Google
-    // (nunca su contraseña — eso vive solo en Google).
+    // (nunca su contraseña — eso vive solo en Google). email_verified viene
+    // de Google: solo permitimos correos verificados.
     $ch = curl_init('https://www.googleapis.com/oauth2/v3/userinfo');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -130,36 +135,66 @@ if ($uri === '/auth/google/callback') {
 
     $correo = trim(strtolower($perfil['email']));
 
-    $stmt = $pdo->prepare('
+    $consultaUsuario = $pdo->prepare('
         SELECT u.id, u.nombre, u.correo, u.cargo_id, cc.nombre AS cargo_nombre, u.rol, u.direccion_id, u.foto
         FROM usuarios u
         LEFT JOIN catalogo_cargos cc ON cc.id = u.cargo_id
         WHERE u.correo = :correo
     ');
-    $stmt->execute([':correo' => $correo]);
-    $usuario = $stmt->fetch();
+    $consultaUsuario->execute([':correo' => $correo]);
+    $usuario = $consultaUsuario->fetch();
 
     if (!$usuario) {
-        header('Location: ' . BASE_URL . '/login?google_error=no_registrado');
-        exit;
+        // No existe: se crea con password_hash aleatorio e inutilizable para
+        // que esa cuenta entre SOLO por Google, nunca por contraseña. foto
+        // NULL: el portal arma las rutas con BASE_URL (ver portal-header.php).
+        $nombre = trim((string) ($perfil['name'] ?? ''));
+        if ($nombre === '') {
+            $nombre = strstr($correo, '@', true) ?: $correo;
+        }
+        $hashAleatorio = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
+
+        try {
+            $pdo->prepare('
+                INSERT INTO usuarios (nombre, correo, password_hash, cargo_id, rol, direccion_id, foto)
+                VALUES (:nombre, :correo, :hash, NULL, :rol, NULL, NULL)
+            ')->execute([
+                ':nombre' => $nombre,
+                ':correo' => $correo,
+                ':hash'   => $hashAleatorio,
+                ':rol'    => 'usuario',
+            ]);
+        } catch (PDOException $e) {
+            // Carrera: otra petición creó la cuenta entre el SELECT y el
+            // INSERT (correo es UNIQUE). Se reintenta el SELECT.
+            error_log('Google login: el INSERT del usuario nuevo falló (posible carrera): ' . $e->getMessage());
+        }
+
+        $consultaUsuario->execute([':correo' => $correo]);
+        $usuario = $consultaUsuario->fetch();
+        if (!$usuario) {
+            header('Location: ' . BASE_URL . '/login?google_error=no_registrado');
+            exit;
+        }
     }
 
     session_regenerate_id(true);
-    $_SESSION['usuario_id']          = $usuario['id'];
-    $_SESSION['usuario_nombre']      = $usuario['nombre'];
-    $_SESSION['usuario_correo']      = $usuario['correo'];
-    $_SESSION['usuario_cargo']       = $usuario['cargo_nombre'];
-    $_SESSION['usuario_cargo_id']    = $usuario['cargo_id'];
-    $_SESSION['usuario_rol']         = $usuario['rol'];
+    $_SESSION['usuario_id']           = $usuario['id'];
+    $_SESSION['usuario_nombre']       = $usuario['nombre'];
+    $_SESSION['usuario_correo']       = $usuario['correo'];
+    $_SESSION['usuario_cargo']        = $usuario['cargo_nombre'];
+    $_SESSION['usuario_cargo_id']     = $usuario['cargo_id'];
+    $_SESSION['usuario_rol']          = $usuario['rol'];
     $_SESSION['usuario_direccion_id'] = $usuario['direccion_id'];
-    $_SESSION['usuario_foto']        = $usuario['foto'];
-    $_SESSION['ultima_actividad']    = time();
+    $_SESSION['usuario_foto']         = $usuario['foto'];
+    $_SESSION['ultima_actividad']     = time();
 
     header('Location: ' . BASE_URL . '/?bienvenida=1');
     exit;
 }
 
 // ---- /login ----
+// Login con correo y contraseña.
 $error = null;
 
 // Límite de intentos fallidos por IP (tabla intentos_login, ver

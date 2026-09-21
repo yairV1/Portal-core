@@ -263,15 +263,34 @@ function google_drive_refresh_token_descifrar(?string $valorGuardado): ?string
 //  Drive PERSONAL de cada usuario (OAuth) — distinto de todo lo de arriba
 //  (que habla con Drive como la cuenta de servicio, para "Traer de Drive"
 //  por link). Acá cada usuario conecta SU PROPIA cuenta de Google (mismo
-//  Client ID/Secret que ya usa el login, ver AuthController.php, pero con
-//  el scope de Drive) y ve su propia lista de archivos — ver
-//  DriveUsuarioController.php. Reusa GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET,
+//  Client ID/Secret que ya usa el login, ver AuthController.php, pero
+//  con el scope de Drive) y ve su propia lista de archivos — ver
+//  DriveUsuarioController.php. Reusa las credenciales de config/google.php,
 //  así que solo aplica si el login con Google ya está configurado.
 // ══════════════════════════════════════════════════════════
 
+// Credenciales OAuth de Google resueltas de UNA sola fuente — config/google.php
+// lee primero las variables de entorno y, si no hay, config/google.local.php
+// (gitignoreado). Así el mismo Client ID/Secret habilita tanto el login como
+// "Mi Google Drive" sin configurarlo dos veces (en XAMPP, sin variables de
+// entorno de Apache, el archivo local es la vía práctica).
+function google_oauth_credenciales(): array
+{
+    static $credenciales = null;
+    if ($credenciales === null) {
+        $config = require dirname(__DIR__, 2) . '/config/google.php';
+        $credenciales = [
+            'client_id'     => trim((string) ($config['client_id'] ?? '')),
+            'client_secret' => trim((string) ($config['client_secret'] ?? '')),
+        ];
+    }
+    return $credenciales;
+}
+
 function google_drive_oauth_configurado(): bool
 {
-    return (getenv('GOOGLE_CLIENT_ID') ?: '') !== '' && (getenv('GOOGLE_CLIENT_SECRET') ?: '') !== '';
+    $credenciales = google_oauth_credenciales();
+    return $credenciales['client_id'] !== '' && $credenciales['client_secret'] !== '';
 }
 
 // URL de consentimiento — access_type=offline + prompt=consent son los que
@@ -279,8 +298,9 @@ function google_drive_oauth_configurado(): bool
 // persona ya autorizó antes, Google no lo vuelve a mandar).
 function google_drive_oauth_url(string $redirectUri, string $state): string
 {
+    $credenciales = google_oauth_credenciales();
     $parametros = http_build_query([
-        'client_id'              => getenv('GOOGLE_CLIENT_ID') ?: '',
+        'client_id'              => $credenciales['client_id'],
         'redirect_uri'           => $redirectUri,
         'response_type'          => 'code',
         // .readonly: para listar/traer archivos que YA tenías en tu Drive
@@ -303,14 +323,15 @@ function google_drive_oauth_url(string $redirectUri, string $state): string
 // cada vez.
 function google_drive_oauth_intercambiar(string $code, string $redirectUri): ?array
 {
+    $credenciales = google_oauth_credenciales();
     $ch = curl_init('https://oauth2.googleapis.com/token');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => http_build_query([
             'code'          => $code,
-            'client_id'     => getenv('GOOGLE_CLIENT_ID') ?: '',
-            'client_secret' => getenv('GOOGLE_CLIENT_SECRET') ?: '',
+            'client_id'     => $credenciales['client_id'],
+            'client_secret' => $credenciales['client_secret'],
             'redirect_uri'  => $redirectUri,
             'grant_type'    => 'authorization_code',
         ]),
@@ -330,14 +351,15 @@ function google_drive_oauth_intercambiar(string $code, string $redirectUri): ?ar
 // BD, se pide de nuevo en cada request que lo necesite).
 function google_drive_oauth_refrescar(string $refreshToken): ?string
 {
+    $credenciales = google_oauth_credenciales();
     $ch = curl_init('https://oauth2.googleapis.com/token');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => http_build_query([
             'refresh_token' => $refreshToken,
-            'client_id'     => getenv('GOOGLE_CLIENT_ID') ?: '',
-            'client_secret' => getenv('GOOGLE_CLIENT_SECRET') ?: '',
+            'client_id'     => $credenciales['client_id'],
+            'client_secret' => $credenciales['client_secret'],
             'grant_type'    => 'refresh_token',
         ]),
         CURLOPT_TIMEOUT => 10,
