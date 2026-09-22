@@ -69,12 +69,26 @@ $EXTENSION_A_TIPO_DOC = [
 
 function editor_fila(PDO $pdo, array $fuente, int $id): ?array
 {
-    $sql = "SELECT t.id, t.nombre, t.archivo, {$fuente['campo_direccion']} AS direccion_id
+    // visibilidad/activo (ver migración 053_gestion_documental_publico.sql)
+    // solo existen en archivos_documentales ('documental') — para las otras
+    // 2 fuentes se piden como NULL fijo, sin tocar su SQL.
+    $campoVisibilidad = $fuente['tabla'] === 'archivos_documentales' ? 't.visibilidad, t.activo' : 'NULL AS visibilidad, NULL AS activo';
+    $sql = "SELECT t.id, t.nombre, t.archivo, {$fuente['campo_direccion']} AS direccion_id, {$campoVisibilidad}
             FROM {$fuente['tabla']} t {$fuente['join']} WHERE t.id = :id";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':id' => $id]);
     $fila = $stmt->fetch();
     return $fila ?: null;
+}
+
+// Solo aplica a archivos_documentales (Gestión Documental, ver migración
+// 053) — las otras 2 fuentes no tienen este concepto (visibilidad queda
+// NULL) y siempre pasan. El admin global nunca pasa por acá (ver el
+// llamador, que ya lo deja pasar antes).
+function editor_publicado(array $fila): bool
+{
+    if ($fila['visibilidad'] === null) return true;
+    return $fila['visibilidad'] === 'publico' && (int) $fila['activo'] === 1;
 }
 
 // null en direccion_id = documento sin dirección propia (Gestión
@@ -254,7 +268,7 @@ $direccionId = $fila && $fila['direccion_id'] !== null ? (int) $fila['direccion_
 // puede averiguar qué ids existen. El admin global siempre pasa.
 if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
     $moduloArchivo = !$fila ? null : ($tipo === 'documental' ? 'gestion-documental' : modulo_de_direccion($direccionId));
-    if (!$fila || !usuario_puede_ver_archivo_de($moduloArchivo) || !editor_area_permitida($direccionId)) {
+    if (!$fila || !usuario_puede_ver_archivo_de($moduloArchivo) || !editor_area_permitida($direccionId) || !editor_publicado($fila)) {
         http_response_code(403);
         mostrar_error(403);
         exit;

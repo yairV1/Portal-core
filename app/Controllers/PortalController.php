@@ -501,100 +501,84 @@ if ($uri === '/mapa-portal') {
 // ── Gestión Documental ──
 // carpetas_documentales es un árbol de 2 niveles (dirección → área, vía
 // parent_id); los archivos cuelgan del nivel de área (hoja), nunca del
-// nivel de dirección.
+// nivel de dirección. Ver migración 053_gestion_documental_publico.sql:
+// ahora cada carpeta/archivo tiene visibilidad ('publico'/'privado') y
+// activo (soft delete). El admin global ve todo lo activo (público Y
+// privado) para poder curarlo desde acá mismo — cualquier otro rol solo ve
+// lo público y activo. "Mi Google Drive" (Drive personal) tiene su propia
+// página, ver '/mi-drive' en DriveUsuarioController.php — esta vista es
+// solo el repositorio institucional, nada personal/privado.
 if ($uri === '/gestion-documental') {
-    $archivosPorCarpeta = [];
-    foreach ($pdo->query('SELECT id, carpeta_id, nombre, tipo, version, estado, responsable, archivo, fecha FROM archivos_documentales ORDER BY fecha DESC')->fetchAll() as $a) {
-        $archivosPorCarpeta[$a['carpeta_id']][] = $a;
-    }
+    $esAdminDoc = usuario_admin_de(null);
+    $condicionVisibleDoc = $esAdminDoc ? 'activo = 1' : "visibilidad = 'publico' AND activo = 1";
 
-    $areasPorDireccion = [];
-    foreach ($pdo->query('SELECT id, parent_id, label FROM carpetas_documentales WHERE parent_id IS NOT NULL ORDER BY orden')->fetchAll() as $area) {
-        if (empty($archivosPorCarpeta[$area['id']])) continue; // sin archivos reales: no se inventa la carpeta vacía
-        $areasPorDireccion[$area['parent_id']][] = $area;
-    }
+    $carpetaIdDoc = isset($_GET['carpeta']) ? (int) $_GET['carpeta'] : null;
 
-    $direccionesDoc = [];
-    foreach ($pdo->query('SELECT id, label FROM carpetas_documentales WHERE parent_id IS NULL ORDER BY orden')->fetchAll() as $dir) {
-        if (empty($areasPorDireccion[$dir['id']])) continue;
-        $direccionesDoc[] = $dir;
-    }
+    $carpetaActualDoc = null;
+    if ($carpetaIdDoc) {
+        $stmt = $pdo->prepare("SELECT id, parent_id, label, visibilidad, activo FROM carpetas_documentales WHERE id = :id AND {$condicionVisibleDoc}");
+        $stmt->execute([':id' => $carpetaIdDoc]);
+        $carpetaActualDoc = $stmt->fetch() ?: null;
 
-    // ── Drive personal (ver DriveUsuarioController.php/GoogleDrive.php) ──
-    require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
-    $miDriveOauthConfigurado = google_drive_oauth_configurado();
-    $miDriveConectado = false;
-    $misArchivosDrive = [];
-    $miDriveSiguientePagina = null;
-
-    $stmt = $pdo->prepare('SELECT google_drive_refresh_token, google_drive_import_estado, google_drive_import_traidos FROM usuarios WHERE id = :id');
-    $stmt->execute([':id' => $_SESSION['usuario_id']]);
-    $filaDriveUsuario = $stmt->fetch();
-    $miDriveTokenGuardado = $filaDriveUsuario['google_drive_refresh_token'] ?? null;
-    $miDriveImportEstado = $filaDriveUsuario['google_drive_import_estado'] ?? 'no_iniciado';
-    $miDriveImportTraidos = (int) ($filaDriveUsuario['google_drive_import_traidos'] ?? 0);
-    $miDriveRefreshToken = google_drive_refresh_token_descifrar($miDriveTokenGuardado ?: null);
-    // "conectado" es tener una fila guardada, aunque no se pueda descifrar
-    // (clave rotada) — así el botón "Desconectar" sigue disponible para
-    // limpiar ese estado en vez de desaparecer sin explicación.
-    if ($miDriveTokenGuardado) {
-        $miDriveConectado = true;
-        $miDriveAccessToken = $miDriveRefreshToken ? google_drive_oauth_refrescar($miDriveRefreshToken) : null;
-        if ($miDriveAccessToken) {
-            $resultadoListado = google_drive_oauth_listar($miDriveAccessToken, $_GET['drive_token'] ?? null);
-            if ($resultadoListado) {
-                $misArchivosDrive = $resultadoListado['files'] ?? [];
-                $miDriveSiguientePagina = $resultadoListado['nextPageToken'] ?? null;
+        // Para quien no es admin, además del nodo pedido, NINGÚN ancestro
+        // puede ser privado/inactivo: si la "dirección" (padre) está
+        // oculta, su "área" (hija) no debe alcanzarse adivinando su id
+        // directo por URL — eso sería un bypass silencioso de la
+        // ocultación del padre. El admin sí puede entrar a cualquier nodo
+        // activo sin importar el estado de sus ancestros (para poder
+        // curarlo aunque el padre haya quedado privado/eliminado).
+        if ($carpetaActualDoc && !$esAdminDoc) {
+            $cursorDoc = $carpetaActualDoc;
+            while ($cursorDoc['parent_id']) {
+                $stmt = $pdo->prepare("SELECT id, parent_id FROM carpetas_documentales WHERE id = :id AND visibilidad = 'publico' AND activo = 1");
+                $stmt->execute([':id' => $cursorDoc['parent_id']]);
+                $cursorDoc = $stmt->fetch() ?: null;
+                if (!$cursorDoc) {
+                    $carpetaActualDoc = null;
+                    break;
+                }
             }
         }
-    }
 
-    // A dónde puede ir un archivo importado — las carpetas REALES que ya
-    // administran Financiera/Talento Humano/etc. (direccion_carpetas, ver
-    // CarpetaController.php), no carpetas_documentales de arriba (nunca se
-    // llegó a usar de verdad, siempre vacía — ahí el selector no tenía
-    // ninguna opción). Solo se ofrecen las carpetas donde la persona puede
-    // administrar contenido (usuario_admin_de(), mismo criterio que crear/
-    // subir en esas carpetas desde su propio módulo) — llevar un archivo
-    // ahí es una acción administrativa, igual que subir uno cualquiera.
-    $carpetasDestinoDrive = [];
-    $todasLasCarpetasReales = $pdo->query('
-        SELECT c.id, c.parent_id, c.nombre, c.direccion_id, d.titulo AS direccion_titulo
-        FROM direccion_carpetas c
-        JOIN direcciones d ON d.id = c.direccion_id
-        ORDER BY d.titulo, c.nombre
-    ')->fetchAll();
-    $carpetasRealesPorId = [];
-    foreach ($todasLasCarpetasReales as $c) {
-        $carpetasRealesPorId[$c['id']] = $c;
-    }
-    foreach ($todasLasCarpetasReales as $c) {
-        if (!usuario_admin_de((int) $c['direccion_id'])) continue;
-        $ruta = [$c['nombre']];
-        $cursor = $c;
-        while ($cursor['parent_id'] && isset($carpetasRealesPorId[$cursor['parent_id']])) {
-            $cursor = $carpetasRealesPorId[$cursor['parent_id']];
-            array_unshift($ruta, $cursor['nombre']);
+        if (!$carpetaActualDoc) {
+            // Id inválido, inactivo, privado, o con algún ancestro
+            // privado/inactivo sin ser admin: vuelve a la raíz en vez de
+            // un error — no revela si la carpeta existe o no.
+            header('Location: ' . BASE_URL . '/gestion-documental');
+            exit;
         }
-        $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
     }
 
-    // Espejo ya importado del Drive personal (ver migración
-    // 047_drive_personal_import_masivo.sql y
-    // /gestion-documental/drive/importar-todo/avanzar en
-    // DriveUsuarioController.php) — 100% privado, siempre filtrado por el
-    // usuario en sesión.
-    $miDriveCarpetas = [];
-    $miDriveArchivosPorCarpeta = [];
-    if ($miDriveImportEstado === 'completo') {
-        $stmtCarpetasDrive = $pdo->prepare('SELECT id, parent_id, nombre FROM drive_personal_carpetas WHERE usuario_id = :uid ORDER BY nombre');
-        $stmtCarpetasDrive->execute([':uid' => $_SESSION['usuario_id']]);
-        $miDriveCarpetas = $stmtCarpetasDrive->fetchAll();
+    if ($carpetaIdDoc) {
+        $stmt = $pdo->prepare("SELECT id, parent_id, label, visibilidad, activo FROM carpetas_documentales WHERE parent_id = :pid AND {$condicionVisibleDoc} ORDER BY orden");
+        $stmt->execute([':pid' => $carpetaIdDoc]);
+    } else {
+        $stmt = $pdo->query("SELECT id, parent_id, label, visibilidad, activo FROM carpetas_documentales WHERE parent_id IS NULL AND {$condicionVisibleDoc} ORDER BY orden");
+    }
+    $subcarpetasDoc = $stmt->fetchAll();
 
-        $stmtArchivosDrive = $pdo->prepare('SELECT id, carpeta_id, nombre, tipo, peso_bytes FROM drive_personal_archivos WHERE usuario_id = :uid ORDER BY nombre');
-        $stmtArchivosDrive->execute([':uid' => $_SESSION['usuario_id']]);
-        foreach ($stmtArchivosDrive->fetchAll() as $a) {
-            $miDriveArchivosPorCarpeta[$a['carpeta_id']][] = $a;
+    $archivosDoc = [];
+    if ($carpetaIdDoc) {
+        $stmt = $pdo->prepare("SELECT id, carpeta_id, nombre, tipo, version, estado, responsable, archivo, fecha, visibilidad, activo FROM archivos_documentales WHERE carpeta_id = :cid AND {$condicionVisibleDoc} ORDER BY fecha DESC");
+        $stmt->execute([':cid' => $carpetaIdDoc]);
+        $archivosDoc = $stmt->fetchAll();
+    }
+
+    // Cuántos hijos visibles tiene cada subcarpeta mostrada — para el
+    // "meta" de cada tarjeta (áreas dentro de una dirección, o documentos
+    // dentro de un área). Una sola consulta agrupada en vez de N+1.
+    $conteosDoc = [];
+    if ($subcarpetasDoc) {
+        $idsDoc = array_column($subcarpetasDoc, 'id');
+        $marcadores = implode(',', array_fill(0, count($idsDoc), '?'));
+        if ($carpetaIdDoc) {
+            $stmt = $pdo->prepare("SELECT carpeta_id, COUNT(*) AS total FROM archivos_documentales WHERE carpeta_id IN ({$marcadores}) AND {$condicionVisibleDoc} GROUP BY carpeta_id");
+        } else {
+            $stmt = $pdo->prepare("SELECT parent_id AS carpeta_id, COUNT(*) AS total FROM carpetas_documentales WHERE parent_id IN ({$marcadores}) AND {$condicionVisibleDoc} GROUP BY parent_id");
+        }
+        $stmt->execute($idsDoc);
+        foreach ($stmt->fetchAll() as $fila) {
+            $conteosDoc[(int) $fila['carpeta_id']] = (int) $fila['total'];
         }
     }
 }

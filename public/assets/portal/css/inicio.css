@@ -106,6 +106,42 @@
     margin-bottom: 20px
   }
 
+  /* Icono delante del título de cada widget — más apoyo visual, menos
+     "solo texto" (ver también .widget-empty debajo). */
+  .section-head h4 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px
+  }
+
+  .section-head h4 i {
+    color: var(--color-accent);
+    font-size: 15px
+  }
+
+  /* Estado vacío liviano: un widget sin datos no debe pesar como uno con
+     contenido real (antes era título + un párrafo de texto largo) — acá es
+     un icono chico + una sola línea corta, sin ocupar más espacio del que
+     ocuparía una fila real de contenido. */
+  .widget-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    margin: 0;
+    opacity: .5;
+    font-size: 12.5px;
+    /* Cuando el vacío cae dentro de un grid (#kpis/.accesos/.noticias),
+       que ocupe todas las columnas en vez de una sola — sin esto, .accesos
+       (grid-template-columns con auto-fill, no auto-fit) mete la línea en
+       la primera pista de 150px y el texto se parte en 3 renglones en vez
+       de quedar en una sola línea corta como en el resto de widgets. */
+    grid-column: 1 / -1;
+    white-space: nowrap
+  }
+
+  .widget-empty i { font-size: 15px }
+
   .section-note {
     font-size: 12px;
     color: var(--color-neutral-700);

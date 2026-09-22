@@ -3,6 +3,11 @@
  * @var string $nombre
  * @var array  $soportes
  * @var array  $misPendientes
+ * @var array  $widgetsOcultos claves ('soportes'/'pendientes'/'drive_personal')
+ *             que este admin no debe ver — hoy siempre vacío, ver
+ *             HomeController.php.
+ * @var bool   $miDriveOauthConfigurado
+ * @var bool   $miDriveConectado
  */
 $titulo = 'Centro de administración';
 require ROOT_PATH . '/app/Views/layouts/portal-header.php';
@@ -22,9 +27,10 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
 
 <div class="admin-two-col">
 
+  <?php if (!in_array('soportes', $widgetsOcultos, true)): ?>
   <div>
     <div class="section-head section-head--compact">
-      <h4>Soportes</h4>
+      <h4><i class="bi bi-life-preserver"></i> Soportes</h4>
       <button type="button" class="btn btn-link" id="btnNuevoSoporte"><i class="bi bi-plus-lg"></i> Agregar</button>
     </div>
 
@@ -41,7 +47,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
 
     <div id="soportes">
       <?php if (!$soportes): ?>
-        <p class="text-muted">No hay soportes registrados por ahora.</p>
+        <p class="widget-empty"><i class="bi bi-life-preserver"></i> Sin soportes registrados por ahora.</p>
       <?php else: foreach ($soportes as $s): [$tipoLabel, $tipoClase] = $TIPO_LABEL[$s['tipo']]; ?>
         <div class="pendiente soporte<?= $s['resuelto'] ? ' pendiente-hecho' : '' ?>">
           <form action="<?= BASE_URL ?>/soportes/completar" method="post" class="pendiente-check-form">
@@ -64,10 +70,12 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
       <?php endforeach; endif; ?>
     </div>
   </div>
+  <?php endif; ?>
 
+  <?php if (!in_array('pendientes', $widgetsOcultos, true)): ?>
   <div>
     <div class="section-head section-head--compact">
-      <h4>Mis pendientes</h4>
+      <h4><i class="bi bi-check2-square"></i> Mis pendientes</h4>
       <button type="button" class="btn btn-link" id="btnNuevoPendiente"><i class="bi bi-plus-lg"></i> Agregar</button>
     </div>
 
@@ -80,7 +88,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
 
     <div id="pendientes">
       <?php if (!$misPendientes): ?>
-        <p class="text-muted">No hay pendientes por ahora.</p>
+        <p class="widget-empty"><i class="bi bi-check2-circle"></i> Sin pendientes por ahora.</p>
       <?php else: foreach ($misPendientes as $p): ?>
         <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
           <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">
@@ -102,7 +110,25 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
         </div>
       <?php endforeach; endif; ?>
     </div>
+
+    <?php // Va dentro de esta misma columna (el grid de arriba es fijo a 2:
+          // Soportes / Mis pendientes) — si algún día se oculta 'pendientes'
+          // por rol, esto se oculta con él; independizarlo necesitaría una
+          // 3ra columna o reacomodar el grid, fuera de alcance por ahora. ?>
+    <?php if (!in_array('drive_personal', $widgetsOcultos, true)): ?>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4><i class="bi bi-google"></i> Mi Google Drive</h4></div>
+    <?php if (!$miDriveOauthConfigurado): ?>
+      <p class="widget-empty"><i class="bi bi-google"></i> No configurado en este entorno.</p>
+    <?php elseif ($miDriveConectado): ?>
+      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu cuenta está conectada.</p>
+      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-link" style="text-decoration:none"><i class="bi bi-folder2"></i> Ver mis archivos</a>
+    <?php else: ?>
+      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px">Trae tus propios archivos de Drive al portal.</p>
+      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-primary" style="text-decoration:none"><i class="bi bi-google"></i> Conectar</a>
+    <?php endif; ?>
+    <?php endif; ?>
   </div>
+  <?php endif; ?>
 
 </div>
 

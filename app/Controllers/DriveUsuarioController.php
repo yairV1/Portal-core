@@ -1,13 +1,15 @@
 <?php
 // ══════════════════════════════════════════════════════════
 //  app/Controllers/DriveUsuarioController.php
-//  Conecta el Google Drive PERSONAL de cada usuario a Gestión Documental
-//  — distinto del "Traer de Drive" por link de CarpetaController.php (que
-//  habla con Drive como una cuenta de servicio compartida): acá cada quien
-//  conecta SU PROPIA cuenta (OAuth de solo lectura) y ve su propia lista
-//  de archivos para llevarlos a una carpeta real del portal. Ver
-//  GoogleDrive.php (funciones google_drive_oauth_*) y migración
-//  041_drive_personal_gestion_documental.sql.
+//  Conecta el Google Drive PERSONAL de cada usuario — página propia
+//  /mi-drive (antes vivía dentro de Gestión Documental, que ahora es solo
+//  el repositorio institucional público, ver migración
+//  053_gestion_documental_publico.sql) — distinto del "Traer de Drive" por
+//  link de CarpetaController.php (que habla con Drive como una cuenta de
+//  servicio compartida): acá cada quien conecta SU PROPIA cuenta (OAuth de
+//  solo lectura) y ve su propia lista de archivos para llevarlos a una
+//  carpeta real del portal. Ver GoogleDrive.php (funciones
+//  google_drive_oauth_*) y migración 041_drive_personal_gestion_documental.sql.
 //  $pdo, $csrf, $uri, e() ya vienen listos desde public/index.php
 // ══════════════════════════════════════════════════════════
 
@@ -28,10 +30,98 @@ function drive_usuario_redirect_uri(): string
     return ($porHttps ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . BASE_URL . '/gestion-documental/drive/callback';
 }
 
+// ---- /mi-drive (GET, la página) ----
+// Todo el cómputo vivía antes en PortalController.php ('/gestion-documental')
+// — se movió acá tal cual (misma lógica, mismos nombres de variable) al
+// separar "Mi Google Drive" del repositorio institucional público.
+if ($uri === '/mi-drive') {
+    $miDriveOauthConfigurado = google_drive_oauth_configurado();
+    $miDriveConectado = false;
+    $misArchivosDrive = [];
+    $miDriveSiguientePagina = null;
+
+    $stmt = $pdo->prepare('SELECT google_drive_refresh_token, google_drive_import_estado, google_drive_import_traidos FROM usuarios WHERE id = :id');
+    $stmt->execute([':id' => $_SESSION['usuario_id']]);
+    $filaDriveUsuario = $stmt->fetch();
+    $miDriveTokenGuardado = $filaDriveUsuario['google_drive_refresh_token'] ?? null;
+    $miDriveImportEstado = $filaDriveUsuario['google_drive_import_estado'] ?? 'no_iniciado';
+    $miDriveImportTraidos = (int) ($filaDriveUsuario['google_drive_import_traidos'] ?? 0);
+    $miDriveRefreshToken = google_drive_refresh_token_descifrar($miDriveTokenGuardado ?: null);
+    // "conectado" es tener una fila guardada, aunque no se pueda descifrar
+    // (clave rotada) — así el botón "Desconectar" sigue disponible para
+    // limpiar ese estado en vez de desaparecer sin explicación.
+    if ($miDriveTokenGuardado) {
+        $miDriveConectado = true;
+        $miDriveAccessToken = $miDriveRefreshToken ? google_drive_oauth_refrescar($miDriveRefreshToken) : null;
+        if ($miDriveAccessToken) {
+            $resultadoListado = google_drive_oauth_listar($miDriveAccessToken, $_GET['drive_token'] ?? null);
+            if ($resultadoListado) {
+                $misArchivosDrive = $resultadoListado['files'] ?? [];
+                $miDriveSiguientePagina = $resultadoListado['nextPageToken'] ?? null;
+            }
+        }
+    }
+
+    // A dónde puede ir un archivo importado — las carpetas REALES que ya
+    // administran Financiera/Talento Humano/etc. (direccion_carpetas, ver
+    // CarpetaController.php). Solo se ofrecen las carpetas donde la persona
+    // puede administrar contenido (usuario_admin_de(), mismo criterio que
+    // crear/subir en esas carpetas desde su propio módulo) — llevar un
+    // archivo ahí es una acción administrativa, igual que subir uno cualquiera.
+    $carpetasDestinoDrive = [];
+    $todasLasCarpetasReales = $pdo->query('
+        SELECT c.id, c.parent_id, c.nombre, c.direccion_id, d.titulo AS direccion_titulo
+        FROM direccion_carpetas c
+        JOIN direcciones d ON d.id = c.direccion_id
+        ORDER BY d.titulo, c.nombre
+    ')->fetchAll();
+    $carpetasRealesPorId = [];
+    foreach ($todasLasCarpetasReales as $c) {
+        $carpetasRealesPorId[$c['id']] = $c;
+    }
+    foreach ($todasLasCarpetasReales as $c) {
+        if (!usuario_admin_de((int) $c['direccion_id'])) continue;
+        $ruta = [$c['nombre']];
+        $cursor = $c;
+        while ($cursor['parent_id'] && isset($carpetasRealesPorId[$cursor['parent_id']])) {
+            $cursor = $carpetasRealesPorId[$cursor['parent_id']];
+            array_unshift($ruta, $cursor['nombre']);
+        }
+        $carpetasDestinoDrive[] = ['id' => (int) $c['id'], 'label' => $c['direccion_titulo'] . ' → ' . implode(' → ', $ruta)];
+    }
+
+    // Espejo ya importado del Drive personal (ver migración
+    // 047_drive_personal_import_masivo.sql y
+    // /gestion-documental/drive/importar-todo/avanzar más abajo) — 100%
+    // privado, siempre filtrado por el usuario en sesión.
+    $miDriveCarpetas = [];
+    $miDriveArchivosPorCarpeta = [];
+    if ($miDriveImportEstado === 'completo') {
+        $stmtCarpetasDrive = $pdo->prepare('SELECT id, parent_id, nombre FROM drive_personal_carpetas WHERE usuario_id = :uid ORDER BY nombre');
+        $stmtCarpetasDrive->execute([':uid' => $_SESSION['usuario_id']]);
+        $miDriveCarpetas = $stmtCarpetasDrive->fetchAll();
+
+        $stmtArchivosDrive = $pdo->prepare('SELECT id, carpeta_id, nombre, tipo, peso_bytes FROM drive_personal_archivos WHERE usuario_id = :uid ORDER BY nombre');
+        $stmtArchivosDrive->execute([':uid' => $_SESSION['usuario_id']]);
+        foreach ($stmtArchivosDrive->fetchAll() as $a) {
+            $miDriveArchivosPorCarpeta[$a['carpeta_id']][] = $a;
+        }
+    }
+
+    $titulo = 'Mi Google Drive';
+    require ROOT_PATH . '/app/Views/Portal/Mi_Drive/MiDrive.php';
+    exit;
+}
+
 // ---- /gestion-documental/drive/conectar ----
+// Nota: estas rutas de acción se quedan con el prefijo /gestion-documental
+// (histórico) aunque la PÁGINA que las usa hoy es /mi-drive — cambiarlas
+// rompería la "URI de redirección autorizados" ya registrada en Google
+// Cloud Console para el flujo OAuth. Solo los redirects "volver a esta
+// pantalla" (abajo) apuntan a /mi-drive.
 if ($uri === '/gestion-documental/drive/conectar') {
     if (!google_drive_oauth_configurado()) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=no_configurado');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=no_configurado');
         exit;
     }
     // state anti-CSRF, mismo criterio que /auth/google en AuthController.php.
@@ -45,7 +135,7 @@ if ($uri === '/gestion-documental/drive/conectar') {
 if ($uri === '/gestion-documental/drive/callback') {
     if (!empty($_GET['error'])) {
         // Canceló el consentimiento en Google — no es un error real.
-        header('Location: ' . BASE_URL . '/gestion-documental');
+        header('Location: ' . BASE_URL . '/mi-drive');
         exit;
     }
 
@@ -53,7 +143,7 @@ if ($uri === '/gestion-documental/drive/callback') {
     $stateEsperado = $_SESSION['drive_oauth_state'] ?? '';
     unset($_SESSION['drive_oauth_state']);
     if ($stateEsperado === '' || !hash_equals($stateEsperado, $stateRecibido)) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=error');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=error');
         exit;
     }
 
@@ -63,7 +153,7 @@ if ($uri === '/gestion-documental/drive/callback') {
         // Sin refresh_token no hay forma de mantener la conexión sin pedir
         // consentimiento cada vez — con prompt=consent en la URL de arriba
         // esto no debería pasar, pero se avisa claro en vez de dejarlo a medias.
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=sin_refresh');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=sin_refresh');
         exit;
     }
 
@@ -73,25 +163,25 @@ if ($uri === '/gestion-documental/drive/callback') {
     // guardarlo, así que se corta acá en vez de guardarlo en texto plano.
     $tokenCifrado = google_drive_refresh_token_cifrar($tokenData['refresh_token']);
     if ($tokenCifrado === null) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=no_configurado');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=no_configurado');
         exit;
     }
     $pdo->prepare('UPDATE usuarios SET google_drive_refresh_token = :token, google_drive_conectado_en = NOW() WHERE id = :id')
         ->execute([':token' => $tokenCifrado, ':id' => $_SESSION['usuario_id']]);
 
-    header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=conectado');
+    header('Location: ' . BASE_URL . '/mi-drive?drive_personal=conectado');
     exit;
 }
 
 // ---- /gestion-documental/drive/desconectar ----
 if ($uri === '/gestion-documental/drive/desconectar') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        header('Location: ' . BASE_URL . '/gestion-documental');
+        header('Location: ' . BASE_URL . '/mi-drive');
         exit;
     }
     $pdo->prepare('UPDATE usuarios SET google_drive_refresh_token = NULL, google_drive_conectado_en = NULL WHERE id = :id')
         ->execute([':id' => $_SESSION['usuario_id']]);
-    header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=desconectado');
+    header('Location: ' . BASE_URL . '/mi-drive?drive_personal=desconectado');
     exit;
 }
 
@@ -102,7 +192,7 @@ if ($uri === '/gestion-documental/drive/desconectar') {
 // persona, no el de la cuenta de servicio.
 if ($uri === '/gestion-documental/drive/importar') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=error');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=error');
         exit;
     }
 
@@ -110,19 +200,19 @@ if ($uri === '/gestion-documental/drive/importar') {
     $stmt->execute([':id' => $_SESSION['usuario_id']]);
     $refreshToken = google_drive_refresh_token_descifrar($stmt->fetchColumn() ?: null);
     if (!$refreshToken) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=no_conectado');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=no_conectado');
         exit;
     }
     $accessToken = google_drive_oauth_refrescar($refreshToken);
     if (!$accessToken) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=token_vencido');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=token_vencido');
         exit;
     }
 
     $fileId = trim($_POST['file_id'] ?? '');
     $carpetaId = (int) ($_POST['carpeta_id'] ?? 0);
     if ($fileId === '' || !$carpetaId) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=error');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=error');
         exit;
     }
     // La carpeta destino tiene que ser una carpeta REAL de direccion_carpetas
@@ -142,8 +232,8 @@ if ($uri === '/gestion-documental/drive/importar') {
         mostrar_error(403);
         exit;
     }
-    // Esta acción cuelga de /gestion-documental pero ESCRIBE en una carpeta de
-    // otro módulo (la de $carpetaDestino, por id): el módulo de esa carpeta no
+    // Esta acción cuelga de /mi-drive pero ESCRIBE en una carpeta de otro
+    // módulo (la de $carpetaDestino, por id): el módulo de esa carpeta no
     // puede estar vetado para este rol — el veto se suma a usuario_admin_de.
     if (!usuario_puede_ver_archivo_de(modulo_de_direccion((int) $carpetaDestino['direccion_id']))) {
         http_response_code(403);
@@ -159,7 +249,7 @@ if ($uri === '/gestion-documental/drive/importar') {
         'institucional' => '/gestion-institucional', 'sgi' => '/sgi',
         'academica' => '/vicerrectoria-academica', 'investigacion' => '/investigacion-innovacion',
     ];
-    $rutaModuloDestino = $MAPA_SLUG_RUTA_DRIVE[$carpetaDestino['slug']] ?? '/gestion-documental';
+    $rutaModuloDestino = $MAPA_SLUG_RUTA_DRIVE[$carpetaDestino['slug']] ?? '/mi-drive';
     $paramsVolver = ['carpeta' => $carpetaId];
     if ($carpetaDestino['area'] === 'finanzas') {
         $paramsVolver['area'] = 'finanzas';
@@ -170,7 +260,7 @@ if ($uri === '/gestion-documental/drive/importar') {
     // criterio que el resto del portal.
     $meta = google_drive_oauth_metadata($accessToken, $fileId);
     if (!$meta) {
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=no_encontrado');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=no_encontrado');
         exit;
     }
 
@@ -183,7 +273,7 @@ if ($uri === '/gestion-documental/drive/importar') {
     $resuelto = google_drive_oauth_resolver_descarga($meta);
     if (!$resuelto) {
         $motivo = ((int) ($meta['size'] ?? 0) > 15 * 1024 * 1024) ? 'tamano' : 'formato';
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=' . $motivo);
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=' . $motivo);
         exit;
     }
     $mimeFinal = $resuelto['mime_final'];
@@ -212,7 +302,7 @@ if ($uri === '/gestion-documental/drive/importar') {
         : google_drive_oauth_descargar($accessToken, $fileId, $rutaDestino);
     if (!$descargaOk) {
         $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=error');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=error');
         exit;
     }
     // El tamaño exportado de un nativo no se sabe hasta que Drive ya lo
@@ -221,7 +311,7 @@ if ($uri === '/gestion-documental/drive/importar') {
     if ($esGoogleNativo && filesize($rutaDestino) > 15 * 1024 * 1024) {
         unlink($rutaDestino);
         $pdo->prepare('DELETE FROM direccion_carpeta_archivos WHERE id = :id')->execute([':id' => $archivoId]);
-        header('Location: ' . BASE_URL . '/gestion-documental?drive_personal=tamano');
+        header('Location: ' . BASE_URL . '/mi-drive?drive_personal=tamano');
         exit;
     }
 
@@ -238,14 +328,14 @@ if ($uri === '/gestion-documental/drive/importar') {
 // Cuántos items pedir a Drive por lote en la importación masiva — chico a
 // propósito (ver migración 047_drive_personal_import_masivo.sql): la idea
 // es traer TODO el Drive de la persona, pero de a poco, sin una petición
-// larga que bloquee nada; el ritmo real lo pone el JS de Documental.php
+// larga que bloquee nada; el ritmo real lo pone el JS de MiDrive.php
 // llamando a este endpoint cada rato mientras la pantalla está abierta.
 const DRIVE_IMPORT_MASIVO_QUERY_CARPETAS = "mimeType='application/vnd.google-apps.folder' and trashed=false";
 const DRIVE_IMPORT_MASIVO_QUERY_ARCHIVOS = "mimeType!='application/vnd.google-apps.folder' and trashed=false";
 
 // ---- /gestion-documental/drive/importar-todo/avanzar ----
 // Un lote de la importación completa del Drive personal — se llama
-// repetidas veces (ver <script> en Documental.php) hasta que la respuesta
+// repetidas veces (ver <script> en MiDrive.php) hasta que la respuesta
 // diga "terminado". No exige ningún rol especial: es una acción sobre el
 // propio Drive de quien la pide, igual que conectar/desconectar arriba.
 if ($uri === '/gestion-documental/drive/importar-todo/avanzar') {

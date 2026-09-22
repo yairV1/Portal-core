@@ -15,6 +15,12 @@
  * @var array  $noticias
  * @var array  $eventos
  * @var array  $cumpleanos
+ * @var bool   $miDriveOauthConfigurado
+ * @var bool   $miDriveConectado
+ * @var array  $widgetsOcultos claves de widgets que este rol no debe ver
+ *             (hoy siempre vacío — ver HomeController.php); cada bloque de
+ *             abajo ya chequea contra esta lista para poder ocultarse por
+ *             rol más adelante sin tocar esta vista.
  */
 $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/inicio.css') ?>">
@@ -51,9 +57,10 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
   <?php endif; ?>
 </div>
 
+<?php if (!in_array('kpis', $widgetsOcultos, true)): ?>
 <div class="kpis" id="kpis">
   <?php if (!$kpis): ?>
-    <p class="text-muted">Sin indicadores por ahora.</p>
+    <p class="widget-empty"><i class="bi bi-bar-chart"></i> Sin indicadores por ahora.</p>
   <?php else: foreach ($kpis as $i => $k): ?>
     <div class="kpi">
       <div class="kpi-head">
@@ -70,16 +77,18 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
     </div>
   <?php endforeach; endif; ?>
 </div>
+<?php endif; ?>
 
 <div class="grid-main">
   <div>
+    <?php if (!in_array('accesos', $widgetsOcultos, true)): ?>
     <div class="section-head">
-      <h4>Accesos rápidos</h4>
+      <h4><i class="bi bi-grid"></i> Accesos rápidos</h4>
       <span class="link">Centro de aplicaciones</span>
     </div>
     <div class="accesos" id="accesos">
       <?php if (!$accesos): ?>
-        <p class="text-muted">Sin accesos configurados por ahora.</p>
+        <p class="widget-empty"><i class="bi bi-grid"></i> Sin accesos configurados por ahora.</p>
       <?php else: foreach ($accesos as $i => $a): ?>
         <a class="acceso<?= $a['sugerido'] ? ' acceso-sugerido' : '' ?>"
            <?= $a['href'] !== '' ? 'href="' . e($a['href']) . '"' : 'aria-disabled="true"' ?>
@@ -91,16 +100,18 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         </a>
       <?php endforeach; endif; ?>
     </div>
+    <?php endif; ?>
 
+    <?php if (!in_array('documentos', $widgetsOcultos, true)): ?>
     <div class="section-head section-head--spaced">
-      <h4>Documentos recientes</h4>
+      <h4><i class="bi bi-file-earmark-text"></i> Documentos recientes</h4>
       <span class="section-note">Repositorio institucional</span>
     </div>
     <table class="table">
       <thead><tr><th>Documento</th><th>Área</th><th>Ver.</th><th>Actualizado</th></tr></thead>
       <tbody id="docsRecientes">
         <?php if (!$docsRecientes): ?>
-          <tr><td colspan="4" class="text-muted">No hay documentos recientes.</td></tr>
+          <tr><td colspan="4"><p class="widget-empty"><i class="bi bi-file-earmark-text"></i> No hay documentos recientes.</p></td></tr>
         <?php else: foreach ($docsRecientes as $d): ?>
           <tr>
             <td><strong><?= e($d['nombre']) ?></strong></td>
@@ -116,13 +127,15 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         <?php endforeach; endif; ?>
       </tbody>
     </table>
+    <?php endif; ?>
 
+    <?php if (!in_array('novedades', $widgetsOcultos, true)): ?>
     <div class="section-head section-head--spaced">
-      <h4>Novedades institucionales</h4>
+      <h4><i class="bi bi-newspaper"></i> Novedades institucionales</h4>
     </div>
     <div class="noticias" id="noticias">
       <?php if (!$noticias): ?>
-        <p class="text-muted">Sin novedades por ahora.</p>
+        <p class="widget-empty"><i class="bi bi-newspaper"></i> Sin novedades por ahora.</p>
       <?php else: foreach ($noticias as $n): ?>
         <div class="card">
           <div class="noticia-foto">Fotografía institucional</div>
@@ -134,11 +147,13 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         </div>
       <?php endforeach; endif; ?>
     </div>
+    <?php endif; ?>
   </div>
 
   <div class="side-col">
+    <?php if (!in_array('pendientes', $widgetsOcultos, true)): ?>
     <div class="section-head section-head--compact">
-      <h4>Mis pendientes</h4>
+      <h4><i class="bi bi-check2-square"></i> Mis pendientes</h4>
       <button type="button" class="btn btn-link" id="btnNuevoPendiente"><i class="bi bi-plus-lg"></i> Agregar</button>
     </div>
 
@@ -151,7 +166,7 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
 
     <div id="pendientes">
       <?php if (!$pendientes): ?>
-        <p class="text-muted">No hay pendientes por ahora.</p>
+        <p class="widget-empty"><i class="bi bi-check2-circle"></i> Sin pendientes por ahora.</p>
       <?php else: foreach ($pendientes as $p): ?>
         <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
           <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">
@@ -173,11 +188,13 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         </div>
       <?php endforeach; endif; ?>
     </div>
+    <?php endif; ?>
 
-    <div class="section-head section-head--compact section-head--spaced-small"><h4>Agenda de la semana</h4></div>
+    <?php if (!in_array('agenda', $widgetsOcultos, true)): ?>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4><i class="bi bi-calendar-week"></i> Agenda de la semana</h4></div>
     <div id="eventos">
       <?php if (!$eventos): ?>
-        <p class="text-muted">No hay eventos programados.</p>
+        <p class="widget-empty"><i class="bi bi-calendar-week"></i> Sin eventos esta semana.</p>
       <?php else: foreach ($eventos as $ev): ?>
         <div class="evento">
           <span class="fecha">
@@ -191,11 +208,13 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         </div>
       <?php endforeach; endif; ?>
     </div>
+    <?php endif; ?>
 
-    <div class="section-head section-head--compact section-head--spaced-small"><h4>Cumpleaños</h4></div>
+    <?php if (!in_array('cumpleanos', $widgetsOcultos, true)): ?>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4><i class="bi bi-gift"></i> Cumpleaños</h4></div>
     <div id="cumpleanos">
       <?php if (!$cumpleanos): ?>
-        <p class="text-muted">Sin cumpleaños esta semana.</p>
+        <p class="widget-empty"><i class="bi bi-gift"></i> Sin cumpleaños esta semana.</p>
       <?php else: foreach ($cumpleanos as $c): ?>
         <div class="cumple">
           <span class="ini"><?= e($c['ini']) ?></span>
@@ -204,6 +223,20 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
         </div>
       <?php endforeach; endif; ?>
     </div>
+    <?php endif; ?>
+
+    <?php if (!in_array('drive_personal', $widgetsOcultos, true)): ?>
+    <div class="section-head section-head--compact section-head--spaced-small"><h4><i class="bi bi-google"></i> Mi Google Drive</h4></div>
+    <?php if (!$miDriveOauthConfigurado): ?>
+      <p class="widget-empty"><i class="bi bi-google"></i> No configurado en este entorno.</p>
+    <?php elseif ($miDriveConectado): ?>
+      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu cuenta está conectada.</p>
+      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-link" style="text-decoration:none"><i class="bi bi-folder2"></i> Ver mis archivos</a>
+    <?php else: ?>
+      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px">Trae tus propios archivos de Drive al portal.</p>
+      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-primary" style="text-decoration:none"><i class="bi bi-google"></i> Conectar</a>
+    <?php endif; ?>
+    <?php endif; ?>
   </div>
 </div>
 

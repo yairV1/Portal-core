@@ -1,0 +1,39 @@
+/* Mi Google Drive — página propia (ver MiDrive.php y
+   DriveUsuarioController.php). Reusa .doc-btn/.doc-archivos/.doc-archivo-row/
+   .doc-select/.doc-section-head ya definidos en centro-documental.css; esto
+   solo agrega lo específico de esta página. */
+
+/* Estado vacío liviano (oauth sin configurar, sin archivos, sin carpeta
+   asignada, importación en progreso). Mismo criterio visual que
+   .empty-state (paneles.css): un aviso sin datos reales no debe pesar como
+   una fila de contenido real. No se reusa .empty-state tal cual porque esa
+   es una CAJA con box-shadow (regla del proyecto: máximo una caja con
+   sombra por pantalla) — esto es solo una línea de texto atenuada.
+   display:block (no flex): el aviso de importación en progreso mete un
+   <strong> a mitad del texto ("...con calma — 128 archivo(s) traídos...")
+   — con display:flex, ese texto mixto (nodos de texto + <strong>) se parte
+   en "anonymous flex items" que NO se envuelven como un párrafo normal,
+   sino que saltan de línea cada uno por su lado (se ve roto en ~375px). En
+   flujo de texto normal envuelve como cualquier párrafo. */
+.widget-empty{
+  display:block; padding:10px 0; margin:0; opacity:.6;
+  font-size:var(--fs-small); line-height:1.6;
+}
+.widget-empty i{ font-size:15px; margin-right:var(--space-sm); vertical-align:-2px }
+
+/* "Mi Drive (copia local)": árbol de carpetas/archivos ya importados. Con
+   scroll propio (max-height+overflow-y) pero SIN ningún borde quedaba
+   flotando suelto sobre el fondo de la página, sin distinguirse como una
+   lista acotada — acá se le da el mismo tipo de contenedor que
+   .doc-archivos (borde + radio, sin sombra) para que se perciba como una
+   caja con scroll, no como texto suelto. */
+.gd-drive-tree{
+  max-height:360px; overflow-y:auto; padding:10px 14px;
+  border:1px solid var(--color-divider); border-radius:var(--radius-lg);
+  background:var(--color-surface); font-size:var(--fs-small);
+}
+/* Los enlaces de descarga heredaban el azul subrayado por defecto del
+   navegador (rgb(0,0,238)) — ninguna vista de este proyecto usa ese azul,
+   todo enlace/acción pasa por --color-accent (paneles.css). */
+.gd-drive-tree a{ color:var(--color-text); text-decoration:underline; text-decoration-color:var(--color-divider) }
+.gd-drive-tree a:hover{ color:var(--color-accent); text-decoration-color:var(--color-accent) }

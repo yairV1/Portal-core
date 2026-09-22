@@ -118,6 +118,8 @@
     var textos = {
       '1': { icon: 'success', title: 'Documento subido correctamente' },
       'creado': { icon: 'success', title: 'Documento creado — ya puedes subirle el archivo' },
+      'editado': { icon: 'success', title: 'Documento actualizado' },
+      'visibilidad': { icon: 'success', title: 'Visibilidad del documento actualizada' },
       'eliminado': { icon: 'success', title: 'Documento eliminado' },
       'nombre': { icon: 'error', title: 'Escribe un nombre y una fecha válida' },
       'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
@@ -172,6 +174,27 @@
       'drive_no_encontrado': { icon: 'error', title: 'No se pudo acceder a ese archivo — revisa el link y que esté compartido con la cuenta de servicio' },
       'drive_google_doc': { icon: 'error', title: 'Ese es un Doc/Sheet/Slide nativo de Google — expórtalo primero como PDF o Word desde Drive' },
       'drive_no_configurado': { icon: 'error', title: 'La importación desde Drive todavía no está configurada en este entorno' },
+      'error': { icon: 'error', title: 'No se pudo completar la acción' }
+    };
+    var t = textos[resultado] || textos['error'];
+    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  });
+</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['carpeta_doc'])): ?>
+<script>
+  // Aviso tras alternar visibilidad/renombrar/eliminar una carpeta del
+  // repositorio institucional (ver CarpetaDocumentalController.php, que
+  // agrega ?carpeta_doc=... al volver a Gestión Documental).
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof SwalBrand === 'undefined') return;
+    var resultado = <?= json_encode($_GET['carpeta_doc'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    var textos = {
+      'visibilidad': { icon: 'success', title: 'Visibilidad de la carpeta actualizada' },
+      'editado': { icon: 'success', title: 'Carpeta renombrada' },
+      'eliminado': { icon: 'success', title: 'Carpeta eliminada' },
+      'nombre': { icon: 'error', title: 'Escribe un nombre de carpeta válido' },
       'error': { icon: 'error', title: 'No se pudo completar la acción' }
     };
     var t = textos[resultado] || textos['error'];

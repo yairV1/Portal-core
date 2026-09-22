@@ -1,2 +1,52 @@
-/* Esta página ya no necesita CSS propio: usa .page-title/.page-desc y
-   .empty-state, los tres definidos en paneles.css (componentes únicos). */
+/* Gestión Documental — repositorio institucional público (ver migración
+   053_gestion_documental_publico.sql). Reusa .doc-categoria-card/
+   .doc-archivo-row/.doc-actions/.doc-btn/.tag ya definidos en
+   centro-documental.css y paneles.css; esto solo agrega lo específico de
+   esta vista: el grupo de iconos de acción que se revela al pasar el mouse
+   o al enfocar por teclado (nunca texto siempre visible), y la zona de
+   carga en línea para un documento recién creado sin archivo todavía. */
+
+.gd-actions{
+  display:flex; gap:4px; opacity:0; transition:opacity .15s ease;
+}
+.doc-categoria-card:hover .gd-actions,
+.doc-categoria-card:focus-within .gd-actions,
+.doc-archivo-row:hover .gd-actions,
+.doc-archivo-row:focus-within .gd-actions{
+  opacity:1;
+}
+/* NO position:absolute acá: con 3 iconos (34px c/u) el grupo mide ~110px,
+   más ancho que las tarjetas angostas de .doc-categorias (mínimo 120-150px
+   según breakpoint) — puesto en la esquina se solapaba con el icono de
+   carpeta (.ic) o se salía de la tarjeta. En flujo normal (la tarjeta ya es
+   flex-column, ver centro-documental.css) cae debajo del nombre/meta,
+   alineado a la derecha, sin pisar nada. */
+.gd-categoria-actions{ justify-content:flex-end }
+/* .doc-categoria-link trae min-height:100% (centro-documental.css) para que
+   el área clicable llene toda la tarjeta cuando el grid la estira para
+   igualar la altura de una vecina más alta — pero acá el link ya NO es el
+   único hijo de la tarjeta (gd-categoria-actions es su hermano, debajo).
+   Sin este reset, el link reclama el 100% del alto disponible y no deja
+   espacio para las acciones, que terminan saliéndose por debajo del borde
+   de la tarjeta (más notorio en tarjetas angostas donde los 3 iconos
+   envuelven a 2 líneas). Acotado con :has() a esta vista — no toca ninguna
+   otra pantalla que reuse .doc-categoria-card sin acciones. */
+.doc-categoria-card:has(.gd-categoria-actions) .doc-categoria-link{ min-height:0 }
+.gd-badge{ font-size:9px; padding:1px 6px; vertical-align:middle; margin-left:6px; white-space:nowrap }
+
+.gd-upload-inline{ display:flex; gap:6px; align-items:center }
+.gd-upload-inline input[type="file"]{ max-width:150px; font-size:11px }
+
+.gd-folder-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+.gd-folder-head .gd-actions{ opacity:1 } /* acá sí siempre visible: no es una fila en lista, es el título de la página */
+
+/* En una fila angosta (~375px), el input[type=file] nativo del formulario
+   "Subir archivo" (gd-upload-inline) más 3-4 botones de icono no caben en
+   una sola línea sin wrap — y como .doc-archivos (centro-documental.css)
+   tiene overflow:hidden, lo que no entra queda directamente CORTADO (el
+   icono "Eliminar", el último de la fila, desaparecía sin dejar rastro).
+   flex-wrap acá + el input de archivo en su propia línea evita el corte. */
+@media (max-width: 480px){
+  .gd-actions{ flex-wrap:wrap; justify-content:flex-end; row-gap:6px }
+  .gd-upload-inline{ flex:1 1 100%; justify-content:flex-end }
+}

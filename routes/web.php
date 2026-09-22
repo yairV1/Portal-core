@@ -129,9 +129,21 @@ return [
     '/investigacion-innovacion/carpetas/eliminar'      => 'CarpetaController.php',
     '/gestion-documental'         => 'PortalController.php',
 
-    // Drive personal de cada usuario en Gestión Documental (distinto del
-    // "Traer de Drive" por link de arriba, que usa una cuenta de servicio
-    // compartida) — ver DriveUsuarioController.php.
+    // Carpetas/archivos públicos del repositorio institucional (ver
+    // migración 053_gestion_documental_publico.sql) — alternar
+    // público/privado, renombrar y "eliminar" (soft delete) una carpeta.
+    '/gestion-documental/carpetas/visibilidad' => 'CarpetaDocumentalController.php',
+    '/gestion-documental/carpetas/editar'      => 'CarpetaDocumentalController.php',
+    '/gestion-documental/carpetas/eliminar'    => 'CarpetaDocumentalController.php',
+
+    // Mi Google Drive — página propia (ver DriveUsuarioController.php y
+    // Views/Portal/Mi_Drive/MiDrive.php): cada quien conecta SU cuenta y
+    // ve/importa SUS propios archivos hacia una carpeta real que administre.
+    // Las rutas de acción de abajo se quedan con el prefijo
+    // /gestion-documental por compatibilidad con la "URI de redirección
+    // autorizados" ya registrada en Google Cloud Console — solo la página
+    // en sí vive en /mi-drive.
+    '/mi-drive' => 'DriveUsuarioController.php',
     '/gestion-documental/drive/conectar'    => 'DriveUsuarioController.php',
     '/gestion-documental/drive/callback'    => 'DriveUsuarioController.php',
     '/gestion-documental/drive/desconectar' => 'DriveUsuarioController.php',
@@ -141,6 +153,9 @@ return [
 
     '/documentos/crear'           => 'DocumentoController.php',
     '/documentos/subir'           => 'DocumentoController.php',
+    '/documentos/visibilidad'     => 'DocumentoController.php',
+    '/documentos/editar'          => 'DocumentoController.php',
+    '/documentos/eliminar'        => 'DocumentoController.php',
     '/documentos/descargar'       => 'DocumentoController.php',
 
     // Editor de Word/Excel/PowerPoint dentro del portal (ver
