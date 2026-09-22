@@ -135,7 +135,14 @@ if ($uri === '/permisos-por-rol/guardar') {
     $permitidosCargo = $_POST['permitido_cargo'] ?? [];
     $accionesPermitidasCargo = $_POST['accion_permitida_cargo'] ?? [];
     $cargoIds = array_column($pdo->query('SELECT id FROM catalogo_cargos')->fetchAll(), 'id');
-    $navItemIds = array_values($navItemsPorRuta);
+    // Solo los nav_item_id que el checklist REALMENTE ofrece (los de algún
+    // módulo de config/modulos.php, ver Permisos.php: "if id===0 continue")
+    // — antes se usaba $navItemsPorRuta completo, que incluye rutas de
+    // nav_items sin módulo asociado (ej. /administracion, migración 038):
+    // cada guardado insertaba un veto por cargo para esas rutas sin que el
+    // formulario ofreciera ninguna casilla para revisarlo o revertirlo
+    // (hallazgo real, corregido).
+    $navItemIds = array_values(array_unique(array_filter(array_column($modulos, 'id'))));
 
     $pdo->exec('DELETE FROM permisos_cargo_negados');
     $stmtCargo = $pdo->prepare('INSERT INTO permisos_cargo_negados (nav_item_id, cargo_id) VALUES (:id, :cargo)');
