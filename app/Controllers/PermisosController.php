@@ -41,8 +41,14 @@ $modulos = modulos_config();
 
 // Los permisos por cargo siguen usando nav_item_id por compatibilidad con la
 // migración 046; los permisos por rol usan las claves estables de config.
+// Sin filtrar por parent_id IS NULL: los 3 submódulos de Talento Humano
+// (migración 048) son hijos de nav_items y si no, quedarían con id=0 acá
+// (la vista los salta, sin casilla de "permisos por cargo" — bug real
+// encontrado 2026-09-21). La `ruta` de cada nav_item sigue siendo única
+// sin importar si es de primer nivel o un hijo, así que el mapeo es igual
+// de seguro.
 $navItemsPorRuta = [];
-foreach ($pdo->query("SELECT id, ruta FROM nav_items WHERE parent_id IS NULL AND ruta IS NOT NULL AND ruta != '/'")->fetchAll() as $navItem) {
+foreach ($pdo->query("SELECT id, ruta FROM nav_items WHERE ruta IS NOT NULL AND ruta != '/'")->fetchAll() as $navItem) {
     $navItemsPorRuta[$navItem['ruta']] = (int) $navItem['id'];
 }
 foreach ($modulos as $clave => &$modulo) {
@@ -129,7 +135,14 @@ if ($uri === '/permisos-por-rol/guardar') {
     $permitidosCargo = $_POST['permitido_cargo'] ?? [];
     $accionesPermitidasCargo = $_POST['accion_permitida_cargo'] ?? [];
     $cargoIds = array_column($pdo->query('SELECT id FROM catalogo_cargos')->fetchAll(), 'id');
-    $navItemIds = array_values($navItemsPorRuta);
+    // Solo los nav_item_id que el checklist REALMENTE ofrece (los de algún
+    // módulo de config/modulos.php, ver Permisos.php: "if id===0 continue")
+    // — antes se usaba $navItemsPorRuta completo, que incluye rutas de
+    // nav_items sin módulo asociado (ej. /administracion, migración 038):
+    // cada guardado insertaba un veto por cargo para esas rutas sin que el
+    // formulario ofreciera ninguna casilla para revisarlo o revertirlo
+    // (hallazgo real, corregido).
+    $navItemIds = array_values(array_unique(array_filter(array_column($modulos, 'id'))));
 
     $pdo->exec('DELETE FROM permisos_cargo_negados');
     $stmtCargo = $pdo->prepare('INSERT INTO permisos_cargo_negados (nav_item_id, cargo_id) VALUES (:id, :cargo)');

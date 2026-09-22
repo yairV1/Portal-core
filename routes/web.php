@@ -108,6 +108,21 @@ return [
     '/talento-humano/carpetas/importar-drive'=> 'CarpetaController.php',
     '/talento-humano/carpetas/descargar'     => 'CarpetaController.php',
     '/talento-humano/carpetas/eliminar'      => 'CarpetaController.php',
+    '/talento-humano/empleados/crear'    => 'EmpleadoController.php',
+    '/talento-humano/empleados/editar'   => 'EmpleadoController.php',
+    '/talento-humano/empleados/eliminar' => 'EmpleadoController.php',
+    '/talento-humano/hojas-de-vida'           => 'EmpleadoDocumentoController.php',
+    '/talento-humano/hojas-de-vida/subir'     => 'EmpleadoDocumentoController.php',
+    '/talento-humano/hojas-de-vida/descargar' => 'EmpleadoDocumentoController.php',
+    '/talento-humano/hojas-de-vida/eliminar'  => 'EmpleadoDocumentoController.php',
+    '/talento-humano/contratos'           => 'EmpleadoDocumentoController.php',
+    '/talento-humano/contratos/subir'     => 'EmpleadoDocumentoController.php',
+    '/talento-humano/contratos/descargar' => 'EmpleadoDocumentoController.php',
+    '/talento-humano/contratos/eliminar'  => 'EmpleadoDocumentoController.php',
+    '/talento-humano/certificaciones-laborales'           => 'EmpleadoDocumentoController.php',
+    '/talento-humano/certificaciones-laborales/subir'     => 'EmpleadoDocumentoController.php',
+    '/talento-humano/certificaciones-laborales/descargar' => 'EmpleadoDocumentoController.php',
+    '/talento-humano/certificaciones-laborales/eliminar'  => 'EmpleadoDocumentoController.php',
     '/investigacion-innovacion'  => 'PortalController.php',
     '/investigacion-innovacion/carpetas/crear'         => 'CarpetaController.php',
     '/investigacion-innovacion/carpetas/crear-documento' => 'CarpetaController.php',
@@ -117,9 +132,21 @@ return [
     '/investigacion-innovacion/carpetas/eliminar'      => 'CarpetaController.php',
     '/gestion-documental'         => 'PortalController.php',
 
-    // Drive personal de cada usuario en Gestión Documental (distinto del
-    // "Traer de Drive" por link de arriba, que usa una cuenta de servicio
-    // compartida) — ver DriveUsuarioController.php.
+    // Carpetas/archivos públicos del repositorio institucional (ver
+    // migración 053_gestion_documental_publico.sql) — alternar
+    // público/privado, renombrar y "eliminar" (soft delete) una carpeta.
+    '/gestion-documental/carpetas/visibilidad' => 'CarpetaDocumentalController.php',
+    '/gestion-documental/carpetas/editar'      => 'CarpetaDocumentalController.php',
+    '/gestion-documental/carpetas/eliminar'    => 'CarpetaDocumentalController.php',
+
+    // Mi Google Drive — página propia (ver DriveUsuarioController.php y
+    // Views/Portal/Mi_Drive/MiDrive.php): cada quien conecta SU cuenta y
+    // ve/importa SUS propios archivos hacia una carpeta real que administre.
+    // Las rutas de acción de abajo se quedan con el prefijo
+    // /gestion-documental por compatibilidad con la "URI de redirección
+    // autorizados" ya registrada en Google Cloud Console — solo la página
+    // en sí vive en /mi-drive.
+    '/mi-drive' => 'DriveUsuarioController.php',
     '/gestion-documental/drive/conectar'    => 'DriveUsuarioController.php',
     '/gestion-documental/drive/callback'    => 'DriveUsuarioController.php',
     '/gestion-documental/drive/desconectar' => 'DriveUsuarioController.php',
@@ -129,6 +156,9 @@ return [
 
     '/documentos/crear'           => 'DocumentoController.php',
     '/documentos/subir'           => 'DocumentoController.php',
+    '/documentos/visibilidad'     => 'DocumentoController.php',
+    '/documentos/editar'          => 'DocumentoController.php',
+    '/documentos/eliminar'        => 'DocumentoController.php',
     '/documentos/descargar'       => 'DocumentoController.php',
 
     // Editor de Word/Excel/PowerPoint dentro del portal (ver

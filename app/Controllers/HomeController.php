@@ -23,6 +23,16 @@ $titulo = 'Inicio';
 
 $MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
+// Widget compacto "Mi Google Drive" (ver Home/Inicio.php y
+// Home/InicioAdmin.php) — enlaza a la página propia /mi-drive
+// (DriveUsuarioController.php), acá solo se necesita el estado, no la
+// lista de archivos completa (eso vive en esa otra página).
+require_once ROOT_PATH . '/app/Helpers/GoogleDrive.php';
+$miDriveOauthConfigurado = google_drive_oauth_configurado();
+$stmt = $pdo->prepare('SELECT google_drive_refresh_token FROM usuarios WHERE id = :id');
+$stmt->execute([':id' => $_SESSION['usuario_id']]);
+$miDriveConectado = (bool) $stmt->fetchColumn();
+
 // ── Centro de administración: el admin global no ve el dashboard "mi día"
 // de un usuario normal (hero/KPIs/accesos/documentos recientes/novedades)
 // — ve solo dos cosas: Soportes (su bitácora de fallos/mejoras del
@@ -54,6 +64,12 @@ if (($_SESSION['usuario_rol'] ?? '') === 'admin') {
             'color' => $r['color'] ?: '#9e1f63', 'completado' => (bool) $r['completado'],
         ];
     }
+
+    // Qué widgets de esta vista ve el admin — hoy ninguno se oculta (ve
+    // Soportes y Mis pendientes siempre), pero la vista ya sabe leer esta
+    // lista (ver Home/InicioAdmin.php) para cuando haga falta ocultar uno
+    // puntual sin reescribir la vista.
+    $widgetsOcultos = [];
 
     require ROOT_PATH . '/app/Views/Portal/Home/InicioAdmin.php';
     exit;
@@ -198,5 +214,15 @@ foreach ($stmt->fetchAll() as $r) {
     $iniciales = strtoupper(mb_substr($partes[0], 0, 1) . mb_substr(end($partes), 0, 1));
     $cumpleanos[] = ['ini' => $iniciales, 'nombre' => $r['nombre'], 'fecha' => $cuando];
 }
+
+// Qué widgets de esta vista ve este usuario — hoy todos ven todos los
+// mismos (el rol solo decide arriba entre Inicio.php/InicioAdmin.php
+// completos), pero cada bloque de Inicio.php ya está envuelto en un
+// chequeo contra esta lista: agregar una clave acá según
+// $_SESSION['usuario_rol']/'usuario_cargo_id' basta para ocultarle un
+// widget puntual a un rol sin tocar la vista. Claves válidas: 'kpis',
+// 'accesos', 'documentos', 'novedades', 'pendientes', 'agenda', 'cumpleanos',
+// 'drive_personal'.
+$widgetsOcultos = [];
 
 require ROOT_PATH . '/app/Views/Portal/Home/Inicio.php';

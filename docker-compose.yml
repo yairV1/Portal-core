@@ -91,8 +91,40 @@ services:
     image: onlyoffice/documentserver:latest
     environment:
       JWT_ENABLED: "true"
-      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:?falta el secreto}
+      # Docker Compose interpola las variables de TODOS los servicios del
+      # archivo al analizarlo, sin importar si su perfil está activo — un
+      # "${VAR:?error}" acá rompía "docker compose up -d" (sin --profile
+      # onlyoffice) para cualquiera que no tuviera ONLYOFFICE_JWT_SECRET en
+      # su .env, justo lo que la migración a "opcional" quería evitar
+      # (hallazgo real, corregido: probado con `docker compose config`).
+      # Seguro dejarlo vacío por defecto: onlyoffice_configurado() en
+      # OnlyOffice.php ya trata un secreto vacío como "no configurado" y
+      # nunca intenta hablarle a este contenedor sin uno real, sin importar
+      # si el contenedor mismo llegó a levantarse.
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-}
       JWT_HEADER: Authorization
+    # Con el secreto vacío, este contenedor quedaría corriendo con
+    # JWT_ENABLED=true pero sin una clave real que de verdad frene nada —
+    # equivalente a un Document Server sin autenticación, expuesto en su
+    # puerto (SSRF vía conversión de documentos desde URL arbitraria,
+    # lectura de archivos, etc.) — aunque el portal nunca le hable sin
+    # secreto (ver onlyoffice_configurado() en OnlyOffice.php), el
+    # contenedor mismo sigue ahí, alcanzable directo. Compose no permite
+    # condicionar un "${VAR:?error}" solo a cuando el perfil está activo
+    # (revienta "docker compose up -d" para todos, ver comentario arriba),
+    # así que la validación se mueve al arranque real del contenedor: si
+    # alguien SÍ activa --profile onlyoffice sin el secreto, este falla
+    # fuerte acá (nunca llega a levantar el servidor) en vez de quedar
+    # corriendo sin autenticación real (hallazgo real de la revisión de
+    # seguridad, corregido).
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$$JWT_SECRET" ]; then
+          echo "ERROR: falta ONLYOFFICE_JWT_SECRET en tu .env — con --profile onlyoffice activado es obligatorio (ver .env.example)." >&2
+          exit 1
+        fi
+        exec /app/ds/run-document-server.sh
     ports:
       - "${ONLYOFFICE_PORT:-8082}:80"
     volumes:

@@ -12,6 +12,12 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
   <p class="doc-hero-desc">Hojas de vida, contratos y certificaciones laborales, organizados en un solo lugar.</p>
 </div>
 
+<?php if ($esAdminDoc && usuario_puede_ver_archivo_de('contrataciones')): ?>
+  <a href="<?= BASE_URL ?>/contrataciones" class="doc-btn doc-btn--secondary" style="margin-bottom:20px">
+    <i class="bi bi-file-earmark-person"></i> Contrataciones — generar enlace para un candidato
+  </a>
+<?php endif; ?>
+
 <?php if ($carpetaActual): ?>
   <a href="<?= BASE_URL ?>/talento-humano" class="doc-back">
     <i class="bi bi-arrow-left"></i> Volver a Documentos

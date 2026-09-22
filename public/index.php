@@ -217,6 +217,13 @@ function usuario_puede_accion(string $accionClave): bool {
 // esto solo puede QUITAR acceso, nunca dar uno que la propia dirección/área ya
 // no permitiera (usuario_area_asignada() sigue aplicando aparte).
 function usuario_puede_ver_modulo(string $clave): bool {
+    // El admin global nunca se autolimita, ni por rol ni por cargo (ver
+    // Permisos.php: "no aparece acá") — sin este corte, el chequeo de cargo
+    // de más abajo SÍ se le aplicaba (bug real: un admin podía vetarse su
+    // propio acceso a un módulo desde el checklist de "Permisos por cargo"
+    // sin darse cuenta, porque solo el veto por ROL lo eximía).
+    if (($_SESSION['usuario_rol'] ?? '') === 'admin') return true;
+
     $vetados = usuario_modulos_vetados();
     if ($vetados === null) return false;
     if (in_array($clave, $vetados, true)) return false;
@@ -225,7 +232,12 @@ function usuario_puede_ver_modulo(string $clave): bool {
     $modulo = modulos_config()[$clave] ?? null;
     $ruta = $modulo['rutas'][0] ?? null;
     if ($ruta === null) return false;
-    $stmt = $pdo->prepare('SELECT id FROM nav_items WHERE parent_id IS NULL AND ruta = :ruta LIMIT 1');
+    // Sin filtrar por parent_id IS NULL: los submódulos que cuelgan de otro
+    // en el sidebar (ver migración 048, Hojas de vida/Contratos/
+    // Certificaciones de Talento Humano) también deben poder vetarse por
+    // cargo — su `ruta` es igual de única que la de un ítem de primer nivel
+    // (ver mismo criterio en PermisosController.php).
+    $stmt = $pdo->prepare('SELECT id FROM nav_items WHERE ruta = :ruta LIMIT 1');
     $stmt->execute([':ruta' => $ruta]);
     $navItemId = $stmt->fetchColumn();
     $cargoId = $_SESSION['usuario_cargo_id'] ?? null;
@@ -287,16 +299,20 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf = $_SESSION['csrf_token'];
 
-// Rol y dirección vigentes: AuthController.php los copia a la sesión al
-// iniciar sesión, y sin esto un admin que le baja el rol a alguien (o lo
-// elimina) no surte efecto hasta que esa persona cierre sesión o pase 30
-// minutos inactiva. Se relee de la BD (una consulta por clave primaria) en
-// cada petición CON sesión — las públicas y las que llama OnlyOffice sin
-// cookie (/editor/archivo, /editor/callback) no pasan por acá. Si el
-// usuario ya no existe, se trata igual que una sesión expirada. (usuarios no
-// tiene columna de estado/activo, así que "existe" es la única condición.)
+// Rol, dirección y cargo vigentes: AuthController.php los copia a la sesión
+// al iniciar sesión, y sin esto un admin que le baja el rol a alguien (o le
+// cambia la dirección o el cargo, o lo elimina) no surte efecto hasta que
+// esa persona cierre sesión o pase 30 minutos inactiva. cargo_id se relee
+// junto con rol/direccion_id (antes se quedaba desactualizado: un veto por
+// cargo nuevo en "Permisos por rol" no aplicaba hasta el próximo login —
+// hallazgo real, corregido). Se relee de la BD (una consulta por clave
+// primaria) en cada petición CON sesión — las públicas y las que llama
+// OnlyOffice sin cookie (/editor/archivo, /editor/callback) no pasan por
+// acá. Si el usuario ya no existe, se trata igual que una sesión expirada.
+// (usuarios no tiene columna de estado/activo, así que "existe" es la
+// única condición.)
 if (!empty($_SESSION['usuario_id'])) {
-    $stmt = $pdo->prepare('SELECT rol, direccion_id FROM usuarios WHERE id = :id');
+    $stmt = $pdo->prepare('SELECT rol, direccion_id, cargo_id FROM usuarios WHERE id = :id');
     $stmt->execute([':id' => $_SESSION['usuario_id']]);
     $usuarioVigente = $stmt->fetch();
     if (!$usuarioVigente) {
@@ -307,6 +323,7 @@ if (!empty($_SESSION['usuario_id'])) {
     }
     $_SESSION['usuario_rol']          = $usuarioVigente['rol'];
     $_SESSION['usuario_direccion_id'] = $usuarioVigente['direccion_id'];
+    $_SESSION['usuario_cargo_id']     = $usuarioVigente['cargo_id'];
 }
 
 // ── Enrutamiento ──
