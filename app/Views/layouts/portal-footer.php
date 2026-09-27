@@ -1,4 +1,5 @@
-</div><!-- /.content -->
+    </div><!-- /.content-inner -->
+  </main><!-- /.content -->
 </div><!-- /.app-shell -->
 
 <!-- ── Asistente flotante "Core" (ver asistente.js) ── -->

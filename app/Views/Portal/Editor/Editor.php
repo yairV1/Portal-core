@@ -8,34 +8,32 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($fila['nombre']) ?> — Portal CORE</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="<?= v('/assets/layouts/css/paneles.css') ?>">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk" crossorigin="anonymous">
+<link rel="stylesheet" href="<?= v('/assets/core/tokens.css') ?>">
+<link rel="stylesheet" href="<?= v('/assets/core/components.css') ?>">
 <style>
   html, body { height: 100%; }
   body { display: flex; flex-direction: column; overflow: hidden; }
   .editor-barra {
-    display: flex; align-items: center; gap: 12px; padding: 10px 18px;
-    border-bottom: 1px solid var(--color-divider); background: var(--color-bg); flex: 0 0 auto;
+    display: flex; align-items: center; gap: var(--space-3); flex: 0 0 auto;
+    height: 52px; padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--border); background: var(--bg-surface);
   }
-  .editor-volver {
-    display: inline-flex; align-items: center; gap: 6px; color: var(--color-text); text-decoration: none;
-    font-weight: 700; font-size: 13.5px; opacity: .75; transition: opacity .15s ease;
-  }
-  .editor-volver:hover { opacity: 1; }
-  .editor-nombre { font-weight: 800; font-size: 14px; opacity: .85; }
-  .editor-modo { margin-left: auto; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 800; opacity: .5; }
+  .editor-nombre { min-width: 0; font-weight: var(--weight-semibold); font-size: var(--text-base); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .editor-modo { margin-left: auto; flex: 0 0 auto; }
   #editorPortalCore { flex: 1 1 auto; min-height: 0; }
 </style>
 </head>
 <body>
   <div class="editor-barra">
     <?php if ($volverA): ?>
-      <a href="<?= e($volverA) ?>" class="editor-volver"><i class="bi bi-arrow-left"></i> Volver</a>
+      <a href="<?= e($volverA) ?>" class="btn btn-ghost btn-sm"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver</a>
     <?php endif; ?>
     <span class="editor-nombre"><?= e($fila['nombre']) ?></span>
-    <span class="editor-modo"><?= $puedeEditar ? 'Editando' : 'Solo lectura' ?></span>
+    <span class="editor-modo badge <?= $puedeEditar ? 'badge-primary' : 'badge-neutral' ?> badge-dot"><?= $puedeEditar ? 'Editando' : 'Solo lectura' ?></span>
   </div>
   <div id="editorPortalCore"></div>
 

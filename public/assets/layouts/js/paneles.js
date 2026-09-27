@@ -1,27 +1,7 @@
-// topbar.js — interactividad de la barra superior
+// paneles.js — interactividad del layout del Portal (barra superior, tema,
+// Mi perfil, cerrar sesión y panel lateral).
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Reloj en vivo (reemplaza la barra de búsqueda del topbar)
-  const clockEl = document.getElementById('topbarClock');
-  if (clockEl) {
-    const actualizarReloj = () => {
-      clockEl.textContent = new Date().toLocaleTimeString('es-CO', {
-        hour: '2-digit', minute: '2-digit'
-      });
-    };
-    actualizarReloj();
-    setInterval(actualizarReloj, 1000 * 15);
-  }
-
-  // Fecha de hoy en la barra de ruta
-  const dateEl = document.getElementById('breadcrumbDate');
-  if (dateEl) {
-    const texto = new Date().toLocaleDateString('es-CO', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
-    dateEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
-  }
-
   // Modo día/noche automático: 06:00–18:00 claro, el resto oscuro.
   // Si el usuario nunca tocó el botón, se revisa cada minuto y se ajusta
   // solo (por si el portal queda abierto y cruza las 6am/6pm). En cuanto
@@ -163,11 +143,25 @@ document.addEventListener('DOMContentLoaded', function () {
   // Colapsa el panel a solo íconos (llamado desde el botón ☰ del navbar superior)
   // y recuerda la preferencia para que no "parpadee" al cambiar de página
   // (el estado inicial ya se aplica antes, en el <script> al inicio de sidebar.php).
+  // aria-expanded del botón ☰ refleja si el menú se ve completo: en
+  // escritorio, no contraído; en móvil, el panel deslizante abierto.
+  const btnMenu = document.getElementById('btnToggleNav');
+  function sincronizarBotonMenu() {
+    const sidebar = document.getElementById('sidebar');
+    if (!btnMenu || !sidebar) return;
+    const esMobile = window.matchMedia('(max-width: 880px)').matches;
+    const expandido = esMobile ? sidebar.classList.contains('mobile-open') : !sidebar.classList.contains('collapsed');
+    btnMenu.setAttribute('aria-expanded', expandido ? 'true' : 'false');
+  }
+  sincronizarBotonMenu();
+  window.matchMedia('(max-width: 880px)').addEventListener('change', sincronizarBotonMenu);
+
   window.toggleSidebarCollapse = function () {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     const colapsado = sidebar.classList.toggle('collapsed');
     try { localStorage.setItem('sidebarCollapsed', colapsado ? '1' : '0'); } catch (e) {}
+    sincronizarBotonMenu();
   };
 
   // Panel deslizante en pantallas angostas (<=880px): no se guarda
@@ -178,12 +172,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!sidebar) return;
     sidebar.classList.toggle('mobile-open');
     if (sidebarBackdrop) sidebarBackdrop.classList.toggle('open');
+    sincronizarBotonMenu();
   };
   function cerrarSidebarMobile() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     sidebar.classList.remove('mobile-open');
     if (sidebarBackdrop) sidebarBackdrop.classList.remove('open');
+    sincronizarBotonMenu();
   }
   if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', cerrarSidebarMobile);
   document.addEventListener('keydown', function (e) {

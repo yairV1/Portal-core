@@ -65,7 +65,7 @@ button.cal-celda.cal-hoy:hover{ background:var(--color-accent-200) }
    datos que la grilla), calendario.js solo alterna cuál se ve.
    calendario.js reescribe #calAgendaLista/#calAgendaFecha al hacer clic
    en una celda; el HTML de acá es el estado inicial ("hoy"), sin JS. */
-.cal-agenda{ padding:20px; display:flex; flex-direction:column; gap:14px; position:sticky; top:20px }
+.cal-agenda{ padding:20px; display:flex; flex-direction:column; gap:14px; position:sticky; top:calc(var(--topbar-h, 60px) + 20px) }
 .cal-agenda-tabs{ width:100% }
 .cal-agenda-tabs .pill-tab{ flex:1 }
 .cal-agenda-panel{ display:flex; flex-direction:column; gap:10px }

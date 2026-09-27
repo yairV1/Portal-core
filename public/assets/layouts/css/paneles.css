@@ -1,14 +1,19 @@
 /* ══════════════════════════════════════════════════════════
-   paneles.css — Layout del Portal: barra superior, barra de ruta,
-   panel lateral, contenedor de contenido, "Mi perfil" y asistente.
-   Los componentes (botones, campos, tablas, modales…) viven en
-   core/components.css y los tokens en core/tokens.css — acá no se
-   redefinen, solo se usan.
+   paneles.css — Layout del Portal: barra superior, panel lateral,
+   contenedor de contenido con ruta de navegación, "Mi perfil" y el
+   asistente "Core". Los componentes (botones, campos, tablas, modales…)
+   viven en core/components.css y los tokens en core/tokens.css — acá no
+   se redefinen, solo se usan.
    ══════════════════════════════════════════════════════════ */
 
-/* Tokens propios del panel lateral, derivados de los semánticos para que
-   cambien solos con el modo oscuro. */
 :root, body{
+  --topbar-h: 60px;
+  --sidebar-w: 256px;
+  --sidebar-w-collapsed: 68px;
+  --content-max: 1360px;
+
+  /* Tokens del panel lateral, derivados de los semánticos para que
+     cambien solos con el modo oscuro. */
   --sb-bg: var(--bg-surface);
   --sb-border: var(--border);
   --sb-text: var(--text);
@@ -17,468 +22,359 @@
   --sb-active-bg: var(--primary-subtle);
   --sb-active-text: var(--primary-text);
   --sb-accent: var(--primary);
-  --sb-radius: 10px;
+  --sb-radius: var(--radius-sm);
 }
 
 /* ── Ícono luna/sol: se alterna solo con CSS según data-tema ── */
-.icon-oscuro{ display:none; }
-body[data-tema="oscuro"] .icon-claro{ display:none; }
-body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
+.icon-oscuro{ display: none; }
+body[data-tema="oscuro"] .icon-claro{ display: none; }
+body[data-tema="oscuro"] .icon-oscuro{ display: inline; }
 
-/* ── Barra superior ── */
+/* ── Saltar al contenido (visible solo con teclado) ── */
+.skip-link{
+  position: fixed; top: 8px; left: 8px; z-index: var(--z-toast);
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: var(--primary-solid); color: var(--text-on-primary);
+  font-weight: var(--weight-semibold); text-decoration: none;
+  transform: translateY(-160%); transition: transform var(--duration-base) var(--ease-out);
+}
+.skip-link:focus{ transform: translateY(0); outline: none; box-shadow: var(--focus-ring); }
+
+
+/* ══ Barra superior ═══════════════════════════════════════ */
 .topbar{
-  position: sticky; top: 0; z-index: 60;
-  display:flex; align-items:center; gap:20px;
-  height:64px; padding:0 24px;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-divider);
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  display: flex; align-items: center; gap: var(--space-3);
+  height: var(--topbar-h); padding: 0 var(--space-4) 0 var(--space-3);
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--border);
 }
-.brand{ display:flex; align-items:center; gap:10px; color: var(--text); text-decoration:none; border-radius: var(--radius-sm); }
-.brand-logo{
-  width:52px; height:36px; flex:0 0 auto;
-  display:flex; align-items:center; justify-content:center;
+.brand{
+  display: flex; align-items: center; gap: 10px; flex: 0 0 auto;
+  padding: 4px 6px; margin-right: var(--space-2);
+  color: var(--text); text-decoration: none; border-radius: var(--radius-sm);
 }
-.brand-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
-.brand-name{ display:block; font-weight:700; font-size:15.5px; letter-spacing:-.01em; }
-.brand-sub{ display:block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); }
+.brand-logo{ width: 44px; height: 30px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.brand-logo img{ width: 100%; height: 100%; object-fit: contain; display: block; }
+.brand-text{ display: block; line-height: 1.15; }
+.brand-name{ display: block; font-weight: var(--weight-bold); font-size: 15px; letter-spacing: -.01em; }
+.brand-sub{ display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
 
-.topbar-clock{
-  flex: 1;
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px;
-  font-variant-numeric: tabular-nums;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: .02em;
+/* Buscador → abre a "Core" (ver asistente.js) */
+.topbar-search{
+  flex: 0 1 420px; margin: 0 auto;
+  display: flex; align-items: center; gap: 10px;
+  height: 38px; padding: 0 8px 0 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-subtle); color: var(--text-subtle);
+  font: inherit; font-size: var(--text-sm); text-align: left; cursor: text;
+  transition: border-color var(--duration-fast) ease, background-color var(--duration-fast) ease;
 }
-.topbar-clock i{ font-size: 13px; opacity: .7; }
+.topbar-search:hover{ border-color: var(--border-strong); background: var(--bg-surface); }
+.topbar-search:focus-visible{ outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.topbar-search > i{ font-size: 14px; }
+.topbar-search-text{ flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-search-kbd{
+  flex: 0 0 auto; padding: 2px 6px; border: 1px solid var(--border); border-radius: var(--radius-xs);
+  background: var(--bg-surface); color: var(--text-muted); font: inherit; font-size: 11px; font-weight: var(--weight-medium);
+}
+.topbar-search-icon{ display: none; }
 
-/* ── Barra de ruta (breadcrumb) — debajo del topbar, cambia por página ── */
-.breadcrumb-bar{
-  position: sticky; top: 64px; z-index: 55;
-  height: 44px;
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 0 24px;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-divider);
-}
-.breadcrumb-path{
-  display:flex; align-items:center; gap:8px;
-  font-size: 12.5px; font-weight:600; color:var(--text-muted);
-}
-.breadcrumb-path .sep{ opacity:.5; }
-.breadcrumb-path .current{ color: var(--color-text); }
-.breadcrumb-date{
-  font-size: 12.5px; color:var(--text-muted); text-transform:capitalize;
-}
+.right-actions{ display: flex; align-items: center; gap: 4px; margin-left: auto; flex: 0 0 auto; }
+.topbar-divider{ width: 1px; height: 24px; margin: 0 6px; background: var(--border); }
 
-.right-actions{ display:flex; align-items:center; gap:8px; margin-left:auto; }
 .profile{
-  display:flex; align-items:center; gap:9px; padding:4px 10px 4px 4px;
-  border-radius: var(--sb-radius); cursor:pointer;
-  border: 1px solid transparent; background: transparent; color: var(--text);
-  font: inherit; text-align: left;
-  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+  display: flex; align-items: center; gap: 9px; padding: 4px 8px 4px 4px;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+  transition: background-color var(--duration-fast) ease;
 }
 .profile:hover, .profile.open{ background: var(--bg-muted); }
 .profile:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
-.profile-text{ display:block; min-width:0; }
-.avatar{
-  width:30px; height:30px; border-radius:999px; position:relative;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700)); color:#fff;
-  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
-  overflow: hidden;
-}
-/* position:absolute (no depende de flex) — con solo width/height:100% en un
-   contenedor flex, una imagen con otra proporción (no cuadrada) no llega a
-   ocupar el 100% del ancho: el navegador la deja más angosta según su
-   relación de aspecto en vez de estirarla a la caja. */
-.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-.profile-name{ display:block; font-size:12.5px; font-weight:600; }
-.profile-role{ display:block; font-size:10.5px; color:var(--text-muted); }
-.profile-chevron{
-  font-size:11px; color:var(--text-muted); margin-left:2px;
-  transition: transform .18s ease;
-}
-.profile:hover .profile-chevron{ transform: translateY(1px); }
+.profile-text{ display: block; min-width: 0; max-width: 180px; }
+.profile-name{ display: block; font-size: 12.5px; font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-role{ display: block; font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-chevron{ font-size: 11px; color: var(--text-muted); transition: transform var(--duration-base) ease; }
 .profile.open .profile-chevron{ transform: rotate(180deg); }
-.bell-dot{
-  position:absolute; top:8px; right:8px; width:7px; height:7px;
-  background: var(--secondary); border-radius:50%;
-  box-shadow: 0 0 0 2px var(--bg-surface);
+.avatar{
+  width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--primary-solid), var(--primary-active)); color: #fff;
+  font-weight: var(--weight-bold); font-size: 12px;
 }
+.avatar img{ width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ── Mi perfil (contenido del drawer #profileDrawer) ── */
-.profile-summary{ display:flex; align-items:center; gap: var(--space-4); margin-bottom: var(--space-6); }
+.profile-summary{ display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
 .profile-summary-avatar{
-  width:56px; height:56px; flex:0 0 auto; border-radius:50%; overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg, var(--primary), var(--primary-active)); color:#fff;
-  font-weight:700; font-size:19px;
+  width: 56px; height: 56px; flex: 0 0 auto; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--primary-solid), var(--primary-active)); color: #fff;
+  font-weight: var(--weight-bold); font-size: 19px;
 }
-.profile-summary-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-.profile-summary-name{ margin:0; font-size: var(--text-lg); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
-.profile-summary-role{ margin:4px 0 0; font-size: var(--text-sm); color: var(--text-muted); }
-.profile-fields{ margin:0; border:1px solid var(--border); border-radius: var(--radius-md); }
-.profile-fields > div{ display:flex; justify-content:space-between; align-items:baseline; gap: var(--space-4); padding: 12px 14px; }
-.profile-fields > div + div{ border-top:1px solid var(--border); }
+.profile-summary-avatar img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.profile-summary-name{ margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.profile-summary-role{ margin: 4px 0 0; font-size: var(--text-sm); color: var(--text-muted); }
+.profile-fields{ margin: 0; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.profile-fields > div{ display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); padding: 12px 14px; }
+.profile-fields > div + div{ border-top: 1px solid var(--border); }
 .profile-fields dt{ font-size: var(--text-sm); color: var(--text-muted); }
-.profile-fields dd{ margin:0; font-weight: var(--weight-semibold); text-align:right; word-break: break-word; }
-.profile-photo-edit{ display:flex; align-items:center; gap: var(--space-4); }
+.profile-fields dd{ margin: 0; font-weight: var(--weight-semibold); text-align: right; word-break: break-word; }
+.profile-photo-edit{ display: flex; align-items: center; gap: var(--space-4); }
 
-/* ── Layout general: sidebar + contenido ──
-   64px del topbar + 44px de la barra de ruta = 108px de encabezado fijo. */
-.app-shell{ display:flex; align-items:stretch; min-height: calc(100vh - 108px); }
-.content{ flex:1; min-width:0; padding: 36px 40px 64px; background: var(--color-surface); }
 
-/* ── Responsive: topbar y barra de ruta en pantallas angostas ──
-   Oculta lo secundario (reloj, fecha, texto del perfil) en vez de dejar
-   que el layout se rompa o se encime. */
-@media (max-width: 720px){
-  .topbar{ gap: 10px; padding: 0 14px; }
-  .brand-sub{ display: none; }
-  .topbar-clock{ display: none; }
-  .right-actions{ gap: 4px; }
-  .profile{ padding: 5px; }
-  .profile-name, .profile-role, .profile-chevron{ display: none; }
-
-  .breadcrumb-bar{ padding: 0 14px; }
-  .breadcrumb-date{ display: none; }
-
+/* ══ Estructura: panel lateral + contenido ════════════════ */
+.app-shell{ display: flex; align-items: stretch; min-height: calc(100dvh - var(--topbar-h)); }
+.content{ flex: 1; min-width: 0; background: var(--bg-canvas); outline: none; }
+.content-inner{
+  max-width: var(--content-max); margin: 0 auto;
+  padding: var(--space-6) var(--space-10) var(--space-16);
 }
 
+/* ── Ruta de navegación ── */
+.breadcrumbs{ margin: 0 0 var(--space-5); }
+.breadcrumbs ol{
+  display: flex; flex-wrap: wrap; align-items: center; gap: 2px 0;
+  margin: 0; padding: 0; list-style: none;
+  font-size: var(--text-sm); color: var(--text-muted);
+}
+.breadcrumbs li{ display: inline-flex; align-items: center; min-width: 0; }
+.breadcrumbs li + li::before{
+  content: ""; width: 6px; height: 6px; margin: 0 10px;
+  border-top: 1.5px solid var(--text-subtle); border-right: 1.5px solid var(--text-subtle);
+  transform: rotate(45deg); flex: 0 0 auto;
+}
+.breadcrumbs a{ color: var(--text-muted); text-decoration: none; border-radius: var(--radius-xs); }
+.breadcrumbs a:hover{ color: var(--primary-text); text-decoration: underline; text-underline-offset: 3px; }
+.breadcrumbs [aria-current="page"]{ color: var(--text); font-weight: var(--weight-medium); }
 
 
-/* ══════════════════════════════════════════════════════════
-   sidebar.css — Panel lateral del Portal CORE
-   Inspirado en el mockup de referencia: buscador arriba,
-   navegación con íconos, sección de Direcciones con puntos de
-   color, y perfil de usuario abajo con menú desplegable.
-   ══════════════════════════════════════════════════════════ */
-
-
+/* ══ Panel lateral ════════════════════════════════════════ */
 .sidebar{
-  width: 268px;
-  flex: 0 0 auto;
-  height: calc(100vh - 108px);
-  position: sticky;
-  top: 108px;
-  background: var(--sb-bg);
-  border-right: 1px solid var(--sb-border);
-  display: flex;
-  flex-direction: column;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--sb-text);
-  transition: width .25s cubic-bezier(.4,0,.2,1);
+  position: sticky; top: var(--topbar-h);
+  width: var(--sidebar-w); height: calc(100dvh - var(--topbar-h)); flex: 0 0 auto;
+  display: flex; flex-direction: column;
+  background: var(--sb-bg); border-right: 1px solid var(--sb-border);
+  color: var(--sb-text); font-size: var(--text-base);
+  transition: width var(--duration-slow) var(--ease-in-out);
 }
+.sidebar-scroll{ flex: 1; overflow-y: auto; overflow-x: hidden; padding: var(--space-4) var(--space-3) 0; }
+.sidebar-divider{ height: 1px; background: var(--sb-border); margin: var(--space-3) var(--space-2); }
 
-/* ── Scroll del contenido central ── */
-.sidebar-scroll{
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 18px 14px 0;
-}
-
-/* ── Separador entre secciones ── */
-.sidebar-divider{
-  height: 1px;
-  background: var(--sb-border);
-  margin: 16px 10px;
-}
-
-/* ── Ítems de navegación ── */
-.sidebar-nav{ display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
-.sidebar-nav--logout{ padding:8px 12px 12px; margin-bottom:0; }
+.sidebar-nav{ display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--space-2); }
+.sidebar-nav--logout{ padding: var(--space-2) var(--space-3) var(--space-3); margin: 0; }
 .sidebar-item{
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--sb-radius);
-  color: var(--sb-text);
-  text-decoration: none;
-  cursor: pointer;
   position: relative;
-  transition: background .16s ease, color .16s ease, transform .16s ease;
+  display: flex; align-items: center; gap: 12px;
+  min-height: 38px; padding: 0 10px;
+  border-radius: var(--sb-radius); color: var(--sb-text); text-decoration: none; cursor: pointer;
+  font-weight: var(--weight-medium);
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
 }
-.sidebar-item:hover{ background: var(--sb-hover); transform: translateX(3px); }
-.sidebar-item.active{
-  background: var(--sb-active-bg); color: var(--sb-active-text); font-weight: 600;
-}
+.sidebar-item:hover{ background: var(--sb-hover); }
+.sidebar-item:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+.sidebar-item.active{ background: var(--sb-active-bg); color: var(--sb-active-text); font-weight: var(--weight-semibold); }
 .sidebar-item.active::before{
-  content:''; position:absolute; left:0; top:8px; bottom:8px; width:3px;
+  content: ''; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 3px;
   background: var(--sb-accent); border-radius: 0 3px 3px 0;
 }
-.sidebar-item i{ width: 18px; text-align: center; font-size: 14.5px; opacity: .85; transition: transform .16s ease; }
-.sidebar-item:hover i{ transform: scale(1.1); }
-.sidebar-item.active i{ opacity: 1; }
+.sidebar-item i{ width: 18px; flex: 0 0 auto; text-align: center; font-size: 15px; color: var(--sb-text-muted); }
+.sidebar-item.active i, .sidebar-item:hover i{ color: inherit; }
 .sidebar-item .label{
-  flex: 1; font-size: 13.5px;
+  flex: 1; min-width: 0; max-width: 200px; font-size: 13.5px;
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-  min-width: 0;
-  opacity: 1; max-width: 200px;
-  transition: opacity .15s ease, max-width .2s ease;
+  transition: opacity var(--duration-fast) ease, max-width var(--duration-base) ease;
 }
 
-/* ── Grupo con submenú (ej. Gestión Institucional → Mejoras) ──
-   .sidebar-group envuelve el .sidebar-item que dispara el submenú (con
-   la flechita .chevron) + el panel .collapse con los .sidebar-subitem. */
+/* Grupo con submenú (dirección → sus áreas) */
 .sidebar-group{ display: flex; flex-direction: column; }
-.sidebar-group .chevron{
-  width: 12px; font-size: 10.5px; opacity: .55;
-  transition: transform .18s ease, opacity .16s ease;
-}
-.sidebar-group .sidebar-item[aria-expanded="true"] .chevron{ transform: rotate(180deg); opacity: .85; }
-
-.collapse{
-  display: grid; grid-template-rows: minmax(0, 0fr); overflow: hidden;
-  transition: grid-template-rows .2s ease;
-}
+.sidebar-group .chevron{ width: 12px; font-size: 10.5px; color: var(--sb-text-muted); transition: transform var(--duration-base) ease; }
+.sidebar-group .sidebar-item[aria-expanded="true"] .chevron{ transform: rotate(180deg); }
+.collapse{ display: grid; grid-template-rows: minmax(0, 0fr); overflow: hidden; transition: grid-template-rows var(--duration-base) ease; }
 .collapse.show{ grid-template-rows: minmax(0, 1fr); }
-/* El truco de 0fr solo colapsa la ÚNICA fila explícita del grid: si los
-   .sidebar-subitem fueran hijos directos, del 2do en adelante caerían en
-   filas implícitas (auto) que no colapsan y quedan visibles encima del
-   siguiente grupo. Por eso van envueltos en .collapse-inner — un solo
-   hijo, una sola fila. */
+/* Un solo hijo (.collapse-inner) = una sola fila del grid: si los subitems
+   fueran hijos directos, las filas implícitas no colapsarían. */
 .collapse-inner{ min-height: 0; overflow: hidden; }
-
 .sidebar-subitem{
   display: flex; align-items: center; gap: 10px;
-  margin: 2px 0 2px 30px;
-  padding: 7px 12px;
-  border-left: 2px solid var(--sb-border);
-  font-size: 12.5px; color: var(--sb-text-muted);
-  text-decoration: none;
+  margin: 1px 0 1px 19px; padding: 6px 12px 6px 14px;
+  border-left: 1px solid var(--sb-border);
+  font-size: var(--text-sm); color: var(--sb-text-muted); text-decoration: none;
   border-radius: 0 var(--sb-radius) var(--sb-radius) 0;
-  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
-.sidebar-subitem:hover{ background: var(--sb-hover); color: var(--sb-text); }
-.sidebar-subitem.active{
-  color: var(--sb-active-text); font-weight: 700; border-color: var(--sb-accent);
-  background: var(--sb-active-bg);
-}
+.sidebar-subitem:hover{ background: var(--sb-hover); color: var(--sb-text); border-color: var(--border-strong); }
+.sidebar-subitem:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+.sidebar-subitem.active{ color: var(--sb-active-text); font-weight: var(--weight-semibold); border-color: var(--sb-accent); background: var(--sb-active-bg); }
 
-/* En modo contraído (solo íconos) no hay espacio para el submenú — se
-   oculta junto con el resto de las etiquetas. */
-.sidebar.collapsed .sidebar-group .chevron,
-.sidebar.collapsed .collapse{ display: none; }
-
-/* ── Encabezado de sección (Direcciones / Recursos) ── */
 .sidebar-section-head{
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px 10px;
-  overflow: hidden;
-  max-height: 34px;
-  opacity: 1;
-  transition: opacity .12s ease, max-height .2s ease, padding .2s ease;
+  padding: 6px 10px 6px; max-height: 30px; overflow: hidden;
+  transition: opacity var(--duration-fast) ease, max-height var(--duration-base) ease, padding var(--duration-base) ease;
 }
 .sidebar-section-title{
-  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--sb-text-muted); font-weight: 700;
-  white-space: nowrap;
+  font-size: 11px; letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  color: var(--sb-text-muted); font-weight: var(--weight-semibold); white-space: nowrap;
 }
 
-/* ── Sin transición al aplicar el estado guardado al cargar la página ──
-   (ver el <script> al inicio de sidebar.php). Cada navegación recarga la
-   página completa, así que sin esto la transición de abajo se dispara en
-   cada carga y se ve como un parpadeo entre expandido y contraído. */
-.sidebar.no-anim,
-.sidebar.no-anim .label,
-.sidebar.no-anim .sidebar-section-head,
-.sidebar.no-anim .collapse,
-.sidebar.no-anim .chevron{
-  transition: none !important;
-}
+/* Sin transición al aplicar el estado guardado en cada carga de página
+   (ver el <script> al inicio de sidebar.php) — evita el parpadeo. */
+.sidebar.no-anim, .sidebar.no-anim .label, .sidebar.no-anim .sidebar-section-head,
+.sidebar.no-anim .collapse, .sidebar.no-anim .chevron{ transition: none !important; }
 
-/* ── Colapsado (solo íconos) ──
-   El ancho, las etiquetas y los encabezados de sección se desvanecen
-   juntos (en vez de un display:none instantáneo) para que colapsar y
-   expandir el panel se sienta como un solo movimiento continuo. */
-.sidebar.collapsed{ width: 72px; }
+/* Contraído a solo íconos (escritorio) */
+.sidebar.collapsed{ width: var(--sidebar-w-collapsed); }
 .sidebar.collapsed .label{ opacity: 0; max-width: 0; }
 .sidebar.collapsed .sidebar-section-head{ opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; }
-.sidebar.collapsed .sidebar-item{ justify-content: center; }
+.sidebar.collapsed .sidebar-item{ justify-content: center; padding: 0; }
+.sidebar.collapsed .sidebar-group .chevron, .sidebar.collapsed .collapse{ display: none; }
 
-/* ── Tooltip del nombre al pasar el mouse (modo contraído) ──
-   position:fixed + posicionado por JS, para escapar del scroll del sidebar
-   (un tooltip absolute dentro de .sidebar-scroll queda recortado). */
+/* Tooltip y flyout del modo contraído: position:fixed (posicionados por
+   paneles.js) para escapar del scroll del panel. */
 .sidebar-tooltip{
-  position: fixed;
-  /* Fondo fijo (no usa --sb-text): en modo oscuro esa variable pasa a ser
-     casi blanca, y dejaría el tooltip blanco sobre blanco. */
-  background: var(--neutral-900);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity .12s ease;
-  z-index: 200;
+  position: fixed; z-index: var(--z-dropdown);
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--neutral-900); color: #fff; box-shadow: var(--shadow-md);
+  font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap;
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--duration-fast) ease;
 }
+body[data-tema="oscuro"] .sidebar-tooltip{ background: var(--bg-raised); }
 .sidebar-tooltip.visible{ opacity: 1; visibility: visible; }
-
-/* ── Flyout de submenú en modo contraído (solo íconos) ──
-   El .collapse normal queda oculto ahí (ver ".sidebar.collapsed .collapse"
-   más abajo — no hay espacio para las etiquetas), así que este flyout es
-   la forma de seguir llegando a esas mismas áreas sin expandir el panel:
-   aparece al pasar el mouse sobre el ícono del grupo (ver paneles.js),
-   con position:fixed por la misma razón que el tooltip de arriba. */
 .sidebar-flyout{
-  position: fixed;
-  min-width: 210px;
-  background: var(--sb-bg);
-  border: 1px solid var(--sb-border);
-  border-radius: var(--sb-radius);
-  box-shadow: var(--shadow-hover);
-  padding: 8px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-50%) translateX(-4px);
-  transition: opacity .12s ease, transform .12s ease;
-  z-index: 210;
+  position: fixed; z-index: var(--z-dropdown); min-width: 210px; padding: var(--space-2);
+  background: var(--sb-bg); border: 1px solid var(--sb-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  opacity: 0; visibility: hidden; transform: translateY(-50%) translateX(-4px);
+  transition: opacity var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 .sidebar-flyout.visible{ opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0); }
 .sidebar-flyout-title{
-  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--sb-text-muted); font-weight: 700;
-  padding: 6px 10px 8px;
+  padding: 6px 10px 8px; font-size: 11px; letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  color: var(--sb-text-muted); font-weight: var(--weight-semibold);
 }
-.sidebar-flyout .sidebar-subitem{ margin: 1px 0; border-left: none; padding: 8px 10px; }
+.sidebar-flyout .sidebar-subitem{ margin: 1px 0; border-left: none; padding: 8px 10px; border-radius: var(--radius-sm); }
 
-/* ── Responsive: sidebar como panel deslizante en pantallas angostas ──
-   Por debajo de este ancho, el sidebar fijo de 268px ya no cabe junto al
-   contenido sin apretarlo (o forzar scroll horizontal de toda la página),
-   así que pasa a ser un panel superpuesto que se abre con el botón ☰ del
-   topbar (ver #btnToggleNav / toggleSidebarMobile en paneles.js).
-   Va al final del archivo a propósito: para ganarle en cascada a las
-   reglas base .sidebar{...} y .sidebar.collapsed{...} de más arriba. */
+
+/* ══ Responsive ═══════════════════════════════════════════ */
+@media (max-width: 1100px){
+  .content-inner{ padding: var(--space-6) var(--space-8) var(--space-16); }
+  .topbar-search-kbd{ display: none; }
+}
+
+/* Panel lateral superpuesto (se abre con ☰) por debajo de 880px */
 @media (max-width: 880px){
-  .content{ padding: 24px 18px 48px; }
-
+  .content-inner{ padding: var(--space-5) var(--space-5) var(--space-12); }
   .sidebar{
-    position: fixed;
-    top: 108px; left: 0; bottom: 0;
-    width: 268px;
-    height: auto;
-    transform: translateX(-100%);
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-    z-index: 150;
+    position: fixed; top: var(--topbar-h); left: 0; bottom: 0; z-index: var(--z-sidebar);
+    width: min(300px, 86vw); height: auto;
+    transform: translateX(-100%); transition: transform var(--duration-slow) var(--ease-in-out);
   }
-  .sidebar.mobile-open{ transform: translateX(0); box-shadow: 12px 0 32px rgba(32,30,29,.18); }
-
+  .sidebar.mobile-open{ transform: translateX(0); box-shadow: var(--shadow-lg); }
   .sidebar-backdrop{
-    position: fixed; top: 108px; left: 0; right: 0; bottom: 0;
-    background: rgba(20,18,22,.4);
-    z-index: 140;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity .22s ease, visibility .22s ease;
+    position: fixed; top: var(--topbar-h); left: 0; right: 0; bottom: 0; z-index: calc(var(--z-sidebar) - 1);
+    background: rgba(24, 18, 22, .45);
+    opacity: 0; visibility: hidden; transition: opacity var(--duration-base) ease, visibility var(--duration-base) ease;
   }
   .sidebar-backdrop.open{ opacity: 1; visibility: visible; }
 }
 
-/* ══════════════════════════════════════════════════════════
-   Asistente flotante "Core" — ver asistente.js
-   ══════════════════════════════════════════════════════════ */
+@media (max-width: 720px){
+  .topbar{ gap: var(--space-2); padding: 0 var(--space-2); }
+  .brand{ margin-right: 0; }
+  .brand-sub{ display: none; }
+  .topbar-search{ display: none; }
+  .topbar-search-icon{ display: inline-flex; }
+  .topbar-divider{ display: none; }
+  .profile{ padding: 4px; }
+  .profile-text, .profile-chevron{ display: none; }
+}
+
+@media (max-width: 480px){
+  .brand-text{ display: none; }
+  .content-inner{ padding: var(--space-4) var(--space-4) var(--space-12); }
+}
+
+
+/* ══ Asistente "Core" (ver asistente.js) ══════════════════ */
 .asistente-fab{
-  position: fixed; right: 24px; bottom: 24px; z-index: 400;
-  width: 58px; height: 58px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700));
-  border: none; cursor: pointer; padding: 0; overflow: hidden;
+  position: fixed; right: 24px; bottom: 24px; z-index: var(--z-overlay);
+  width: 56px; height: 56px; padding: 0; border: none; border-radius: 50%; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; line-height: 1; box-shadow: var(--shadow-hover);
-  transition: transform .2s ease;
+  background: linear-gradient(135deg, var(--primary-solid), var(--primary-active));
+  box-shadow: var(--shadow-md); cursor: pointer;
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) ease;
 }
 .asistente-fab img{ width: 100%; height: 100%; object-fit: cover; }
-.asistente-fab:hover{ transform: scale(1.08); }
+.asistente-fab:hover{ transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.asistente-fab:focus-visible{ outline: none; box-shadow: var(--focus-ring), var(--shadow-md); }
 .asistente-fab .badge-nuevo{
-  position: absolute; top: 2px; right: 4px;
-  width: 13px; height: 13px; border-radius: 50%;
-  background: var(--color-accent-2); border: 2px solid var(--color-bg);
+  position: absolute; top: 2px; right: 4px; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--secondary); border: 2px solid var(--bg-surface);
 }
 
 .asistente-panel{
-  position: fixed; right: 24px; bottom: 92px; z-index: 400;
-  width: 360px; max-width: calc(100vw - 32px);
-  height: 480px; max-height: calc(100vh - 140px);
-  background: var(--color-bg); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-hover); border: 1px solid var(--color-divider);
+  position: fixed; right: 24px; bottom: 92px; z-index: var(--z-overlay);
+  width: 360px; max-width: calc(100vw - 32px); height: 480px; max-height: calc(100dvh - 140px);
   display: flex; flex-direction: column; overflow: hidden;
-  font-family: var(--font-heading);
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  animation: ui-modal-in var(--duration-slow) var(--ease-out);
 }
-/* El "display: flex" de arriba, al tener la misma especificidad que la
-   regla [hidden]{display:none} del navegador, le gana — sin esto el panel
-   nunca se ocultaba de verdad aunque JS sí alternara el atributo. */
+/* display:flex le gana a [hidden] del navegador — sin esto no se ocultaría. */
 .asistente-panel[hidden]{ display: none !important; }
 .asistente-header{
-  display: flex; align-items: center; gap: 10px; padding: 14px 16px; flex: 0 0 auto;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700));
-  color: #fff;
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px; flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--primary-solid), var(--primary-active)); color: #fff;
 }
 .asistente-avatar{
-  width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center; font-size: 20px; flex: 0 0 auto;
-  overflow: hidden;
+  width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.2);
 }
 .asistente-avatar img{ width: 100%; height: 100%; object-fit: cover; }
 .asistente-header strong{ display: block; font-size: 13.5px; }
 .asistente-header small{ opacity: .85; font-size: 11px; }
 .asistente-close{
-  margin-left: auto; background: none; border: none; color: #fff;
-  font-size: 22px; cursor: pointer; line-height: 1; opacity: .85; padding: 0;
-  width: 32px; height: 32px; flex: 0 0 auto;
+  margin-left: auto; width: 32px; height: 32px; flex: 0 0 auto; padding: 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
+  border: none; border-radius: var(--radius-sm); background: none; color: #fff; cursor: pointer; opacity: .85;
 }
 .asistente-close:hover{ opacity: 1; background: rgba(255,255,255,.18); }
+.asistente-close:focus-visible{ outline: 2px solid #fff; outline-offset: -2px; }
 
 .asistente-mensajes{
   flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px;
-  background: var(--color-surface);
+  background: var(--bg-canvas);
 }
-.asistente-msg{ max-width: 84%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
-.asistente-msg.bot{
-  align-self: flex-start; background: var(--color-bg); border: 1px solid var(--color-divider);
-  border-bottom-left-radius: 4px;
-}
-.asistente-msg.user{
-  align-self: flex-end; background: var(--color-accent); color: #fff;
-  border-bottom-right-radius: 4px;
-}
-.asistente-msg a{ display: inline-block; margin-top: 6px; font-weight: 800; text-decoration: underline; color: inherit; }
-.asistente-msg.bot a{ color: var(--color-accent-700); }
+.asistente-msg{ max-width: 84%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.45; }
+.asistente-msg.bot{ align-self: flex-start; background: var(--bg-surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.asistente-msg.user{ align-self: flex-end; background: var(--primary-solid); color: #fff; border-bottom-right-radius: 4px; }
+.asistente-msg a{ display: inline-block; margin-top: 6px; font-weight: var(--weight-semibold); text-decoration: underline; color: inherit; }
+.asistente-msg.bot a{ color: var(--primary-text); }
 
 .asistente-typing{ align-self: flex-start; display: flex; gap: 4px; padding: 10px 13px; }
 .asistente-typing span{
-  width: 6px; height: 6px; border-radius: 50%; background: var(--color-neutral-700); opacity: .5;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); opacity: .5;
   animation: asistente-bounce 1s infinite ease-in-out;
 }
 .asistente-typing span:nth-child(2){ animation-delay: .15s; }
 .asistente-typing span:nth-child(3){ animation-delay: .3s; }
-@keyframes asistente-bounce{
-  0%, 80%, 100%{ transform: translateY(0); opacity: .5; }
-  40%{ transform: translateY(-4px); opacity: 1; }
-}
+@keyframes asistente-bounce{ 0%, 80%, 100%{ transform: translateY(0); opacity: .5; } 40%{ transform: translateY(-4px); opacity: 1; } }
 
-.asistente-form{ display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--color-divider); background: var(--color-bg); flex: 0 0 auto; }
+.asistente-form{ display: flex; gap: 8px; padding: 12px; flex: 0 0 auto; border-top: 1px solid var(--border); background: var(--bg-surface); }
 .asistente-form input{
-  flex: 1; border: 1px solid var(--color-divider); border-radius: 999px; padding: 9px 14px;
-  font-size: 13px; font-family: inherit; background: var(--color-surface); color: var(--color-text);
+  flex: 1; min-width: 0; padding: 9px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-full);
+  background: var(--bg-subtle); color: var(--text); font: inherit; font-size: 13px;
 }
-.asistente-form input:focus{ outline: none; border-color: var(--color-accent); }
+.asistente-form input:focus{ outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
 .asistente-form button{
-  width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--color-accent); color: #fff;
-  cursor: pointer; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
-  transition: background .15s ease;
+  width: 38px; height: 38px; flex: 0 0 auto; border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primary-solid); color: #fff; cursor: pointer; transition: background-color var(--duration-fast) ease;
 }
-.asistente-form button:hover{ background: var(--color-accent-700); }
+.asistente-form button:hover{ background: var(--primary-solid-hover); }
 
-@media (max-width: 480px){
-  .asistente-panel{ right: 16px; left: 16px; width: auto; bottom: 84px; }
-  .asistente-fab{ right: 16px; bottom: 16px; }
+/* En móvil el buscador de la barra superior es la entrada al asistente:
+   el botón flotante se oculta para no tapar contenido ni acciones. */
+@media (max-width: 720px){
+  .asistente-fab{ display: none; }
+  .asistente-panel{ left: 12px; right: 12px; bottom: 12px; top: calc(var(--topbar-h) + 12px); width: auto; height: auto; max-height: none; }
 }

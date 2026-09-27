@@ -22,7 +22,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#9E1F63">
 <script>
   // Si el navegador restaura esta página desde su caché de "atrás/adelante"
@@ -115,29 +115,39 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   })();
 </script>
 
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
 <header class="topbar">
-  <button type="button" class="btn btn-ghost btn-icon" id="btnToggleNav" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar">
+  <button type="button" class="btn btn-ghost btn-icon topbar-menu" id="btnToggleNav" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar" aria-expanded="true">
     <i class="bi bi-list" aria-hidden="true"></i>
   </button>
 
   <a class="brand" href="<?= BASE_URL ?>/" aria-label="Portal CORE — Inicio">
     <span class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt=""></span>
-    <span>
-      <span class="brand-name">PORTAL CORE</span>
+    <span class="brand-text">
+      <span class="brand-name">Portal CORE</span>
       <span class="brand-sub">Coreducación</span>
     </span>
   </a>
 
-  <div class="topbar-clock" aria-hidden="true"><i class="bi bi-clock"></i><span id="topbarClock"></span></div>
+  <!-- Buscador: abre a "Core", el asistente que ya lleva a cualquier
+       sección por palabras clave (ver asistente.js) — no es un buscador
+       de contenido aparte. Reemplaza al reloj que ocupaba este lugar. -->
+  <button type="button" class="topbar-search" data-asistente-open aria-controls="asistentePanel" aria-expanded="false">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <span class="topbar-search-text">Buscar o preguntar a Core…</span>
+    <kbd class="topbar-search-kbd" aria-hidden="true">Ctrl K</kbd>
+  </button>
 
   <div class="right-actions">
+    <button type="button" class="btn btn-ghost btn-icon topbar-search-icon" data-asistente-open aria-controls="asistentePanel" aria-expanded="false" aria-label="Buscar o preguntar a Core">
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </button>
     <button type="button" class="btn btn-ghost btn-icon" id="btnTheme" aria-label="Cambiar entre modo claro y oscuro">
       <i class="bi bi-moon icon-claro" aria-hidden="true"></i>
       <i class="bi bi-sun icon-oscuro" aria-hidden="true"></i>
     </button>
-    <button type="button" class="btn btn-ghost btn-icon btn-bell" id="btnBell" aria-label="Notificaciones">
-      <i class="bi bi-bell" aria-hidden="true"></i><span class="bell-dot"></span>
-    </button>
+    <span class="topbar-divider" aria-hidden="true"></span>
     <button type="button" class="profile" id="btnProfile" data-open="profileDrawer" aria-haspopup="dialog" aria-label="Abrir mi perfil">
       <span class="avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
       <span class="profile-text">
@@ -207,19 +217,21 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   </form>
 </dialog>
 
-<div class="breadcrumb-bar">
-  <div class="breadcrumb-path">
-    <span>Portal CORE</span>
-    <?php if (!empty($titulo)): ?>
-      <span class="sep">/</span>
-      <span class="current"><?= e($titulo) ?></span>
-    <?php endif; ?>
-  </div>
-  <div class="breadcrumb-date" id="breadcrumbDate"></div>
-</div>
-
 <div class="app-shell">
 
   <?php require __DIR__ . '/sidebar.php'; ?>
 
-  <div class="content">
+  <main class="content" id="contenido" tabindex="-1">
+    <div class="content-inner">
+    <?php if (!empty($breadcrumbs)): ?>
+      <nav class="breadcrumbs" aria-label="Ruta de navegación">
+        <ol>
+          <?php foreach ($breadcrumbs as $nivel): ?>
+            <li><?php if ($nivel['enlace']): ?><a href="<?= BASE_URL . e($nivel['ruta']) ?>"><?= e($nivel['label']) ?></a><?php else: ?><span><?= e($nivel['label']) ?></span><?php endif; ?></li>
+          <?php endforeach; ?>
+          <?php $migaActual = $titulo ?? $breadcrumbActual ?? ''; if ($migaActual !== ''): ?>
+            <li aria-current="page"><?= e($migaActual) ?></li>
+          <?php endif; ?>
+        </ol>
+      </nav>
+    <?php endif; ?>
