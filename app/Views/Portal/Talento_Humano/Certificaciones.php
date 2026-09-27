@@ -49,7 +49,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
               <span class="text-muted" style="font-size:12px"> · <?= e((new DateTime($emp['fecha_expedicion']))->format('d/m/Y')) ?></span>
               <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/talento-humano/certificaciones-laborales/descargar?id=<?= (int) $emp['doc_id'] ?>" target="_blank" rel="noopener" title="Descargar"><i class="bi bi-download"></i></a>
               <?php if ($puedeAdministrar): ?>
-                <form action="<?= BASE_URL ?>/talento-humano/certificaciones-laborales/eliminar" method="post" style="display:inline-block" onsubmit="return confirm('¿Eliminar esta certificación?')">
+                <form action="<?= BASE_URL ?>/talento-humano/certificaciones-laborales/eliminar" method="post" style="display:inline-block" data-confirm="¿Eliminar esta certificación?" data-confirm-ok="Eliminar">
                   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                   <input type="hidden" name="doc_id" value="<?= (int) $emp['doc_id'] ?>">
                   <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
@@ -92,7 +92,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                   <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-check-lg"></i> Guardar</button>
                 </form>
               </details>
-              <form action="<?= BASE_URL ?>/talento-humano/empleados/eliminar" method="post" style="display:inline-block" onsubmit="return confirm('¿Eliminar a <?= e(addslashes($emp['nombre_completo'])) ?>? También se borran su hoja de vida, contrato y certificaciones.')">
+              <form action="<?= BASE_URL ?>/talento-humano/empleados/eliminar" method="post" style="display:inline-block" data-confirm="¿Eliminar a <?= e($emp['nombre_completo']) ?>?" data-confirm-text="También se borran su hoja de vida, contrato y certificaciones." data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="volver" value="<?= e($rutaBase) ?>">
                 <input type="hidden" name="id" value="<?= (int) $emp['id'] ?>">

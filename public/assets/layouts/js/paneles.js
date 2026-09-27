@@ -51,50 +51,46 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Panel de perfil: se abre al hacer clic en el perfil de la barra
-  // superior, se cierra con la X, clic afuera (backdrop) o Escape.
+  // Mi perfil: es un drawer del sistema de diseño (<dialog>, ver
+  // portal-header.php) — abrir/cerrar, Esc, overlay y foco los maneja
+  // core/ui.js vía data-open/data-close. Acá solo queda alternar entre ver
+  // los datos y el formulario de edición, sin recargar.
   const btnProfile = document.getElementById('btnProfile');
   const profileDrawer = document.getElementById('profileDrawer');
-  const profileBackdrop = document.getElementById('profileDrawerBackdrop');
-  const profileClose = document.getElementById('profileDrawerClose');
-
-  if (btnProfile && profileDrawer && profileBackdrop) {
-    const abrirPerfil = () => {
-      profileDrawer.classList.add('open');
-      profileBackdrop.classList.add('open');
-      btnProfile.classList.add('open');
-    };
-    const cerrarPerfil = () => {
-      profileDrawer.classList.remove('open');
-      profileBackdrop.classList.remove('open');
-      btnProfile.classList.remove('open');
-    };
-
-    btnProfile.addEventListener('click', abrirPerfil);
-    profileBackdrop.addEventListener('click', cerrarPerfil);
-    if (profileClose) profileClose.addEventListener('click', cerrarPerfil);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') cerrarPerfil();
-    });
-  }
-
-  // Editar perfil (lápiz en el panel): muestra el formulario en vez de
-  // los datos, y viceversa con "Cancelar" — sin recargar la página.
   const perfilVista = document.getElementById('perfilVista');
+  const perfilVistaAcciones = document.getElementById('perfilVistaAcciones');
   const perfilForm = document.getElementById('perfilForm');
+  const perfilDesc = document.getElementById('perfilDesc');
   const btnEditarPerfil = document.getElementById('btnEditarPerfil');
   const btnCancelarPerfil = document.getElementById('btnCancelarPerfil');
-  if (perfilVista && perfilForm && btnEditarPerfil) {
-    btnEditarPerfil.addEventListener('click', function () {
-      perfilVista.hidden = true;
-      perfilForm.hidden = false;
-    });
-    if (btnCancelarPerfil) {
-      btnCancelarPerfil.addEventListener('click', function () {
-        perfilForm.hidden = true;
-        perfilVista.hidden = false;
-      });
+
+  function modoEdicionPerfil(editar) {
+    if (!perfilVista || !perfilForm) return;
+    perfilVista.hidden = editar;
+    if (perfilVistaAcciones) perfilVistaAcciones.hidden = editar;
+    perfilForm.hidden = !editar;
+    if (perfilDesc) perfilDesc.textContent = editar ? 'Actualiza tu nombre y tu foto.' : 'Tu información en el Portal CORE.';
+    if (editar) {
+      const nombre = document.getElementById('perfilNombre');
+      if (nombre) nombre.focus();
+    } else if (btnEditarPerfil) {
+      btnEditarPerfil.focus();
     }
+  }
+  if (btnEditarPerfil) btnEditarPerfil.addEventListener('click', function () { modoEdicionPerfil(true); });
+  if (btnCancelarPerfil) btnCancelarPerfil.addEventListener('click', function () { modoEdicionPerfil(false); });
+  if (profileDrawer) {
+    profileDrawer.addEventListener('ui:open', function () { if (btnProfile) btnProfile.classList.add('open'); });
+    // Al cerrar, siempre vuelve a la vista de datos (no queda "a medio editar").
+    profileDrawer.addEventListener('close', function () {
+      if (btnProfile) btnProfile.classList.remove('open');
+      if (perfilForm && !perfilForm.hidden) {
+        perfilVista.hidden = false;
+        if (perfilVistaAcciones) perfilVistaAcciones.hidden = false;
+        perfilForm.hidden = true;
+        if (perfilDesc) perfilDesc.textContent = 'Tu información en el Portal CORE.';
+      }
+    });
   }
 
   // Vista previa de la foto elegida, antes de guardar.
@@ -132,33 +128,27 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Confirmación antes de cerrar sesión (SweetAlert2, cargado en
-  // portal-footer.php). El aviso de "sesión cerrada" ya lo muestra
-  // login.php al volver, vía el ?salida=1 que agrega AuthController.
+  // Confirmación antes de cerrar sesión (diálogo del sistema, core/ui.js).
+  // /logout exige POST+CSRF (ver AuthController.php), así que el logout
+  // real siempre es el envío de #formCerrarSesion. El aviso de "sesión
+  // cerrada" lo muestra login.php al volver (?salida=1).
   const btnCerrarSesion = document.getElementById('btnCerrarSesion');
   const formCerrarSesion = document.getElementById('formCerrarSesion');
   if (btnCerrarSesion && formCerrarSesion) {
     btnCerrarSesion.addEventListener('click', function (e) {
       e.preventDefault();
-      // /logout exige POST+CSRF (ver AuthController.php) — el link ya no
-      // tiene una URL real que navegar, así que en ambas ramas el logout
-      // de verdad ocurre enviando #formCerrarSesion.
-      if (typeof SwalBrand === 'undefined') {
-        formCerrarSesion.submit(); // sin SweetAlert2, cierra sesión directo
+      if (!window.UI || typeof UI.confirm !== 'function') {
+        formCerrarSesion.submit();
         return;
       }
-      SwalBrand.fire({
-        icon: 'question',
+      UI.confirm({
         title: '¿Cerrar sesión?',
         text: 'Tendrás que volver a ingresar tu correo y contraseña.',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, cerrar sesión',
-        confirmButtonColor: '#d63859', // --color-danger: es la única acción destructiva real del Portal
-        cancelButtonText: 'Cancelar'
-      }).then(function (resultado) {
-        if (resultado.isConfirmed) {
-          formCerrarSesion.submit();
-        }
+        confirmLabel: 'Cerrar sesión',
+        icon: 'bi-box-arrow-right',
+        trigger: btnCerrarSesion
+      }).then(function (ok) {
+        if (ok) formCerrarSesion.submit();
       });
     });
   }

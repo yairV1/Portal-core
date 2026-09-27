@@ -51,7 +51,7 @@
           <?php if ($c['postulacion_nombre']): ?><span class="text-muted"> · vinculado a <?= e($c['postulacion_nombre']) ?></span><?php endif; ?>
           <span class="text-muted"> · vence <?= (new DateTime($c['expira_en']))->format('d/m/Y') ?></span>
         </div>
-        <form action="<?= BASE_URL ?>/contrataciones/eliminar" method="post" onsubmit="return confirm('¿Eliminar este enlace sin usar?')">
+        <form action="<?= BASE_URL ?>/contrataciones/eliminar" method="post" data-confirm="¿Eliminar este enlace sin usar?" data-confirm-ok="Eliminar">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
           <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
           <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer"><i class="bi bi-trash"></i></button>

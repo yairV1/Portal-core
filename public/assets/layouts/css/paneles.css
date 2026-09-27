@@ -1,329 +1,24 @@
 /* ══════════════════════════════════════════════════════════
-   paneles.css — Barra superior (topbar) y layout general
-   El panel lateral vive aparte en sidebar.css
+   paneles.css — Layout del Portal: barra superior, barra de ruta,
+   panel lateral, contenedor de contenido, "Mi perfil" y asistente.
+   Los componentes (botones, campos, tablas, modales…) viven en
+   core/components.css y los tokens en core/tokens.css — acá no se
+   redefinen, solo se usan.
    ══════════════════════════════════════════════════════════ */
 
-:root{
-  --color-bg:#ffffff; --color-surface:#f5f3f4; --color-text:#201e1d;
-  --color-divider: rgba(32,30,29,.14);
-  --color-accent:#9e1f63; --color-accent-100:#fbeef5; --color-accent-200:#f3d6e6;
-  --color-accent-700:#6b123f; --color-accent-800:#4d0c2c; --color-accent-2:#f15a29;
-  --color-neutral-300:#d7d3d3; --color-neutral-700:#605d5d;
-  --font-heading: 'Poppins', system-ui, sans-serif;
-
-  /* Sistema de profundidad reutilizado por tarjetas/cajas de todo el
-     Portal — un solo lugar para que sombras y radios se re-tematicen
-     junto con el resto de la paleta en modo oscuro. */
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --shadow-soft: 0 3px 10px rgba(32,30,29,.07), 0 1px 2px rgba(32,30,29,.05);
-  --shadow-hover: 0 10px 24px rgba(32,30,29,.12), 0 2px 6px rgba(32,30,29,.06);
-  --shadow-accent: 0 10px 24px rgba(158,31,99,.20);
-  /* Anillo de foco de teclado — mismo criterio que el resto del sistema
-     de sombras (derivado del acento), aplicado vía :focus-visible en
-     los componentes interactivos compartidos más abajo. */
-  --shadow-focus: 0 0 0 3px var(--color-accent-100), 0 0 0 1px var(--color-accent);
-
-  /* Colores semánticos de estado — mismos valores que ya usa el login
-     (config/estilo propio de esa pantalla), acá centralizados para que el
-     Portal los reutilice en vez de tonos sueltos sin nombre (ej. los
-     hex fijos que tenía talento-humano.css para sus etiquetas). */
-  --color-success: #1a9e6d; --color-success-bg: #e6f7f0;
-  --color-warning: #c98a00; --color-warning-bg: #fff6e0;
-  --color-danger:  #d63859; --color-danger-bg:  #fdeaee;
-  --color-info:    #2b7fc9; --color-info-bg:    #e8f3fc;
-
-  /* Escala tipográfica y de espaciado documentadas — referencia para
-     componentes nuevos; no se reescribe mecánicamente lo que ya está bien. */
-  --fs-h1: 40px; --fs-h2: 28px; --fs-h3: 20px; --fs-h4: 15px;
-  --fs-body: 14px; --fs-small: 12.5px; --fs-caption: 11px;
-  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px;
+/* Tokens propios del panel lateral, derivados de los semánticos para que
+   cambien solos con el modo oscuro. */
+:root, body{
+  --sb-bg: var(--bg-surface);
+  --sb-border: var(--border);
+  --sb-text: var(--text);
+  --sb-text-muted: var(--text-muted);
+  --sb-hover: var(--bg-muted);
+  --sb-active-bg: var(--primary-subtle);
+  --sb-active-text: var(--primary-text);
+  --sb-accent: var(--primary);
+  --sb-radius: 10px;
 }
-
-/* ── Modo oscuro ──
-   Redefine las mismas variables que ya usan el topbar, el sidebar y las 13
-   vistas del Portal (todas comparten estos nombres), así que con esto solo
-   se re-tematiza todo el sitio sin tocar cada página. Mayor especificidad
-   que un simple ":root" para ganarle al ":root" propio de cada vista. */
-body[data-tema="oscuro"]{
-  color-scheme: dark;
-  --color-bg:#1c1a1f; --color-surface:#26232a; --color-text:#f2f0f2;
-  --color-divider: rgba(255,255,255,.14);
-  --color-accent:#e8558f; --color-accent-100: rgba(232,85,143,.16); --color-accent-200: rgba(232,85,143,.28);
-  --color-accent-700:#ff9dc4; --color-accent-800:#ffd2e8; --color-accent-2:#ff7043;
-  --color-neutral-300:#3a3740; --color-neutral-700:#b5b0b8;
-
-  --sb-bg:#1c1a1f; --sb-border: rgba(255,255,255,.14); --sb-text:#f2f0f2;
-  --sb-text-muted:#9c96a0; --sb-hover:#29262d;
-  --sb-active-bg: rgba(232,85,143,.16); --sb-active-text:#ff9dc4; --sb-accent:#e8558f;
-
-  --shadow-soft: 0 3px 10px rgba(0,0,0,.28), 0 1px 2px rgba(0,0,0,.2);
-  --shadow-hover: 0 10px 24px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.24);
-  --shadow-accent: 0 10px 24px rgba(232,85,143,.24);
-
-  --color-success: #3ddb9b; --color-success-bg: rgba(61,219,155,.16);
-  --color-warning: #ffcf5c; --color-warning-bg: rgba(255,207,92,.16);
-  --color-danger:  #ff7d95; --color-danger-bg:  rgba(255,125,149,.16);
-  --color-info:    #6fb3ec; --color-info-bg:    rgba(111,179,236,.16);
-}
-
-/* SweetAlert2 (avisos de "cerrar sesión", bienvenida, guardado, etc. — ver
-   portal-footer.php) trae su propio tema claro por defecto, ajeno a
-   data-tema — sin esto el toast queda con fondo blanco fijo mientras el
-   resto de la página ya cambió a oscuro. Mismas variables que el resto del
-   sitio para que se vea como una pieza más del sistema, no un parche. */
-body[data-tema="oscuro"] .swal2-popup{
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-body[data-tema="oscuro"] .swal2-title,
-body[data-tema="oscuro"] .swal2-html-container{
-  color: var(--color-text);
-}
-body[data-tema="oscuro"] .swal2-popup.swal2-toast{
-  box-shadow: var(--shadow-hover);
-}
-body[data-tema="oscuro"] .swal2-timer-progress-bar{
-  background: var(--color-accent-200);
-}
-
-*{ box-sizing: border-box; }
-body{ margin:0; font-family: var(--font-heading); background: var(--color-bg); color: var(--color-text); transition: background .15s ease, color .15s ease; }
-
-/* ── Scroll de marca (todo el Portal) ──
-   Antes cada página lo resolvía por su cuenta (o no lo resolvía —
-   inicio.css apuntaba a --color-accent-400/500, tokens que nunca
-   existieron, así que ese estilo nunca se aplicaba y quedaba el
-   scrollbar por defecto del navegador). Va centralizado acá, con los
-   mismos --color-accent-* que ya cambian solos entre claro/oscuro, para
-   que se vea igual de cuidado en cualquier página sin repetirlo. */
-*{
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-accent-200) transparent;
-}
-*::-webkit-scrollbar{ width: 9px; height: 9px; }
-*::-webkit-scrollbar-track{ background: transparent; }
-*::-webkit-scrollbar-thumb{
-  background-color: var(--color-accent-200);
-  border-radius: 999px;
-  transition: background-color .15s ease;
-}
-*::-webkit-scrollbar-thumb:hover{ background-color: var(--color-accent); }
-*::-webkit-scrollbar-corner{ background: transparent; }
-
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  cursor:pointer; border:1px solid var(--color-divider); background:var(--color-bg);
-  padding:6px 10px; color:var(--color-text); font-family: inherit;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 1px 2px rgba(32,30,29,.05);
-  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease;
-}
-.btn-icon{ width:36px; height:36px; padding:0; border-radius: var(--sb-radius); }
-.btn:hover{
-  background: var(--color-accent-100);
-  border-color: var(--color-accent);
-  color: var(--color-accent-700);
-  box-shadow: 0 2px 6px rgba(32,30,29,.08);
-}
-.btn:active{ transform: translateY(1px); }
-.btn-bell{ position:relative; }
-.btn-link{
-  min-height:36px; padding:6px 10px; border-color:transparent;
-  background:transparent; color:var(--color-accent-700); font-size:var(--fs-small); font-weight:800;
-}
-.btn-link:hover{ background:var(--color-accent-100); border-color:var(--color-accent-200); color:var(--color-accent-700); }
-
-/* ── Jerarquía de botones ──
-   .btn a secas ya cumple el rol de "secundario" (borde, sin relleno).
-   .btn-primary generaliza el patrón que antes solo existía local a
-   .profile-drawer-actions; .btn-danger es el mismo patrón con el color
-   semántico de peligro, para acciones destructivas. */
-.btn-primary{
-  background: var(--color-accent); border-color: var(--color-accent); color: #fff;
-}
-.btn-primary:hover{
-  background: var(--color-accent-700); border-color: var(--color-accent-700); color: #fff;
-}
-.btn-danger{
-  background: var(--color-danger); border-color: var(--color-danger); color: #fff;
-}
-.btn-danger:hover{ filter: brightness(.92); color: #fff; }
-
-/* ── Foco de teclado visible ──
-   Fuera del login, el Portal no tenía ningún tratamiento de foco.
-   :focus-visible (no :focus a secas) para que el anillo solo aparezca
-   al navegar con teclado, no al hacer click con mouse. */
-.btn:focus-visible,
-.sidebar-item:focus-visible,
-.pill-tab:focus-visible,
-.tile:focus-visible,
-.profile:focus-visible,
-.tag-outline:focus-visible,
-.table tbody tr:focus-visible{
-  outline: none;
-  box-shadow: var(--shadow-focus);
-}
-
-/* ── Caja con sombra suave reutilizable ──
-   Reemplaza el patrón "border:1px solid var(--color-divider)" que se
-   repetía como estilo en línea en varias vistas (Tableros, Mapa del
-   portal) por una sola clase con el mismo lenguaje visual que el resto
-   de tarjetas del Portal. */
-.box-card{
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-soft);
-  padding: 24px;
-}
-/* Variante sin sombra — para paneles secundarios de una vista que ya
-   tiene un bloque "elevado" protagonista; evita que todo bloque compita
-   por la misma jerarquía visual (regla: como máximo una caja con sombra
-   por pantalla). */
-.box-card--flat{ box-shadow: none; }
-
-/* ── Tile plano-hasta-hover ──
-   Componente único para grillas de elementos clicables (apps, mapa del
-   portal, organigrama, bienestar, accesos rápidos) — antes cada una
-   definía su propia tarjeta casi idéntica con sombra en reposo
-   (.app-card/.sitemap-card/.org-caja/.bienestar-card/.acceso). Sin
-   sombra en reposo y con --shadow-hover solo al pasar el mouse: se ve
-   clicable sin sumar peso visual constante a la grilla. */
-.tile-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-md); }
-.tile{
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 18px; text-align: left;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  color: inherit; text-decoration: none;
-  cursor: pointer;
-  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
-}
-.tile:hover{ box-shadow: var(--shadow-hover); border-color: transparent; transform: translateY(-2px); }
-
-/* ── Tabla — componente único ──
-   Antes vivía copiada (con reglas distintas) en inicio.css, normatividad.css
-   y las 6 CSS de "módulo genérico" — ahora es una sola definición para que
-   toda tabla del Portal se vea igual. */
-.table{
-  width: 100%; border-collapse: separate; border-spacing: 0;
-  font-size: var(--fs-body);
-  background: var(--color-bg); border: 1px solid var(--color-divider);
-  border-radius: var(--radius-lg); box-shadow: var(--shadow-soft);
-}
-.table th{
-  text-align: left; font-size: var(--fs-caption); letter-spacing: .08em; text-transform: uppercase;
-  opacity: .6; padding: 12px; background: var(--color-surface); border-bottom: 2px solid var(--color-divider);
-  white-space: nowrap;
-}
-.table th:first-child{ border-top-left-radius: var(--radius-lg); }
-.table th:last-child{ border-top-right-radius: var(--radius-lg); }
-.table td{ padding: 12px; border-bottom: 1px solid var(--color-divider); font-variant-numeric: tabular-nums; }
-.table tbody tr{ cursor: pointer; transition: background .15s ease; }
-.table tbody tr:hover{ background: var(--color-surface); }
-.table tbody tr:last-child td{ border-bottom: none; }
-
-/* ── Sello de versión ──
-   Para columnas de versión de documento: una insignia rotada, como un
-   sello de trámite institucional, en vez del .tag plano. */
-.tag-stamp{
-  display: inline-block; border: 1.5px solid var(--color-accent); color: var(--color-accent);
-  font-weight: 800; font-size: 10.5px; padding: 2px 7px; border-radius: 3px;
-  transform: rotate(-4deg);
-}
-.table tbody tr:nth-child(even) .tag-stamp{ transform: rotate(3deg); }
-.table tbody tr:nth-child(3n) .tag-stamp{ transform: rotate(-3deg); }
-
-/* ── Etiquetas / estados ──
-   .tag = base neutra (ej. "V2.0"); las variantes semánticas reemplazan los
-   hex sueltos que tenía cada página para "ok/alerta/riesgo". */
-.tag{
-  display: inline-flex; font-size: var(--fs-caption); font-weight: 800;
-  padding: 3px 10px; border-radius: 999px; background: var(--color-surface); color: var(--color-text);
-}
-.tag-accent{ background: var(--color-accent-100); color: var(--color-accent-800); }
-.tag-success{ background: var(--color-success-bg); color: var(--color-success); }
-.tag-warning{ background: var(--color-warning-bg); color: var(--color-warning); }
-.tag-danger{ background: var(--color-danger-bg); color: var(--color-danger); }
-.tag-info{ background: var(--color-info-bg); color: var(--color-info); }
-.tag-outline{
-  display: inline-flex; font-size: var(--fs-caption); padding: 4px 10px; border-radius: 999px;
-  background: transparent; border: 1px solid var(--color-accent); color: var(--color-accent);
-  transition: background .15s ease, color .15s ease;
-}
-.tag-outline:hover{ background: var(--color-accent); color: #fff; }
-
-/* ── Utilidades de texto ──
-   Reemplazan el "opacity:.7"/"color:...;font-weight:800" que se repetía
-   como estilo en línea en varias tablas (Inicio, módulos, Talento Humano). */
-.text-muted{ opacity: .7; }
-.text-accent{ color: var(--color-accent-700); font-weight: 800; }
-
-/* ── KPIs — componente único ──
-   Antes vivía triplicado (con pequeñas diferencias) en inicio.css,
-   talento-humano.css y tableros.css. */
-.kpis{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); overflow: hidden; }
-.kpi{ position: relative; padding: 20px 22px; border-right: 1px solid var(--color-divider); transition: background .15s ease; }
-.kpi::before{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--color-accent); }
-.kpi:hover{ background: var(--color-surface); }
-.kpi-head{ display: flex; align-items: center; gap: 7px; }
-.kpi-ic{ font-size: 13px; color: var(--color-accent); opacity: .85; }
-.kpi-label{ font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; opacity: .55; }
-.kpi-value{ font-weight: 800; font-size: 32px; letter-spacing: -.035em; font-variant-numeric: tabular-nums; padding: 8px 0 4px; }
-.kpi-foot{ display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; }
-.kpi-spark{ flex: 0 0 auto; display: flex; opacity: .85; }
-
-/* ── Barra de progreso ──
-   Reemplaza los <span style="height:6px;background:..."> anidados que se
-   repetían en Talento Humano y Tableros. */
-.progress-cell{ width: 180px; }
-.progress-track{ display: block; height: 6px; background: var(--color-surface); border-radius: 999px; overflow: hidden; }
-.progress-fill{ display: block; height: 6px; background: var(--color-accent); border-radius: 999px; transition: width .6s cubic-bezier(.2,.8,.2,1); }
-
-/* ── Encabezado de página ──
-   Reemplaza el <h1 style="font-size:40px..."> + <p style="opacity:.65..">
-   que se repetía tal cual en Talento Humano, Tableros, Aplicaciones, Mapa,
-   Normatividad y Gestión Documental. */
-.page-title{ font-size: var(--fs-h1); margin: 0 0 8px; }
-.page-desc{ opacity: .65; max-width: 640px; margin: 0 0 26px; }
-.section-title{ margin: 0 0 14px; }
-.subsection{ border-top: 2px solid var(--color-divider); padding-top: 24px; margin-top: 24px; }
-.chip-row{ display: flex; flex-wrap: wrap; gap: 8px; }
-
-/* ── Pestañas en píldora ──
-   Generaliza el patrón que ya usaba Talento Humano (.th-tab) para que
-   Tableros lo reutilice en vez de botones con estilo armado en línea. */
-.pill-tabs{
-  display: flex; flex-wrap: wrap; width: fit-content;
-  background: var(--color-bg); border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md); overflow: hidden;
-}
-.pill-tab{
-  padding: 10px 18px; border: 0; border-right: 1px solid var(--color-divider);
-  cursor: pointer; font-weight: 800; font-size: var(--fs-small); font-family: inherit;
-  background: transparent; color: var(--color-text);
-  transition: background .15s ease, color .15s ease;
-}
-.pill-tab:last-child{ border-right: none; }
-.pill-tab:hover{ background: var(--color-surface); }
-.pill-tab.active{ background: var(--color-accent); color: #fff; }
-
-/* ── Estado vacío ──
-   Formaliza el patrón que ya existía a mano en Gestión Documental (.aviso). */
-.empty-state{
-  border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft);
-  padding: 40px; text-align: center; max-width: 560px; margin: 40px auto 0;
-  transition: box-shadow .2s ease;
-}
-.empty-state:hover{ box-shadow: var(--shadow-hover); }
-.empty-state .ic{ font-size: 34px; padding-bottom: 14px; color: var(--color-accent); animation: empty-state-float 3s ease-in-out infinite; }
-.empty-state h4{ margin: 0 0 4px; }
-.empty-state p{ opacity: .65; margin: 10px 0 0; }
-@keyframes empty-state-float{ 0%, 100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
-@media (prefers-reduced-motion: reduce){ .empty-state .ic{ animation: none; } }
 
 /* ── Ícono luna/sol: se alterna solo con CSS según data-tema ── */
 .icon-oscuro{ display:none; }
@@ -338,14 +33,14 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-divider);
 }
-.brand{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+.brand{ display:flex; align-items:center; gap:10px; color: var(--text); text-decoration:none; border-radius: var(--radius-sm); }
 .brand-logo{
   width:52px; height:36px; flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
 }
 .brand-logo img{ width:100%; height:100%; object-fit:contain; display:block; }
 .brand-name{ display:block; font-weight:700; font-size:15.5px; letter-spacing:-.01em; }
-.brand-sub{ display:block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#83808a; }
+.brand-sub{ display:block; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); }
 
 .topbar-clock{
   flex: 1;
@@ -354,7 +49,7 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   font-variant-numeric: tabular-nums;
   font-size: 13.5px;
   font-weight: 600;
-  color: #83808a;
+  color: var(--text-muted);
   letter-spacing: .02em;
 }
 .topbar-clock i{ font-size: 13px; opacity: .7; }
@@ -370,32 +65,30 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
 }
 .breadcrumb-path{
   display:flex; align-items:center; gap:8px;
-  font-size: 12.5px; font-weight:600; color:#83808a;
+  font-size: 12.5px; font-weight:600; color:var(--text-muted);
 }
 .breadcrumb-path .sep{ opacity:.5; }
 .breadcrumb-path .current{ color: var(--color-text); }
 .breadcrumb-date{
-  font-size: 12.5px; color:#83808a; text-transform:capitalize;
+  font-size: 12.5px; color:var(--text-muted); text-transform:capitalize;
 }
 
 .right-actions{ display:flex; align-items:center; gap:8px; margin-left:auto; }
 .profile{
-  display:flex; align-items:center; gap:9px; padding:5px 10px 5px 5px;
+  display:flex; align-items:center; gap:9px; padding:4px 10px 4px 4px;
   border-radius: var(--sb-radius); cursor:pointer;
-  border: 1px solid transparent;
-  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+  border: 1px solid transparent; background: transparent; color: var(--text);
+  font: inherit; text-align: left;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
-.profile:hover{
-  background: var(--color-surface);
-  border-color: var(--color-divider);
-  box-shadow: 0 2px 6px rgba(32,30,29,.06);
-}
+.profile:hover, .profile.open{ background: var(--bg-muted); }
+.profile:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+.profile-text{ display:block; min-width:0; }
 .avatar{
   width:30px; height:30px; border-radius:999px; position:relative;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700)); color:#fff;
   display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;
-  box-shadow: 0 2px 6px rgba(158,31,99,.35);
-  overflow: hidden; scrollbar-gutter: auto;
+  overflow: hidden;
 }
 /* position:absolute (no depende de flex) — con solo width/height:100% en un
    contenedor flex, una imagen con otra proporción (no cuadrada) no llega a
@@ -403,114 +96,36 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
    relación de aspecto en vez de estirarla a la caja. */
 .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
 .profile-name{ display:block; font-size:12.5px; font-weight:600; }
-.profile-role{ display:block; font-size:10.5px; color:#83808a; }
+.profile-role{ display:block; font-size:10.5px; color:var(--text-muted); }
 .profile-chevron{
-  font-size:11px; color:#83808a; margin-left:2px;
+  font-size:11px; color:var(--text-muted); margin-left:2px;
   transition: transform .18s ease;
 }
 .profile:hover .profile-chevron{ transform: translateY(1px); }
 .profile.open .profile-chevron{ transform: rotate(180deg); }
 .bell-dot{
-  position:absolute; top:4px; right:4px; width:7px; height:7px;
-  background: var(--color-accent-2); border-radius:50%;
-  animation: bell-pulse 2.2s ease-out infinite;
-}
-@keyframes bell-pulse{
-  0%   { box-shadow: 0 0 0 0 rgba(241,90,41,.5); }
-  70%  { box-shadow: 0 0 0 7px rgba(241,90,41,0); }
-  100% { box-shadow: 0 0 0 0 rgba(241,90,41,0); }
+  position:absolute; top:8px; right:8px; width:7px; height:7px;
+  background: var(--secondary); border-radius:50%;
+  box-shadow: 0 0 0 2px var(--bg-surface);
 }
 
-/* ── Panel de perfil (drawer deslizante desde la derecha) ── */
-.profile-drawer-backdrop{
-  position: fixed; inset: 0; background: rgba(20,18,22,.4);
-  opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease;
-  z-index: 300;
+/* ── Mi perfil (contenido del drawer #profileDrawer) ── */
+.profile-summary{ display:flex; align-items:center; gap: var(--space-4); margin-bottom: var(--space-6); }
+.profile-summary-avatar{
+  width:56px; height:56px; flex:0 0 auto; border-radius:50%; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, var(--primary), var(--primary-active)); color:#fff;
+  font-weight:700; font-size:19px;
 }
-.profile-drawer-backdrop.open{ opacity: 1; visibility: visible; }
-
-.profile-drawer{
-  position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 90vw;
-  background: var(--color-bg); box-shadow: -12px 0 32px rgba(32,30,29,.18);
-  z-index: 301; padding: 28px 24px; overflow-y: auto;
-  transform: translateX(100%); transition: transform .25s ease;
-}
-.profile-drawer.open{ transform: translateX(0); }
-
-.profile-drawer-close{
-  position: absolute; top: 20px; right: 20px;
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 1px solid var(--color-divider); background: var(--color-bg);
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-  color: var(--color-text); transition: background .15s ease;
-}
-.profile-drawer-close:hover{ background: var(--color-surface); }
-
-.profile-drawer-avatar{
-  width: 64px; height: 64px; border-radius: 50%; position:relative;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-700));
-  color:#fff; display:flex; align-items:center; justify-content:center;
-  font-weight:800; font-size:22px; margin: 8px 0 16px;
-  box-shadow: 0 3px 10px rgba(158,31,99,.4);
-  overflow: hidden; scrollbar-gutter: auto;
-}
-.profile-drawer-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-.profile-drawer-name-row{ display:flex; align-items:center; gap:8px; }
-.profile-drawer-name{ font-size:19px; font-weight:800; margin:0 0 6px; }
-.profile-drawer-editar{
-  width:26px; height:26px; flex:0 0 auto; margin-bottom:6px;
-  border:1px solid var(--color-divider); background:var(--color-bg); border-radius:50%;
-  display:flex; align-items:center; justify-content:center; font-size:11px;
-  color:#83808a; cursor:pointer; transition:background .15s ease, color .15s ease;
-}
-.profile-drawer-editar:hover{ background:var(--color-accent-100); color:var(--color-accent-700); }
-
-.profile-drawer-desc{ font-size:13px; color:#83808a; line-height:1.5; margin:0 0 22px; }
-
-.profile-drawer-actions{ display:flex; gap:10px; margin-bottom:28px; }
-.profile-drawer-actions .btn{
-  flex:1; height:38px; border-radius: var(--sb-radius); font-size:13px; font-weight:700;
-}
-
-.profile-drawer-fields{ display:flex; flex-direction:column; }
-.profile-drawer-field{
-  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
-  padding: 12px 0; border-bottom: 1px solid var(--color-divider);
-  font-size: 13px;
-}
-.profile-drawer-field .label{ color:#83808a; }
-.profile-drawer-field .value{ font-weight:600; text-align:right; }
-
-/* ── Formulario de edición (nombre/cargo/foto) — oculto hasta el lápiz ── */
-.profile-drawer-form{ display:flex; flex-direction:column; }
-.profile-drawer-avatar-edit{ position:relative; width:64px; }
-.profile-drawer-avatar-img{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
-.profile-drawer-avatar-img img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
-.profile-drawer-foto-btn{
-  position:absolute; right:-2px; bottom:14px; width:24px; height:24px;
-  border-radius:50%; background:var(--color-accent); color:#fff;
-  display:flex; align-items:center; justify-content:center; font-size:10.5px;
-  cursor:pointer; border:2px solid var(--color-bg);
-}
-.profile-drawer-form input[type="file"]{
-  position:absolute; width:1px; height:1px; overflow:hidden; opacity:0;
-}
-
-.profile-drawer-label{
-  display:flex; flex-direction:column; gap:6px;
-  font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
-  color:#83808a; margin-bottom:16px;
-}
-.profile-drawer-label input[type="text"]{
-  font-family:inherit; font-size:14px; font-weight:600; text-transform:none;
-  letter-spacing:normal; color:var(--color-text);
-  padding:9px 12px; border:1px solid var(--color-divider); border-radius:var(--radius-sm);
-  background:var(--color-bg);
-}
-.profile-drawer-label input[type="text"]:focus-visible{
-  outline:none; box-shadow:var(--shadow-focus); border-color:var(--color-accent);
-}
+.profile-summary-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.profile-summary-name{ margin:0; font-size: var(--text-lg); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.profile-summary-role{ margin:4px 0 0; font-size: var(--text-sm); color: var(--text-muted); }
+.profile-fields{ margin:0; border:1px solid var(--border); border-radius: var(--radius-md); }
+.profile-fields > div{ display:flex; justify-content:space-between; align-items:baseline; gap: var(--space-4); padding: 12px 14px; }
+.profile-fields > div + div{ border-top:1px solid var(--border); }
+.profile-fields dt{ font-size: var(--text-sm); color: var(--text-muted); }
+.profile-fields dd{ margin:0; font-weight: var(--weight-semibold); text-align:right; word-break: break-word; }
+.profile-photo-edit{ display:flex; align-items:center; gap: var(--space-4); }
 
 /* ── Layout general: sidebar + contenido ──
    64px del topbar + 44px de la barra de ruta = 108px de encabezado fijo. */
@@ -531,13 +146,6 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   .breadcrumb-bar{ padding: 0 14px; }
   .breadcrumb-date{ display: none; }
 
-  /* .table en pantallas angostas: las cabeceras no rotan a varias
-     líneas (white-space:nowrap arriba), así que en vez de comprimir
-     columnas hasta ilegibles, la tabla se vuelve su propia caja con
-     scroll horizontal — solo acá, no en escritorio (ahí "display:block"
-     dejaba un espacio en blanco flotando cuando el contenido real
-     pesaba menos que el 100% del ancho). */
-  .table{ display: block; overflow-x: auto; }
 }
 
 
@@ -549,17 +157,6 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
    color, y perfil de usuario abajo con menú desplegable.
    ══════════════════════════════════════════════════════════ */
 
-:root{
-  --sb-bg: #ffffff;
-  --sb-border: #e8e6e9;
-  --sb-text: #201e1d;
-  --sb-text-muted: #837e86;
-  --sb-hover: #f5f3f4;
-  --sb-active-bg: #fbeef5;
-  --sb-active-text: #9e1f63;
-  --sb-accent: #9e1f63;
-  --sb-radius: 12px;
-}
 
 .sidebar{
   width: 268px;
@@ -571,7 +168,7 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   border-right: 1px solid var(--sb-border);
   display: flex;
   flex-direction: column;
-  font-family: 'Poppins', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   color: var(--sb-text);
   transition: width .25s cubic-bezier(.4,0,.2,1);
@@ -710,7 +307,7 @@ body[data-tema="oscuro"] .icon-oscuro{ display:inline; }
   position: fixed;
   /* Fondo fijo (no usa --sb-text): en modo oscuro esa variable pasa a ser
      casi blanca, y dejaría el tooltip blanco sobre blanco. */
-  background: #201e1d;
+  background: var(--neutral-900);
   color: #fff;
   padding: 6px 10px;
   border-radius: 8px;

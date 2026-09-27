@@ -42,7 +42,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                 onclick='gdEditarCarpeta(<?= (int) $carpetaActualDoc['id'] ?>, <?= json_encode($carpetaActualDoc['label'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
           <i class="bi bi-pencil-square"></i>
         </button>
-        <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta carpeta? Dejará de verse, junto con lo que tenga dentro.')">
+        <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" data-confirm="¿Eliminar esta carpeta?" data-confirm-text="Dejará de verse, junto con lo que tenga dentro." data-confirm-ok="Eliminar">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
           <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActualDoc['id'] ?>">
           <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" title="Eliminar carpeta"><i class="bi bi-trash"></i></button>
@@ -96,7 +96,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                       onclick='gdEditarCarpeta(<?= (int) $c['id'] ?>, <?= json_encode($c['label'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                 <i class="bi bi-pencil-square"></i>
               </button>
-              <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta carpeta? Dejará de verse, junto con lo que tenga dentro.')">
+              <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" data-confirm="¿Eliminar esta carpeta?" data-confirm-text="Dejará de verse, junto con lo que tenga dentro." data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
                 <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" title="Eliminar"><i class="bi bi-trash"></i></button>
@@ -164,7 +164,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                       onclick='gdEditarDoc(<?= (int) $arc["id"] ?>, <?= json_encode($arc["nombre"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["tipo"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["version"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["responsable"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["fecha"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                 <i class="bi bi-pencil-square"></i>
               </button>
-              <form action="<?= BASE_URL ?>/documentos/eliminar" method="post" onsubmit="return confirm('¿Eliminar este documento?')">
+              <form action="<?= BASE_URL ?>/documentos/eliminar" method="post" data-confirm="¿Eliminar este documento?" data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="archivo_id" value="<?= (int) $arc['id'] ?>">
                 <input type="hidden" name="volver" value="/gestion-documental">
@@ -187,72 +187,128 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
       $estaEnAreaDoc = $carpetaActualDoc && $carpetaActualDoc['parent_id'] !== null;
 ?>
 <?php if ($esAdminDoc && $estaEnAreaDoc): ?>
-  <div style="margin-top:20px">
-    <button type="button" class="doc-btn doc-btn--primary doc-modal-trigger" onclick="document.getElementById('gdAgregarDoc').showModal()">
-      <i class="bi bi-plus-lg"></i> Agregar documento
+  <div class="page-actions gd-agregar">
+    <button type="button" class="btn btn-primary" data-open="gdAgregarDoc" aria-haspopup="dialog">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar documento
     </button>
   </div>
 
-  <dialog id="gdAgregarDoc" class="doc-modal">
-    <div class="doc-modal-body">
-      <h4>Agregar documento</h4>
-      <form action="<?= BASE_URL ?>/documentos/crear" method="post" style="display:flex;flex-direction:column;gap:10px">
-        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-        <input type="hidden" name="tipo" value="documental">
-        <input type="hidden" name="volver" value="/gestion-documental">
-        <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActualDoc['id'] ?>">
-        <input type="text" name="nombre" placeholder="Nombre del documento" required class="doc-input">
-        <input type="text" name="tipo_doc" placeholder="Tipo (ej: Formato)" class="doc-input">
-        <input type="text" name="version" placeholder="v1.0" class="doc-input">
-        <input type="text" name="responsable" placeholder="Responsable" class="doc-input">
-        <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" class="doc-input">
-        <p class="text-muted" style="margin:0;font-size:11.5px">Después de crearlo podrás adjuntarle el archivo desde la lista.</p>
-        <div class="doc-modal-actions">
-          <button type="button" class="doc-btn doc-btn--secondary" onclick="this.closest('dialog').close()">Cancelar</button>
-          <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-plus-lg"></i> Agregar</button>
+  <dialog id="gdAgregarDoc" class="modal" aria-labelledby="gdAgregarDocT">
+    <form action="<?= BASE_URL ?>/documentos/crear" method="post">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <input type="hidden" name="tipo" value="documental">
+      <input type="hidden" name="volver" value="/gestion-documental">
+      <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActualDoc['id'] ?>">
+      <header class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="gdAgregarDocT">Agregar documento</h2>
+          <p class="modal-desc">Después de crearlo podrás adjuntarle el archivo desde la lista.</p>
         </div>
-      </form>
-    </div>
+        <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </header>
+      <div class="modal-body form-stack">
+      <div class="field">
+        <label class="field-label" for="gdAgregarDocNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+        <input class="input" type="text" name="nombre" id="gdAgregarDocNombre" required placeholder="Ej. Procedimiento de compras">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="gdAgregarDocTipo">Tipo <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="tipo_doc" id="gdAgregarDocTipo" placeholder="Ej. Formato">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdAgregarDocVersion">Versión <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="version" id="gdAgregarDocVersion" placeholder="v1.0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdAgregarDocResponsable">Responsable <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="responsable" id="gdAgregarDocResponsable" placeholder="Nombre de quien lo gestiona">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdAgregarDocFecha">Fecha</label>
+          <input class="input" type="date" name="fecha" id="gdAgregarDocFecha" value="<?= date('Y-m-d') ?>">
+        </div>
+      </div>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar documento</button>
+      </footer>
+    </form>
   </dialog>
 <?php endif; ?>
 
 <?php if ($esAdminDoc): ?>
-  <dialog id="gdEditarDocDialog" class="doc-modal">
-    <div class="doc-modal-body">
-      <h4>Editar documento</h4>
-      <form action="<?= BASE_URL ?>/documentos/editar" method="post" style="display:flex;flex-direction:column;gap:10px">
-        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-        <input type="hidden" name="volver" value="/gestion-documental">
-        <input type="hidden" name="archivo_id" id="gdEditarDocId">
-        <input type="text" name="nombre" id="gdEditarDocNombre" placeholder="Nombre" required class="doc-input">
-        <input type="text" name="tipo_doc" id="gdEditarDocTipo" placeholder="Tipo" class="doc-input">
-        <input type="text" name="version" id="gdEditarDocVersion" placeholder="v1.0" class="doc-input">
-        <input type="text" name="responsable" id="gdEditarDocResponsable" placeholder="Responsable" class="doc-input">
-        <input type="date" name="fecha" id="gdEditarDocFecha" class="doc-input">
-        <div class="doc-modal-actions">
-          <button type="button" class="doc-btn doc-btn--secondary" onclick="this.closest('dialog').close()">Cancelar</button>
-          <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-check-lg"></i> Guardar</button>
+  <dialog id="gdEditarDocDialog" class="modal" aria-labelledby="gdEditarDocT">
+    <form action="<?= BASE_URL ?>/documentos/editar" method="post">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <input type="hidden" name="volver" value="/gestion-documental">
+      <input type="hidden" name="archivo_id" id="gdEditarDocId">
+      <header class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="gdEditarDocT">Editar documento</h2>
+          <p class="modal-desc">Actualiza los datos del documento. El archivo adjunto no cambia.</p>
         </div>
-      </form>
-    </div>
+        <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </header>
+      <div class="modal-body form-stack">
+      <div class="field">
+        <label class="field-label" for="gdEditarDocNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+        <input class="input" type="text" name="nombre" id="gdEditarDocNombre" required placeholder="Ej. Procedimiento de compras">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="gdEditarDocTipo">Tipo <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="tipo_doc" id="gdEditarDocTipo" placeholder="Ej. Formato">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdEditarDocVersion">Versión <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="version" id="gdEditarDocVersion" placeholder="v1.0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdEditarDocResponsable">Responsable <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" name="responsable" id="gdEditarDocResponsable" placeholder="Nombre de quien lo gestiona">
+        </div>
+        <div class="field">
+          <label class="field-label" for="gdEditarDocFecha">Fecha</label>
+          <input class="input" type="date" name="fecha" id="gdEditarDocFecha">
+        </div>
+      </div>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar cambios</button>
+      </footer>
+    </form>
   </dialog>
 
-  <dialog id="gdEditarCarpetaDialog" class="doc-modal">
-    <div class="doc-modal-body">
-      <h4>Renombrar carpeta</h4>
-      <form action="<?= BASE_URL ?>/gestion-documental/carpetas/editar" method="post" style="display:flex;flex-direction:column;gap:10px">
-        <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-        <input type="hidden" name="carpeta_id" id="gdEditarCarpetaId">
-        <input type="text" name="nombre" id="gdEditarCarpetaNombre" placeholder="Nombre de la carpeta" required class="doc-input">
-        <div class="doc-modal-actions">
-          <button type="button" class="doc-btn doc-btn--secondary" onclick="this.closest('dialog').close()">Cancelar</button>
-          <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-check-lg"></i> Guardar</button>
+  <dialog id="gdEditarCarpetaDialog" class="modal modal-sm" aria-labelledby="gdEditarCarpetaT">
+    <form action="<?= BASE_URL ?>/gestion-documental/carpetas/editar" method="post">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <input type="hidden" name="carpeta_id" id="gdEditarCarpetaId">
+      <header class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="gdEditarCarpetaT">Renombrar carpeta</h2>
         </div>
-      </form>
-    </div>
+        <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </header>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label" for="gdEditarCarpetaNombre">Nombre de la carpeta <span class="req" aria-hidden="true">*</span></label>
+          <input class="input" type="text" name="nombre" id="gdEditarCarpetaNombre" required>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
+      </footer>
+    </form>
   </dialog>
 
   <script>
+    // Llenan el modal de edición con los datos de la fila y lo abren con
+    // el componente del sistema (core/ui.js: foco, Esc, overlay, animación
+    // y devolución del foco al botón al cerrar).
     function gdEditarDoc(id, nombre, tipo, version, responsable, fecha) {
       document.getElementById('gdEditarDocId').value = id;
       document.getElementById('gdEditarDocNombre').value = nombre || '';
@@ -260,12 +316,12 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
       document.getElementById('gdEditarDocVersion').value = version || '';
       document.getElementById('gdEditarDocResponsable').value = responsable || '';
       document.getElementById('gdEditarDocFecha').value = fecha || '';
-      document.getElementById('gdEditarDocDialog').showModal();
+      UI.open('gdEditarDocDialog', document.activeElement);
     }
     function gdEditarCarpeta(id, nombre) {
       document.getElementById('gdEditarCarpetaId').value = id;
       document.getElementById('gdEditarCarpetaNombre').value = nombre || '';
-      document.getElementById('gdEditarCarpetaDialog').showModal();
+      UI.open('gdEditarCarpetaDialog', document.activeElement);
     }
   </script>
 <?php endif; ?>

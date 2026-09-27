@@ -180,10 +180,10 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
             <span class="t"><?= e($p['titulo']) ?></span>
             <?php if ($p['meta']): ?><span class="m"><?= e($p['meta']) ?></span><?php endif; ?>
           </span>
-          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form">
+          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este pendiente?" data-confirm-ok="Eliminar">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" title="Eliminar" onclick="return confirm('¿Eliminar este pendiente?')"><i class="fa-solid fa-xmark"></i></button>
+            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
           </form>
         </div>
       <?php endforeach; endif; ?>

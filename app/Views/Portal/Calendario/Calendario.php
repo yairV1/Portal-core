@@ -165,7 +165,7 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
 
     <button type="submit" class="btn btn-primary" id="calPopSubmitBtn"><i class="bi bi-check-lg"></i> Crear evento</button>
   </form>
-  <form action="<?= BASE_URL ?>/calendario/eliminar-evento" method="post" class="cal-pop-delete" id="calPopDeleteForm" hidden onsubmit="return confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')">
+  <form action="<?= BASE_URL ?>/calendario/eliminar-evento" method="post" class="cal-pop-delete" id="calPopDeleteForm" hidden data-confirm="¿Eliminar este evento?" data-confirm-text="Esta acción no se puede deshacer." data-confirm-ok="Eliminar">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="hidden" name="id" id="calPopDeleteId" value="">

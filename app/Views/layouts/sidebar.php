@@ -172,7 +172,7 @@ if (isset($pdo)) {
               data-bs-toggle="collapse" role="button"
               aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
               <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
-              <i class="fa-solid fa-chevron-down chevron"></i>
+              <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
             </a>
             <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
               <div class="collapse-inner">
@@ -200,7 +200,7 @@ if (isset($pdo)) {
        normal ya no sirve — el link dispara el submit de este form oculto. -->
   <div class="sidebar-nav sidebar-nav--logout">
     <a href="#" class="sidebar-item" id="btnCerrarSesion">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Cerrar sesión</span>
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="label">Cerrar sesión</span>
     </a>
     <form id="formCerrarSesion" method="POST" action="<?= BASE_URL ?>/logout" style="display:none">
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">

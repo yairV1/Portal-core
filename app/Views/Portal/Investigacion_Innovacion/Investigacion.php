@@ -96,7 +96,7 @@ $heroDesc = $moduloDesc ?: 'Proyectos, publicaciones y convocatorias de investig
               <span class="meta"><?= (int) $c['total_archivos'] ?> documento<?= ((int) $c['total_archivos'] === 1) ? '' : 's' ?></span>
             </a>
             <?php if ($esAdminDoc): ?>
-              <form action="<?= BASE_URL ?>/investigacion-innovacion/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta categoría y TODO lo que tenga dentro?')">
+              <form action="<?= BASE_URL ?>/investigacion-innovacion/carpetas/eliminar" method="post" data-confirm="¿Eliminar esta categoría?" data-confirm-text="También se eliminará todo lo que tenga dentro." data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
@@ -147,7 +147,7 @@ $heroDesc = $moduloDesc ?: 'Proyectos, publicaciones y convocatorias de investig
                 <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/investigacion-innovacion') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
               <?php endif; ?>
               <?php if ($esAdminDoc && $a['origen'] === 'carpeta'): ?>
-                <form action="<?= BASE_URL ?>/investigacion-innovacion/carpetas/eliminar" method="post" onsubmit="return confirm('¿Eliminar este documento?')">
+                <form action="<?= BASE_URL ?>/investigacion-innovacion/carpetas/eliminar" method="post" data-confirm="¿Eliminar este documento?" data-confirm-ok="Eliminar">
                   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                   <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                   <input type="hidden" name="archivo_id" value="<?= (int) $a['id'] ?>">

@@ -109,7 +109,7 @@ $campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibl
               </form>
             </details>
             <?php if ((int) $u['id'] !== (int) $_SESSION['usuario_id']): ?>
-              <form action="<?= BASE_URL ?>/usuarios/eliminar" method="post" style="display:inline-block" onsubmit="return confirm('¿Eliminar a <?= e(addslashes($u['nombre'])) ?>? No podrá volver a iniciar sesión.')">
+              <form action="<?= BASE_URL ?>/usuarios/eliminar" method="post" style="display:inline-block" data-confirm="¿Eliminar a <?= e($u['nombre']) ?>?" data-confirm-text="No podrá volver a iniciar sesión." data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
                 <button type="submit" class="btn btn-danger btn-icon" aria-label="Eliminar usuario"><i class="bi bi-trash"></i></button>

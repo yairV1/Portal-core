@@ -37,7 +37,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
 <?php else: ?>
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
     <span class="text-muted"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu Google Drive está conectado.</span>
-    <form action="<?= BASE_URL ?>/gestion-documental/drive/desconectar" method="post" onsubmit="return confirm('¿Desconectar tu Google Drive? Podrás volver a conectarlo cuando quieras.')">
+    <form action="<?= BASE_URL ?>/gestion-documental/drive/desconectar" method="post" data-confirm="¿Desconectar tu Google Drive?" data-confirm-text="Podrás volver a conectarlo cuando quieras." data-confirm-ok="Desconectar">
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
       <button type="submit" class="doc-btn doc-btn--secondary"><i class="bi bi-x-circle"></i> Desconectar</button>
     </form>

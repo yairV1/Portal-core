@@ -61,10 +61,10 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
             <span class="t"><span class="tag <?= e($tipoClase) ?> soporte-tag"><?= e($tipoLabel) ?></span><?= e($s['titulo']) ?></span>
             <?php if ($s['descripcion']): ?><span class="m"><?= e($s['descripcion']) ?></span><?php endif; ?>
           </span>
-          <form action="<?= BASE_URL ?>/soportes/eliminar" method="post" class="pendiente-eliminar-form">
+          <form action="<?= BASE_URL ?>/soportes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este soporte?" data-confirm-ok="Eliminar">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" title="Eliminar" onclick="return confirm('¿Eliminar este soporte?')"><i class="fa-solid fa-xmark"></i></button>
+            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
           </form>
         </div>
       <?php endforeach; endif; ?>
@@ -102,10 +102,10 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'tag-danger'], 'mejora' => ['Mejora', 'tag-i
             <span class="t"><?= e($p['titulo']) ?></span>
             <?php if ($p['meta']): ?><span class="m"><?= e($p['meta']) ?></span><?php endif; ?>
           </span>
-          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form">
+          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este pendiente?" data-confirm-ok="Eliminar">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" title="Eliminar" onclick="return confirm('¿Eliminar este pendiente?')"><i class="fa-solid fa-xmark"></i></button>
+            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
           </form>
         </div>
       <?php endforeach; endif; ?>

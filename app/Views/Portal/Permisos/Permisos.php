@@ -11,8 +11,10 @@
 </p>
 
 <?php if (isset($_GET['guardado'])): ?>
-  <div class="empty-state" style="margin:0 0 24px;padding:16px;text-align:left;max-width:none">
-    <p style="margin:0"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Permisos guardados.</p>
+  <div class="alert alert-success" role="status">
+    <i class="bi bi-check-circle-fill alert-icon" aria-hidden="true"></i>
+    <div class="alert-content"><p class="alert-title">Permisos guardados</p></div>
+    <button type="button" class="alert-close" data-dismiss="alert" aria-label="Cerrar aviso"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
   </div>
 <?php elseif (is_string($_GET['error'] ?? null)): ?>
   <?php
@@ -25,8 +27,9 @@
   ];
   $textoError = $mensajesError[$_GET['error']] ?? 'No se pudo guardar, intenta de nuevo.';
   ?>
-  <div class="empty-state" style="margin:0 0 24px;padding:16px;text-align:left;max-width:none">
-    <p style="margin:0"><i class="bi bi-exclamation-triangle-fill" style="color:var(--color-accent-2)"></i> <?= e($textoError) ?></p>
+  <div class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle-fill alert-icon" aria-hidden="true"></i>
+    <div class="alert-content"><p class="alert-text"><?= e($textoError) ?></p></div>
   </div>
 <?php endif; ?>
 

@@ -50,3 +50,6 @@
   .gd-actions{ flex-wrap:wrap; justify-content:flex-end; row-gap:6px }
   .gd-upload-inline{ flex:1 1 100%; justify-content:flex-end }
 }
+
+/* Botón "Agregar documento" bajo la lista de un área (ver Documental.php). */
+.gd-agregar{ margin-top: 20px; }

@@ -1,6 +1,8 @@
-:root{
-    --magenta:#9E1F63; --magenta-dark:#6E1747;
-    --orange:#F15A29; --orange-dark:#C23F16;
+/* Colores de marca desde core/tokens.css (compartidos con Portal y Login);
+     papel, tinta y líneas son la personalidad propia de las landings. */
+  :root{
+    --magenta:var(--brand-magenta-600); --magenta-dark:var(--brand-magenta-800);
+    --orange:var(--brand-orange-500); --orange-dark:var(--brand-orange-700);
     --ink:#1A1A1A; --paper:#FBF8F6; --paper-2:#F1E6E0;
     --line:#E4D6DA; --text:#2B2226; --text-soft:#7C6A70;
   }

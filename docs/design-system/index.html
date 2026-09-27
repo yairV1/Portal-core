@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de diseño — Portal CORE</title>
+<!--
+  Guía viva del sistema de diseño de COREDUCACIÓN. Usa los MISMOS archivos
+  que el Portal (public/assets/core/*), así que lo que se ve acá es lo que
+  ven las vistas. Ábrela directo en el navegador (file://) o con cualquier
+  servidor estático. No depende de PHP, de la BD ni de una sesión.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../../public/assets/core/tokens.css">
+<link rel="stylesheet" href="../../public/assets/core/components.css">
+<style>
+  /* Solo maquetación de esta guía — nada de esto es parte del sistema. */
+  .ds-shell{ max-width: 1120px; margin: 0 auto; padding: 32px 24px 96px; }
+  .ds-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom: 32px; }
+  .ds-section{ margin-top: 48px; }
+  .ds-section > h2{ font-size: var(--text-xl); margin: 0 0 4px; }
+  .ds-section > p.ds-lead{ color: var(--text-muted); margin: 0 0 20px; max-width: 70ch; }
+  .ds-row{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom: 16px; }
+  .ds-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px; }
+  .ds-swatch{ border:1px solid var(--border); border-radius: var(--radius-md); overflow:hidden; background: var(--bg-surface); }
+  .ds-swatch span{ display:block; height:56px; }
+  .ds-swatch small{ display:block; padding:8px 10px; font-size:12px; color: var(--text-muted); font-family: ui-monospace, monospace; }
+  .ds-type p{ margin: 6px 0; }
+  .ds-label{ font-size: var(--text-xs); font-weight:600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-subtle); margin: 20px 0 10px; }
+  .ds-canvas{ background: var(--bg-canvas); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+</style>
+</head>
+<body>
+<div class="ds-shell">
+
+  <div class="ds-top">
+    <div>
+      <p class="page-eyebrow">COREDUCACIÓN</p>
+      <h1 class="page-title">Sistema de diseño</h1>
+      <p class="page-desc" style="margin:6px 0 0">Tokens y componentes compartidos por el Portal, el Login y las Landings.</p>
+    </div>
+    <div class="segmented" data-tabs aria-label="Tema">
+      <button type="button" class="segmented-item is-active" data-tab="claro" id="dsClaro"><i class="bi bi-sun"></i> Claro</button>
+      <button type="button" class="segmented-item" data-tab="oscuro" id="dsOscuro"><i class="bi bi-moon"></i> Oscuro</button>
+    </div>
+  </div>
+
+  <!-- ─────────── Color ─────────── -->
+  <section class="ds-section" id="color">
+    <h2>Color</h2>
+    <p class="ds-lead">Magenta institucional como primario y naranja como secundario. Los estados tienen tres tonos: base (ícono), sutil (fondo) y texto (con contraste AA sobre el sutil).</p>
+    <div class="ds-grid">
+      <div class="ds-swatch"><span style="background:var(--primary)"></span><small>--primary</small></div>
+      <div class="ds-swatch"><span style="background:var(--primary-subtle)"></span><small>--primary-subtle</small></div>
+      <div class="ds-swatch"><span style="background:var(--secondary)"></span><small>--secondary</small></div>
+      <div class="ds-swatch"><span style="background:var(--bg-canvas)"></span><small>--bg-canvas</small></div>
+      <div class="ds-swatch"><span style="background:var(--bg-surface)"></span><small>--bg-surface</small></div>
+      <div class="ds-swatch"><span style="background:var(--bg-muted)"></span><small>--bg-muted</small></div>
+      <div class="ds-swatch"><span style="background:var(--text)"></span><small>--text</small></div>
+      <div class="ds-swatch"><span style="background:var(--text-muted)"></span><small>--text-muted</small></div>
+      <div class="ds-swatch"><span style="background:var(--border-strong)"></span><small>--border-strong</small></div>
+      <div class="ds-swatch"><span style="background:var(--success)"></span><small>--success</small></div>
+      <div class="ds-swatch"><span style="background:var(--warning)"></span><small>--warning</small></div>
+      <div class="ds-swatch"><span style="background:var(--danger)"></span><small>--danger</small></div>
+      <div class="ds-swatch"><span style="background:var(--info)"></span><small>--info</small></div>
+    </div>
+  </section>
+
+  <!-- ─────────── Tipografía ─────────── -->
+  <section class="ds-section ds-type" id="tipografia">
+    <h2>Tipografía</h2>
+    <p class="ds-lead">Poppins en el Portal. Ocho tamaños, cuatro pesos.</p>
+    <p style="font-size:var(--text-3xl);font-weight:700;letter-spacing:-.02em">Título de página — text-3xl</p>
+    <p style="font-size:var(--text-xl);font-weight:600">Título de sección — text-xl</p>
+    <p style="font-size:var(--text-lg);font-weight:600">Título de modal / tarjeta — text-lg</p>
+    <p style="font-size:var(--text-base)">Texto de cuerpo — text-base (14px). Se usa para párrafos, celdas y controles.</p>
+    <p style="font-size:var(--text-sm);color:var(--text-muted)">Texto secundario y ayudas — text-sm</p>
+    <p class="page-eyebrow">Etiqueta en mayúscula — text-xs</p>
+  </section>
+
+  <!-- ─────────── Botones ─────────── -->
+  <section class="ds-section" id="botones">
+    <h2>Botones</h2>
+    <p class="ds-lead">Una sola acción primaria por vista o diálogo. Las destructivas en listados usan la variante suave y piden confirmación.</p>
+    <div class="ds-row">
+      <button class="btn btn-primary"><i class="bi bi-plus-lg"></i> Primario</button>
+      <button class="btn">Secundario</button>
+      <button class="btn btn-ghost"><i class="bi bi-funnel"></i> Ghost</button>
+      <button class="btn btn-link">Enlace</button>
+      <button class="btn btn-danger-soft"><i class="bi bi-trash"></i> Eliminar</button>
+      <button class="btn btn-danger">Eliminar definitivamente</button>
+    </div>
+    <div class="ds-row">
+      <button class="btn btn-primary btn-sm">Pequeño</button>
+      <button class="btn btn-primary">Mediano</button>
+      <button class="btn btn-primary btn-lg">Grande</button>
+      <button class="btn btn-icon" aria-label="Editar"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
+      <button class="btn btn-ghost btn-icon" aria-label="Más"><i class="bi bi-three-dots"></i></button>
+    </div>
+    <div class="ds-row">
+      <button class="btn btn-primary is-loading" aria-busy="true">Guardando</button>
+      <button class="btn is-loading" aria-busy="true">Cargando</button>
+      <button class="btn btn-primary" disabled>Deshabilitado</button>
+      <button class="btn" disabled>Deshabilitado</button>
+    </div>
+  </section>
+
+  <!-- ─────────── Campos ─────────── -->
+  <section class="ds-section" id="campos">
+    <h2>Campos de formulario</h2>
+    <p class="ds-lead">Siempre con etiqueta visible (el placeholder es solo un ejemplo). Ayuda y error debajo del campo.</p>
+    <div class="box-card">
+      <form class="form-stack" onsubmit="event.preventDefault()">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label" for="dsNombre">Nombre completo <span class="req">*</span></label>
+            <input class="input" id="dsNombre" placeholder="Ej. María Fernanda Ríos">
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsCorreo">Correo institucional <span class="req">*</span></label>
+            <input class="input" id="dsCorreo" type="email" value="maria@coreducacion" aria-invalid="true" aria-describedby="dsCorreoErr">
+            <p class="field-error" id="dsCorreoErr"><i class="bi bi-exclamation-circle"></i> Escribe un correo válido.</p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsRol">Rol</label>
+            <select class="select" id="dsRol"><option>Usuario (solo lectura)</option><option>Administrador de dirección</option></select>
+            <p class="field-hint">Define qué puede administrar.</p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsFecha">Fecha de ingreso <span class="opt">(opcional)</span></label>
+            <input class="input" id="dsFecha" type="date">
+          </div>
+          <div class="field field--full">
+            <label class="field-label" for="dsBuscar">Búsqueda</label>
+            <div class="input-group"><i class="bi bi-search input-icon"></i><input class="input" id="dsBuscar" placeholder="Buscar documentos…"></div>
+          </div>
+          <div class="field field--full">
+            <label class="field-label" for="dsDesc">Descripción</label>
+            <textarea class="textarea" id="dsDesc" placeholder="Detalle opcional"></textarea>
+          </div>
+          <div class="field">
+            <span class="field-label">Visibilidad</span>
+            <div class="check-group">
+              <label class="check"><input type="radio" name="dsVis" checked> Pública</label>
+              <label class="check"><input type="radio" name="dsVis"> Privada</label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="field-label">Preferencias</span>
+            <label class="check"><input type="checkbox" checked><span>Notificarme<span class="check-desc">Recibir aviso al publicar.</span></span></label>
+            <label class="check" style="align-items:center"><input type="checkbox" class="switch" role="switch" checked> Activo</label>
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsSolo">Solo lectura</label>
+            <input class="input" id="dsSolo" value="Honda, Tolima" readonly>
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsDis">Deshabilitado</label>
+            <input class="input" id="dsDis" value="No editable" disabled>
+          </div>
+          <div class="field field--full">
+            <span class="field-label">Archivo</span>
+            <label class="file-drop">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <span><strong>Elige un archivo</strong> o arrástralo aquí</span>
+              <span class="file-drop-name"></span>
+              <input type="file">
+            </label>
+            <p class="field-hint">PDF, Word, Excel o PowerPoint · máximo 20 MB</p>
+          </div>
+        </div>
+        <div class="form-actions"><button type="button" class="btn">Cancelar</button><button class="btn btn-primary">Guardar</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ─────────── Segmentado / badges ─────────── -->
+  <section class="ds-section" id="badges">
+    <h2>Control segmentado y badges</h2>
+    <div class="ds-row">
+      <div class="segmented" data-tabs>
+        <button type="button" class="segmented-item is-active" data-tab="a">Hoy</button>
+        <button type="button" class="segmented-item" data-tab="b">Este mes</button>
+        <button type="button" class="segmented-item" data-tab="c">Todos</button>
+      </div>
+    </div>
+    <div class="ds-row">
+      <span class="badge">Neutro</span>
+      <span class="badge badge-primary">Administrador</span>
+      <span class="badge badge-success badge-dot">Vigente</span>
+      <span class="badge badge-warning badge-dot">Pendiente</span>
+      <span class="badge badge-danger badge-dot">Expirado</span>
+      <span class="badge badge-info">Mejora</span>
+      <span class="badge badge-outline">V2.0</span>
+    </div>
+  </section>
+
+  <!-- ─────────── Alertas ─────────── -->
+  <section class="ds-section" id="alertas">
+    <h2>Alertas</h2>
+    <p class="ds-lead">Mensajes persistentes dentro de la página. Para avisos pasajeros tras una acción se usan toasts.</p>
+    <div class="alert alert-success" role="status"><i class="bi bi-check-circle-fill alert-icon"></i><div class="alert-content"><p class="alert-title">Permisos guardados</p><p class="alert-text">Los cambios aplican desde la próxima página que abra cada usuario.</p></div><button class="alert-close" data-dismiss="alert" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button></div>
+    <div class="alert alert-warning" role="status"><i class="bi bi-exclamation-triangle-fill alert-icon"></i><div class="alert-content"><p class="alert-text">Trello no está conectado en este entorno.</p></div></div>
+    <div class="alert alert-danger" role="alert"><i class="bi bi-x-circle-fill alert-icon"></i><div class="alert-content"><p class="alert-title">No se guardó nada</p><p class="alert-text">El formulario incluía un módulo que no existe.</p><div class="alert-actions"><button class="btn btn-sm">Reintentar</button></div></div></div>
+    <div class="alert" role="status"><i class="bi bi-info-circle-fill alert-icon"></i><div class="alert-content"><p class="alert-text">Enlace generado — cópialo y envíaselo al candidato.</p></div></div>
+  </section>
+
+  <!-- ─────────── Encabezado + filtros + tabla ─────────── -->
+  <section class="ds-section" id="listado">
+    <h2>Patrón de listado</h2>
+    <p class="ds-lead">Encabezado de página → filtros → tabla. En móvil la tabla se convierte en tarjetas (<code>.table--stack</code>).</p>
+    <div class="ds-canvas">
+      <header class="page-header">
+        <div class="page-header-main">
+          <a class="page-back" href="#listado"><i class="bi bi-arrow-left"></i> Volver a Talento Humano</a>
+          <p class="page-eyebrow">Talento Humano</p>
+          <h1 class="page-title">Hojas de vida</h1>
+          <p class="page-desc">Hoja de vida por empleado, con su archivo adjunto.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn"><i class="bi bi-download"></i> Exportar</button>
+          <button class="btn btn-primary" data-open="dsDrawer"><i class="bi bi-person-plus"></i> Nuevo empleado</button>
+        </div>
+      </header>
+
+      <div class="filter-bar">
+        <div class="input-group search-field"><i class="bi bi-search input-icon"></i><input class="input" placeholder="Buscar por nombre o documento" aria-label="Buscar"></div>
+        <div class="chips">
+          <button class="chip" aria-pressed="true">Todos <span class="chip-count">24</span></button>
+          <button class="chip" aria-pressed="false">Activos <span class="chip-count">21</span></button>
+          <button class="chip" aria-pressed="false">Sin hoja de vida <span class="chip-count">3</span></button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table table--stack">
+          <thead><tr><th>Nombre</th><th>Documento</th><th>Cargo</th><th>Estado</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
+          <tbody>
+            <tr><td class="cell-strong">María Fernanda Ríos</td><td class="cell-muted">1.098.765.432</td><td>Coordinadora académica</td><td><span class="badge badge-success badge-dot">Activo</span></td>
+              <td class="col-actions"><div class="table-actions"><button class="btn btn-sm" data-open="dsDrawer"><i class="bi bi-pencil"></i> Editar</button><form data-confirm="¿Eliminar a María Fernanda Ríos?" data-confirm-text="También se borran su hoja de vida, contrato y certificaciones." data-confirm-ok="Eliminar" onsubmit="event.preventDefault()"><button class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar"><i class="bi bi-trash"></i></button></form></div></td></tr>
+            <tr><td class="cell-strong">Andrés Felipe Gómez</td><td class="cell-muted">80.123.456</td><td>Auxiliar contable</td><td><span class="badge badge-warning badge-dot">Sin hoja de vida</span></td>
+              <td class="col-actions"><div class="table-actions"><button class="btn btn-sm" data-open="dsModal"><i class="bi bi-upload"></i> Subir</button><button class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar"><i class="bi bi-trash"></i></button></div></td></tr>
+            <tr><td class="cell-strong">Laura Castaño</td><td class="cell-muted">1.110.555.901</td><td>Docente</td><td><span class="badge badge-neutral badge-dot">Inactivo</span></td>
+              <td class="col-actions"><div class="table-actions"><button class="btn btn-sm"><i class="bi bi-pencil"></i> Editar</button><button class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar"><i class="bi bi-trash"></i></button></div></td></tr>
+          </tbody>
+        </table>
+        <div class="table-footer"><span>3 de 24 empleados</span><div class="btn-group"><button class="btn btn-sm" disabled>Anterior</button><button class="btn btn-sm">Siguiente</button></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Estados ─────────── -->
+  <section class="ds-section" id="estados">
+    <h2>Estados: vacío y carga</h2>
+    <div class="ds-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div class="empty-state">
+        <div class="ic"><i class="bi bi-person-vcard"></i></div>
+        <h4>Aún no hay empleados</h4>
+        <p>Agrega el primero para empezar a adjuntar su hoja de vida, contrato y certificaciones.</p>
+        <div class="empty-state-actions"><button class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo empleado</button></div>
+      </div>
+      <div class="box-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text" style="width:80%"></div>
+        <div class="skeleton skeleton-text" style="width:60%"></div>
+        <div class="loading-block"><span class="spinner"></span> Cargando documentos…</div>
+      </div>
+    </div>
+    <div style="margin-top:16px" class="empty-state empty-state--compact"><div class="ic"><i class="bi bi-calendar-week"></i></div><p>Sin eventos esta semana.</p></div>
+  </section>
+
+  <!-- ─────────── Tarjeta ─────────── -->
+  <section class="ds-section" id="tarjetas">
+    <h2>Tarjeta y KPIs</h2>
+    <div class="kpis" style="margin-bottom:16px">
+      <div class="kpi"><div class="kpi-head"><i class="bi bi-people kpi-ic"></i><div class="kpi-label">Empleados activos</div></div><div class="kpi-value">128</div><div class="kpi-foot"><span class="badge badge-success">+4 este mes</span></div></div>
+      <div class="kpi"><div class="kpi-head"><i class="bi bi-file-earmark-text kpi-ic"></i><div class="kpi-label">Documentos</div></div><div class="kpi-value">1.204</div><div class="kpi-foot"><span class="badge badge-info">12 nuevos</span></div></div>
+      <div class="kpi"><div class="kpi-head"><i class="bi bi-hourglass-split kpi-ic"></i><div class="kpi-label">Pendientes</div></div><div class="kpi-value">7</div><div class="kpi-foot"><span class="badge badge-warning">3 vencen hoy</span></div></div>
+    </div>
+    <div class="box-card">
+      <div class="box-card-header"><div><h3 class="box-card-title">Mi Google Drive</h3><p class="box-card-desc">Trae tus propios archivos al portal.</p></div><span class="badge badge-success badge-dot">Conectado</span></div>
+      <p style="margin:0;color:var(--text-muted)">Contenido de la tarjeta.</p>
+      <div class="box-card-footer"><button class="btn btn-ghost">Desconectar</button><button class="btn btn-primary">Ver mis archivos</button></div>
+    </div>
+  </section>
+
+  <!-- ─────────── Overlays ─────────── -->
+  <section class="ds-section" id="overlays">
+    <h2>Modal, drawer, confirmación y toasts</h2>
+    <p class="ds-lead"><strong>Modal</strong>: acciones cortas (1–5 campos). <strong>Drawer</strong>: crear/editar un registro sin perder de vista el listado. <strong>Página</strong>: formularios largos o con secciones. <strong>Confirmación</strong>: toda acción destructiva.</p>
+    <div class="ds-row">
+      <button class="btn btn-primary" data-open="dsModal" id="dsBtnModal">Abrir modal</button>
+      <button class="btn" data-open="dsModalTabs" id="dsBtnTabs">Modal con pestañas</button>
+      <button class="btn" data-open="dsDrawer" id="dsBtnDrawer">Abrir drawer</button>
+      <button class="btn btn-danger-soft" id="dsBtnConfirm"><i class="bi bi-trash"></i> Confirmación</button>
+      <button class="btn" id="dsBtnToast">Mostrar toasts</button>
+    </div>
+  </section>
+</div>
+
+<!-- Modal simple -->
+<dialog class="modal" id="dsModal" aria-labelledby="dsModalT">
+  <form method="dialog" onsubmit="event.preventDefault(); UI.close('dsModal'); UI.toast({type:'success', title:'Hoja de vida subida'})">
+    <header class="modal-header">
+      <div class="modal-heading"><h2 class="modal-title" id="dsModalT">Subir hoja de vida</h2><p class="modal-desc">Andrés Felipe Gómez · 80.123.456</p></div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+    </header>
+    <div class="modal-body form-stack">
+      <div class="field"><label class="field-label" for="dsmNombre">Nombre del documento <span class="req">*</span></label><input class="input" id="dsmNombre" required placeholder="Ej. Hoja de vida 2026"></div>
+      <div class="field"><label class="field-label" for="dsmFecha">Fecha <span class="req">*</span></label><input class="input" id="dsmFecha" type="date"></div>
+      <div class="field"><span class="field-label">Archivo <span class="req">*</span></span><label class="file-drop"><i class="bi bi-cloud-arrow-up"></i><span><strong>Elige un archivo</strong> o arrástralo aquí</span><span class="file-drop-name"></span><input type="file"></label><p class="field-hint">PDF, Word, Excel o PowerPoint · máximo 20 MB</p></div>
+    </div>
+    <footer class="modal-footer"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary"><i class="bi bi-upload"></i> Subir</button></footer>
+  </form>
+</dialog>
+
+<!-- Modal con pestañas (varias acciones) -->
+<dialog class="modal" id="dsModalTabs" aria-labelledby="dsModalTabsT">
+  <header class="modal-header">
+    <div class="modal-heading"><h2 class="modal-title" id="dsModalTabsT">Agregar a «Actas 2026»</h2><p class="modal-desc">Crea una subcarpeta, sube un archivo desde tu equipo o tráelo de Google Drive.</p></div>
+    <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+  </header>
+  <div class="modal-toolbar">
+    <div class="segmented segmented--block" data-tabs>
+      <button type="button" class="segmented-item is-active" data-tab="carpeta"><i class="bi bi-folder-plus"></i> Carpeta</button>
+      <button type="button" class="segmented-item" data-tab="subir"><i class="bi bi-upload"></i> Archivo</button>
+      <button type="button" class="segmented-item" data-tab="drive"><i class="bi bi-google"></i> Drive</button>
+    </div>
+  </div>
+  <form data-tab-panel="carpeta" onsubmit="event.preventDefault()">
+    <div class="modal-body"><div class="field"><label class="field-label" for="dstC">Nombre de la carpeta <span class="req">*</span></label><input class="input" id="dstC" placeholder="Ej. Actas 2026"></div></div>
+    <footer class="modal-footer"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary"><i class="bi bi-folder-plus"></i> Crear carpeta</button></footer>
+  </form>
+  <form data-tab-panel="subir" hidden onsubmit="event.preventDefault()">
+    <div class="modal-body"><div class="field"><span class="field-label">Archivo</span><label class="file-drop"><i class="bi bi-cloud-arrow-up"></i><span><strong>Elige un archivo</strong> o arrástralo aquí</span><span class="file-drop-name"></span><input type="file"></label></div></div>
+    <footer class="modal-footer"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary"><i class="bi bi-upload"></i> Subir archivo</button></footer>
+  </form>
+  <form data-tab-panel="drive" hidden onsubmit="event.preventDefault()">
+    <div class="modal-body"><div class="field"><label class="field-label" for="dstD">Link del archivo en Google Drive</label><div class="input-group"><i class="bi bi-link-45deg input-icon"></i><input class="input" id="dstD" placeholder="https://drive.google.com/file/d/…"></div><p class="field-hint">El archivo debe estar compartido con la cuenta de servicio del portal.</p></div></div>
+    <footer class="modal-footer"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary"><i class="bi bi-google"></i> Traer de Drive</button></footer>
+  </form>
+</dialog>
+
+<!-- Drawer de edición -->
+<dialog class="drawer" id="dsDrawer" aria-labelledby="dsDrawerT">
+  <form onsubmit="event.preventDefault(); UI.close('dsDrawer'); UI.toast({type:'success', title:'Empleado actualizado'})">
+    <header class="modal-header">
+      <div class="modal-heading"><h2 class="modal-title" id="dsDrawerT">Editar empleado</h2><p class="modal-desc">María Fernanda Ríos · ingresó el 3 feb 2024</p></div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+    </header>
+    <div class="modal-body">
+      <section class="form-section">
+        <h3 class="form-section-title">Datos personales</h3>
+        <p class="form-section-desc">Como aparecen en su documento de identidad.</p>
+        <div class="form-grid">
+          <div class="field field--full"><label class="field-label" for="dsdN">Nombre completo <span class="req">*</span></label><input class="input" id="dsdN" value="María Fernanda Ríos" required></div>
+          <div class="field"><label class="field-label" for="dsdD">Documento <span class="req">*</span></label><input class="input" id="dsdD" value="1.098.765.432"></div>
+          <div class="field"><label class="field-label" for="dsdT">Teléfono</label><input class="input" id="dsdT" placeholder="300 123 4567"></div>
+          <div class="field field--full"><label class="field-label" for="dsdC">Correo</label><input class="input" id="dsdC" type="email" placeholder="nombre@coreducacion.edu.co"></div>
+        </div>
+      </section>
+      <section class="form-section">
+        <h3 class="form-section-title">Vinculación</h3>
+        <div class="form-grid">
+          <div class="field field--full"><label class="field-label" for="dsdCa">Cargo</label><input class="input" id="dsdCa" value="Coordinadora académica"></div>
+          <div class="field"><label class="field-label" for="dsdF">Fecha de ingreso</label><input class="input" id="dsdF" type="date" value="2024-02-03"></div>
+          <div class="field"><label class="field-label" for="dsdE">Estado</label><select class="select" id="dsdE"><option>Activo</option><option>Inactivo</option></select></div>
+        </div>
+      </section>
+    </div>
+    <footer class="modal-footer"><button type="button" class="btn" data-close>Cancelar</button><button class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar cambios</button></footer>
+  </form>
+</dialog>
+
+<script src="../../public/assets/core/ui.js"></script>
+<script>
+  document.getElementById('dsClaro').addEventListener('click', function () { delete document.body.dataset.tema; });
+  document.getElementById('dsOscuro').addEventListener('click', function () { document.body.dataset.tema = 'oscuro'; });
+  if (location.hash === '#oscuro') { document.body.dataset.tema = 'oscuro'; }
+  document.getElementById('dsBtnConfirm').addEventListener('click', function () {
+    UI.confirm({ title: '¿Eliminar este documento?', text: 'Dejará de estar disponible para todos los usuarios.', confirmLabel: 'Eliminar', trigger: this })
+      .then(function (ok) { if (ok) UI.toast({ type: 'success', title: 'Documento eliminado' }); });
+  });
+  document.getElementById('dsBtnToast').addEventListener('click', function () {
+    UI.toast({ type: 'success', title: 'Usuario creado' });
+    setTimeout(function () { UI.toast({ type: 'error', title: 'Ya existe un usuario con ese correo', text: 'Revisa el correo e intenta de nuevo.' }); }, 150);
+  });
+</script>
+</body>
+</html>

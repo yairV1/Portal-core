@@ -108,7 +108,7 @@ $TABS = [
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
         <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
       </form>
-      <form action="<?= BASE_URL ?>/contenido-landing/estadistica/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta estadística?')" style="display:inline;">
+      <form action="<?= BASE_URL ?>/contenido-landing/estadistica/eliminar" method="post" data-confirm="¿Eliminar esta estadística?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
         <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
@@ -168,7 +168,7 @@ $TABS = [
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
         <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
       </form>
-      <form action="<?= BASE_URL ?>/contenido-landing/modulo/eliminar" method="post" onsubmit="return confirm('¿Eliminar este módulo de la portada?')" style="display:inline;">
+      <form action="<?= BASE_URL ?>/contenido-landing/modulo/eliminar" method="post" data-confirm="¿Eliminar este módulo de la portada?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
         <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
@@ -233,7 +233,7 @@ $TABS = [
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
         <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
       </form>
-      <form action="<?= BASE_URL ?>/contenido-landing/rol/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta tarjeta de rol?')" style="display:inline;">
+      <form action="<?= BASE_URL ?>/contenido-landing/rol/eliminar" method="post" data-confirm="¿Eliminar esta tarjeta de rol?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
         <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
@@ -289,7 +289,7 @@ $TABS = [
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
         <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
       </form>
-      <form action="<?= BASE_URL ?>/contenido-landing/paso/eliminar" method="post" onsubmit="return confirm('¿Eliminar este paso?')" style="display:inline;">
+      <form action="<?= BASE_URL ?>/contenido-landing/paso/eliminar" method="post" data-confirm="¿Eliminar este paso?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
         <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
