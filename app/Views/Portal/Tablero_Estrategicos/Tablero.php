@@ -3,7 +3,7 @@
 <h1 class="page-title">Cuadro de Mando Integral</h1>
 <p class="page-desc">Indicadores institucionales en tiempo real. Vista Rectoría, con descenso a dirección y área.</p>
 
-<div class="pill-tabs" style="margin-bottom:28px" id="tableroTabs"></div>
+<div class="segmented" style="margin-bottom:28px" id="tableroTabs"></div>
 
 <div class="kpis" id="kpisTablero" style="margin-bottom:36px">
   <?php if (!$tableroKpis): ?>

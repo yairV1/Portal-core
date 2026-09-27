@@ -16,11 +16,11 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
   <h1 class="doc-hero-titulo"><?= e($heroTitulo) ?></h1>
   <p class="doc-hero-desc"><?= e($heroDesc) ?></p>
 
-  <div class="pill-tabs" role="tablist" aria-label="Área del centro documental">
-    <a href="<?= BASE_URL ?>/administrativa-financiera?area=administracion" class="pill-tab<?= $areaActiva === 'administracion' ? ' active' : '' ?>" role="tab" aria-selected="<?= $areaActiva === 'administracion' ? 'true' : 'false' ?>">
+  <div class="segmented" role="tablist" aria-label="Área del centro documental">
+    <a href="<?= BASE_URL ?>/administrativa-financiera?area=administracion" class="segmented-item<?= $areaActiva === 'administracion' ? ' active' : '' ?>" role="tab" aria-selected="<?= $areaActiva === 'administracion' ? 'true' : 'false' ?>">
       <i class="bi bi-building"></i> Administración
     </a>
-    <a href="<?= BASE_URL ?>/administrativa-financiera?area=finanzas" class="pill-tab<?= $areaActiva === 'finanzas' ? ' active' : '' ?>" role="tab" aria-selected="<?= $areaActiva === 'finanzas' ? 'true' : 'false' ?>">
+    <a href="<?= BASE_URL ?>/administrativa-financiera?area=finanzas" class="segmented-item<?= $areaActiva === 'finanzas' ? ' active' : '' ?>" role="tab" aria-selected="<?= $areaActiva === 'finanzas' ? 'true' : 'false' ?>">
       <i class="bi bi-cash-coin"></i> Finanzas
     </a>
   </div>
@@ -45,7 +45,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
 
   <?php if ($terminoBusqueda !== ''): ?>
 
-    <div class="doc-section-head"><h4>Resultados para "<?= e($terminoBusqueda) ?>"</h4>
+    <div class="section-header"><h2 class="section-heading">Resultados para "<?= e($terminoBusqueda) ?>"</h2>
       <a href="<?= BASE_URL ?>/administrativa-financiera?area=<?= e($areaActiva) ?>" class="doc-clear-search">Limpiar búsqueda</a>
     </div>
     <?php if (!$resultadosBusqueda): ?>
@@ -72,9 +72,9 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
                   ? BASE_URL . '/administrativa-financiera/carpetas/descargar?id=' . (int) $a['id']
                   : BASE_URL . '/documentos/descargar?tipo=direccion&id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
-              <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <a class="btn btn-sm" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
               <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
-                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/administrativa-financiera?area=' . $areaActiva) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+                <a class="btn btn-sm btn-icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/administrativa-financiera?area=' . $areaActiva) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
               <?php endif; ?>
             </span>
           </div>
@@ -84,7 +84,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
 
   <?php else: ?>
 
-    <div class="doc-section-head"><h4>Categorías</h4></div>
+    <div class="section-header"><h2 class="section-heading">Categorías</h2></div>
     <?php if (!$subcarpetas): ?>
       <div class="empty-state">
         <div class="ic"><i class="bi bi-folder2"></i></div>
@@ -95,8 +95,8 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
             <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
-            <input type="text" name="nombre" placeholder="Nombre de la categoría" required class="doc-input">
-            <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-plus-lg"></i> Crear categoría</button>
+            <input type="text" name="nombre" placeholder="Nombre de la categoría" required class="input">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Crear categoría</button>
           </form>
         <?php endif; ?>
       </div>
@@ -114,7 +114,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
-                <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon doc-cat-borrar" aria-label="Eliminar categoría"><i class="bi bi-trash"></i></button>
+                <button type="submit" class="btn btn-danger-soft btn-icon doc-cat-borrar" aria-label="Eliminar categoría"><i class="bi bi-trash"></i></button>
               </form>
             <?php endif; ?>
           </article>
@@ -125,14 +125,14 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
             <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
             <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
             <span class="ic"><i class="bi bi-folder-plus"></i></span>
-            <input type="text" name="nombre" placeholder="Nueva categoría" required class="doc-input">
-            <button type="submit" class="doc-btn doc-btn--secondary">Crear</button>
+            <input type="text" name="nombre" placeholder="Nueva categoría" required class="input">
+            <button type="submit" class="btn">Crear</button>
           </form>
         <?php endif; ?>
       </div>
     <?php endif; ?>
 
-    <div class="doc-section-head"><h4>Archivos recientes</h4></div>
+    <div class="section-header"><h2 class="section-heading">Archivos recientes</h2></div>
     <?php if (!$archivosRecientes): ?>
       <div class="empty-state">
         <div class="ic"><i class="bi bi-file-earmark-text"></i></div>
@@ -157,16 +157,16 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
                   ? BASE_URL . '/administrativa-financiera/carpetas/descargar?id=' . (int) $a['id']
                   : BASE_URL . '/documentos/descargar?tipo=direccion&id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
-              <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <a class="btn btn-sm" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
               <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
-                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/administrativa-financiera?area=' . $areaActiva) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+                <a class="btn btn-sm btn-icon" href="<?= BASE_URL ?>/editor?tipo=<?= $a['origen'] === 'carpeta' ? 'carpeta' : 'direccion' ?>&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/administrativa-financiera?area=' . $areaActiva) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
               <?php endif; ?>
               <?php if ($esAdminDoc && $a['origen'] === 'carpeta'): ?>
                 <form action="<?= BASE_URL ?>/administrativa-financiera/carpetas/eliminar" method="post" data-confirm="¿Eliminar este documento?" data-confirm-ok="Eliminar">
                   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                   <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                   <input type="hidden" name="archivo_id" value="<?= (int) $a['id'] ?>">
-                  <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
+                  <button type="submit" class="btn btn-sm btn-danger-soft btn-icon" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
                 </form>
               <?php endif; ?>
             </span>
@@ -187,7 +187,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
     ?>
     <?php if ($esAdminDoc): ?>
       <?php if ($pendientes): ?>
-        <div class="doc-section-head doc-section-head--spaced"><h4>Pendientes de adjuntar</h4><span class="text-muted">Ya tienen nombre, les falta el archivo</span></div>
+        <div class="section-header section-header--spaced"><h2 class="section-heading">Pendientes de adjuntar</h2><span class="section-desc">Ya tienen nombre, les falta el archivo</span></div>
         <div class="doc-archivos">
           <?php foreach ($pendientes as $p): ?>
             <div class="doc-archivo-row">
@@ -202,7 +202,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
                   <input type="hidden" name="tipo" value="direccion">
                   <input type="hidden" name="volver" value="/administrativa-financiera">
                   <input type="hidden" name="archivo_id" value="<?= (int) $p['id'] ?>">
-                  <label class="file-btn doc-btn doc-btn--primary">
+                  <label class="file-btn btn btn-sm btn-primary">
                     <i class="bi bi-upload"></i> Subir
                     <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required onchange="this.form.submit()">
                   </label>
@@ -216,10 +216,10 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
 
   <?php endif; ?>
 
-  <div class="section-head doc-section-head--spaced"><h4>Indicadores</h4></div>
+  <div class="section-header section-header--spaced"><h2 class="section-heading">Indicadores</h2></div>
   <div class="modulo-kpis doc-kpis" id="moduloKpis">
     <?php if (!$moduloKpis): ?>
-      <div class="modulo-vacio"><i class="bi bi-bar-chart-line"></i> Sin indicadores por ahora.</div>
+      <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></div><p>Sin indicadores por ahora.</p></div>
     <?php else: foreach ($moduloKpis as $k): ?>
       <div class="modulo-kpi">
         <div class="label"><?= e($k['label']) ?></div>
@@ -231,10 +231,10 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
 
   <div class="modulo-grid">
     <div>
-      <div class="section-head"><h4>Áreas del módulo</h4></div>
+      <div class="section-header"><h2 class="section-heading">Áreas del módulo</h2></div>
       <div id="moduloAreas">
         <?php if (!$moduloAreas): ?>
-          <div class="modulo-vacio"><i class="bi bi-folder2"></i> Sin áreas registradas por ahora.</div>
+          <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-folder2"></i></div><p>Sin áreas registradas por ahora.</p></div>
         <?php else: foreach ($moduloAreas as $a): ?>
           <div class="area-item" id="<?= e(sb_slug($a['label'])) ?>">
             <span class="ic"><i class="bi bi-folder2"></i></span>
@@ -252,7 +252,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
         <div class="side-box-title">Responsables</div>
         <div id="moduloResponsables">
           <?php if (!$moduloResponsables): ?>
-            <div class="modulo-vacio"><i class="bi bi-people"></i> Sin responsables por ahora.</div>
+            <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-people"></i></div><p>Sin responsables por ahora.</p></div>
           <?php else: foreach ($moduloResponsables as $r):
               $partesNombre = preg_split('/\s+/', trim($r['nombre']));
               $iniciales = mb_strtoupper(mb_substr($partesNombre[0], 0, 1) . mb_substr(end($partesNombre), 0, 1));
@@ -271,7 +271,7 @@ $heroDesc = $moduloDesc ?: 'Gestiona y organiza de forma centralizada la documen
         <div class="side-box-title">Software relacionado</div>
         <div id="moduloSoftware">
           <?php if (!$moduloSoftware): ?>
-            <div class="modulo-vacio"><i class="bi bi-link-45deg"></i> Sin software relacionado.</div>
+            <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-link-45deg"></i></div><p>Sin software relacionado.</p></div>
           <?php else: foreach ($moduloSoftware as $s): ?>
             <div class="software-item"><span class="doc-soft-icon"><i class="bi bi-link-45deg"></i></span><?= e($s['nombre']) ?></div>
           <?php endforeach; endif; ?>

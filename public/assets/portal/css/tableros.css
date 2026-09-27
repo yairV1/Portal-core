@@ -1,4 +1,4 @@
-  /* .kpis/.kpi ya viven en paneles.css. */
+  /* .kpis/.kpi vienen de core/components.css. */
   .kpi-meta{font-size:12px;opacity:.6;margin-top:2px}
   .kpi-meta + .progress-track{margin-top:10px}
 
@@ -23,7 +23,7 @@
   .alert-row .ic{color:var(--color-accent-2);flex:0 0 auto}
   .alert-row .texto{font-size:12.5px;flex:1}
 
-  /* .tile/.tile-grid ya viven en paneles.css; acá solo el contenido propio
+  /* .tile/.tile-grid vienen de core/components.css; acá solo el contenido propio
      (ícono + nombre) de las tarjetas de submódulo. */
   .tile-submodulo{flex-direction:row;align-items:center;gap:12px}
   .tile-submodulo i{font-size:20px;color:var(--color-accent)}

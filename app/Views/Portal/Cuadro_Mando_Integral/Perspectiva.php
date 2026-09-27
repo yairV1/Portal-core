@@ -8,7 +8,7 @@
 
 <div class="modulo-kpis" id="moduloKpis">
   <?php if (!$moduloKpis): ?>
-    <div class="modulo-vacio"><i class="bi bi-bar-chart-line"></i> Sin indicadores por ahora.</div>
+    <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></div><p>Sin indicadores por ahora.</p></div>
   <?php else: foreach ($moduloKpis as $k): ?>
     <div class="modulo-kpi">
       <div class="label"><?= e($k['label']) ?></div>
@@ -19,10 +19,10 @@
 
 <div class="modulo-grid">
   <div>
-    <div class="section-head"><h4>Áreas de esta perspectiva</h4></div>
+    <div class="section-header"><h2 class="section-heading">Áreas de esta perspectiva</h2></div>
     <div id="moduloAreas">
       <?php if (!$moduloAreas): ?>
-        <div class="modulo-vacio"><i class="bi bi-folder2"></i> Sin áreas registradas por ahora.</div>
+        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-folder2"></i></div><p>Sin áreas registradas por ahora.</p></div>
       <?php else: foreach ($moduloAreas as $a): ?>
         <div class="area-item">
           <span class="ic"><i class="bi bi-folder2"></i></span>
@@ -34,21 +34,22 @@
       <?php endforeach; endif; ?>
     </div>
 
-    <div class="section-head" style="margin-top:40px"><h4>Documentación destacada</h4></div>
-    <table class="table">
+    <div class="section-header" style="margin-top:40px"><h2 class="section-heading">Documentación destacada</h2></div>
+    <div class="table-wrap">
+  <table class="table table--stack">
       <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Actualizado</th><th>Archivo</th></tr></thead>
       <tbody>
         <?php if (!$moduloDocumentos): ?>
-          <tr><td colspan="5"><div class="modulo-vacio"><i class="bi bi-file-earmark-text"></i> Sin documentos por ahora.</div></td></tr>
+          <tr><td colspan="5"><div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></div><p>Sin documentos por ahora.</p></div></td></tr>
         <?php else: foreach ($moduloDocumentos as $d): ?>
           <tr>
             <td><strong><?= e($d['nombre']) ?></strong></td>
-            <td style="opacity:.7"><?= e($d['tipo']) ?></td>
-            <td><span class="tag"><?= e($d['version']) ?></span></td>
-            <td style="opacity:.7"><?= e($d['fecha']) ?></td>
+            <td class="cell-muted"><?= e($d['tipo']) ?></td>
+            <td><span class="badge"><?= e($d['version']) ?></span></td>
+            <td class="cell-muted"><?= e($d['fecha']) ?></td>
             <td>
               <?php if ($d['archivo']): ?>
-                <a class="tag tag-accent" href="<?= BASE_URL ?>/documentos/descargar?tipo=direccion&id=<?= (int) $d['id'] ?>">
+                <a class="btn btn-sm" href="<?= BASE_URL ?>/documentos/descargar?tipo=direccion&id=<?= (int) $d['id'] ?>">
                   <i class="bi bi-download"></i> Descargar
                 </a>
               <?php elseif (usuario_admin_de($direccion['id'] ?? null)): ?>
@@ -58,7 +59,7 @@
                   <input type="hidden" name="volver" value="<?= e($uri) ?>">
                   <input type="hidden" name="archivo_id" value="<?= (int) $d['id'] ?>">
                   <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required style="max-width:160px;font-size:11px">
-                  <button type="submit" class="tag tag-neutral" style="border:none;cursor:pointer">
+                  <button type="submit" class="btn btn-sm">
                     <i class="bi bi-upload"></i> Subir
                   </button>
                 </form>
@@ -70,6 +71,7 @@
         <?php endforeach; endif; ?>
       </tbody>
     </table>
+  </div>
     <?php if ($direccion && usuario_admin_de($direccion['id'])): ?>
       <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="modulo-add">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
@@ -80,7 +82,7 @@
         <input type="text" name="tipo_doc" placeholder="Tipo">
         <input type="text" name="version" placeholder="v1.0">
         <input type="date" name="fecha" value="<?= date('Y-m-d') ?>">
-        <button type="submit" class="tag tag-accent" style="border:none;cursor:pointer"><i class="bi bi-plus-lg"></i> Agregar documento</button>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar documento</button>
       </form>
     <?php endif; ?>
   </div>
@@ -89,7 +91,7 @@
     <div class="side-box">
       <div class="side-box-title">Responsables</div>
       <?php if (!$moduloResponsables): ?>
-        <div class="modulo-vacio"><i class="bi bi-people"></i> Sin responsables por ahora.</div>
+        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-people"></i></div><p>Sin responsables por ahora.</p></div>
       <?php else: foreach ($moduloResponsables as $r):
           $partesNombre = preg_split('/\s+/', trim($r['nombre']));
           $iniciales = mb_strtoupper(mb_substr($partesNombre[0], 0, 1) . mb_substr(end($partesNombre), 0, 1));
@@ -106,7 +108,7 @@
     <div class="side-box">
       <div class="side-box-title">Software relacionado</div>
       <?php if (!$moduloSoftware): ?>
-        <div class="modulo-vacio"><i class="bi bi-link-45deg"></i> Sin software relacionado.</div>
+        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-link-45deg"></i></div><p>Sin software relacionado.</p></div>
       <?php else: foreach ($moduloSoftware as $s): ?>
         <div class="software-item"><span style="opacity:.6"><i class="bi bi-link-45deg"></i></span><?= e($s['nombre']) ?></div>
       <?php endforeach; endif; ?>

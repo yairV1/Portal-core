@@ -25,7 +25,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
 
   <div class="gd-folder-head" style="margin-bottom:18px">
     <h4 style="margin:0"><i class="bi bi-folder-fill" style="color:var(--color-warning)"></i> <?= e($carpetaActualDoc['label']) ?></h4>
-    <span class="tag <?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'tag-success' : 'tag-outline' ?>">
+    <span class="badge <?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'badge-success' : 'badge-outline' ?>">
       <i class="bi <?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'bi-globe2' : 'bi-lock-fill' ?>"></i>
       <?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'Pública' : 'Privada' ?>
     </span>
@@ -34,29 +34,24 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
         <form action="<?= BASE_URL ?>/gestion-documental/carpetas/visibilidad" method="post">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
           <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActualDoc['id'] ?>">
-          <button type="submit" class="doc-btn doc-btn--secondary doc-btn--icon" title="<?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'Hacer privada' : 'Hacer pública' ?>">
+          <button type="submit" class="btn btn-icon" title="<?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'Hacer privada' : 'Hacer pública' ?>">
             <i class="bi <?= $carpetaActualDoc['visibilidad'] === 'publico' ? 'bi-lock' : 'bi-globe2' ?>"></i>
           </button>
         </form>
-        <button type="button" class="doc-btn doc-btn--secondary doc-btn--icon" title="Renombrar carpeta"
+        <button type="button" class="btn btn-icon" title="Renombrar carpeta"
                 onclick='gdEditarCarpeta(<?= (int) $carpetaActualDoc['id'] ?>, <?= json_encode($carpetaActualDoc['label'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
           <i class="bi bi-pencil-square"></i>
         </button>
         <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" data-confirm="¿Eliminar esta carpeta?" data-confirm-text="Dejará de verse, junto con lo que tenga dentro." data-confirm-ok="Eliminar">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
           <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActualDoc['id'] ?>">
-          <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" title="Eliminar carpeta"><i class="bi bi-trash"></i></button>
+          <button type="submit" class="btn btn-danger-soft btn-icon" title="Eliminar carpeta"><i class="bi bi-trash"></i></button>
         </form>
       </span>
     <?php endif; ?>
   </div>
 <?php else: ?>
-  <!-- .section-head (modulo-generico.css/inicio.css) no está cargado en esta
-       vista — quedaba sin ningún estilo. .doc-section-head sí viene de
-       centro-documental.css (ya enlazado arriba) y es el mismo que usa el
-       encabezado "Documentos" más abajo: mismo look en las dos secciones
-       de esta página. -->
-  <div class="doc-section-head" style="margin:0 0 14px"><h4><i class="bi bi-archive"></i> Repositorio institucional</h4></div>
+  <div class="section-header" style="margin:0 0 14px"><h2 class="section-heading"><i class="bi bi-archive"></i> Repositorio institucional</h2></div>
 <?php endif; ?>
 
 <?php if (!$subcarpetasDoc && !$archivosDoc): ?>
@@ -77,7 +72,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
             <span class="ic"><i class="bi bi-folder-fill"></i></span>
             <span class="nombre">
               <?= e($c['label']) ?>
-              <span class="tag <?= $c['visibilidad'] === 'publico' ? 'tag-success' : 'tag-outline' ?> gd-badge">
+              <span class="badge <?= $c['visibilidad'] === 'publico' ? 'badge-success' : 'badge-outline' ?> gd-badge">
                 <?= $c['visibilidad'] === 'publico' ? 'Pública' : 'Privada' ?>
               </span>
             </span>
@@ -88,18 +83,18 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
               <form action="<?= BASE_URL ?>/gestion-documental/carpetas/visibilidad" method="post">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
-                <button type="submit" class="doc-btn doc-btn--secondary doc-btn--icon" title="<?= $c['visibilidad'] === 'publico' ? 'Hacer privada' : 'Hacer pública' ?>">
+                <button type="submit" class="btn btn-icon" title="<?= $c['visibilidad'] === 'publico' ? 'Hacer privada' : 'Hacer pública' ?>">
                   <i class="bi <?= $c['visibilidad'] === 'publico' ? 'bi-lock' : 'bi-globe2' ?>"></i>
                 </button>
               </form>
-              <button type="button" class="doc-btn doc-btn--secondary doc-btn--icon" title="Renombrar"
+              <button type="button" class="btn btn-icon" title="Renombrar"
                       onclick='gdEditarCarpeta(<?= (int) $c['id'] ?>, <?= json_encode($c['label'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                 <i class="bi bi-pencil-square"></i>
               </button>
               <form action="<?= BASE_URL ?>/gestion-documental/carpetas/eliminar" method="post" data-confirm="¿Eliminar esta carpeta?" data-confirm-text="Dejará de verse, junto con lo que tenga dentro." data-confirm-ok="Eliminar">
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
-                <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" title="Eliminar"><i class="bi bi-trash"></i></button>
+                <button type="submit" class="btn btn-danger-soft btn-icon" title="Eliminar"><i class="bi bi-trash"></i></button>
               </form>
             </span>
           <?php endif; ?>
@@ -109,7 +104,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
   <?php endif; ?>
 
   <?php if ($archivosDoc): ?>
-    <div class="doc-section-head<?= $subcarpetasDoc ? ' doc-section-head--spaced' : '' ?>"><h4>Documentos</h4></div>
+    <div class="section-header<?= $subcarpetasDoc ? ' section-header--spaced' : '' ?>"><h2 class="section-heading">Documentos</h2></div>
     <div class="doc-archivos">
       <?php foreach ($archivosDoc as $arc): ?>
         <div class="doc-archivo-row">
@@ -117,12 +112,12 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
           <span class="info">
             <span class="nombre"><?= e($arc['nombre']) ?></span>
             <span class="meta">
-              <span class="tag <?= $arc['visibilidad'] === 'publico' ? 'tag-success' : 'tag-outline' ?> gd-badge">
+              <span class="badge <?= $arc['visibilidad'] === 'publico' ? 'badge-success' : 'badge-outline' ?> gd-badge">
                 <?= $arc['visibilidad'] === 'publico' ? 'Pública' : 'Privada' ?>
               </span>
               <?php if ($arc['tipo']): ?><span class="doc-tag-origen"><?= e($arc['tipo']) ?></span><?php endif; ?>
               <span class="tag-stamp"><?= e($arc['version']) ?></span>
-              <span class="tag tag-<?= e($ESTADO_TAG[$arc['estado']] ?? 'info') ?>"><?= e($arc['estado']) ?></span>
+              <span class="badge badge-<?= e($ESTADO_TAG[$arc['estado']] ?? 'info') ?>"><?= e($arc['estado']) ?></span>
               <?= $arc['fecha'] ? e((new DateTime($arc['fecha']))->format('d M Y')) : '' ?>
             </span>
           </span>
@@ -130,11 +125,11 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
             <?php if ($arc['archivo']):
               $esPdfDoc = strtolower(pathinfo($arc['archivo'], PATHINFO_EXTENSION)) === 'pdf';
             ?>
-              <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/documentos/descargar?tipo=documental&id=<?= (int) $arc['id'] ?>" target="_blank" rel="noopener" title="<?= $esPdfDoc ? 'Ver' : 'Descargar' ?>">
+              <a class="btn btn-icon" href="<?= BASE_URL ?>/documentos/descargar?tipo=documental&id=<?= (int) $arc['id'] ?>" target="_blank" rel="noopener" title="<?= $esPdfDoc ? 'Ver' : 'Descargar' ?>">
                 <i class="bi <?= $esPdfDoc ? 'bi-eye' : 'bi-download' ?>"></i>
               </a>
               <?php if (onlyoffice_configurado() && onlyoffice_editable($arc['archivo'])): ?>
-                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=documental&id=<?= (int) $arc['id'] ?>&volver=<?= urlencode(BASE_URL . '/gestion-documental?carpeta=' . (int) $carpetaActualDoc['id']) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal">
+                <a class="btn btn-icon" href="<?= BASE_URL ?>/editor?tipo=documental&id=<?= (int) $arc['id'] ?>&volver=<?= urlencode(BASE_URL . '/gestion-documental?carpeta=' . (int) $carpetaActualDoc['id']) ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal">
                   <i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i>
                 </a>
               <?php endif; ?>
@@ -145,7 +140,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                 <input type="hidden" name="volver" value="/gestion-documental">
                 <input type="hidden" name="archivo_id" value="<?= (int) $arc['id'] ?>">
                 <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required>
-                <button type="submit" class="doc-btn doc-btn--secondary doc-btn--icon" title="Subir archivo"><i class="bi bi-upload"></i></button>
+                <button type="submit" class="btn btn-icon" title="Subir archivo"><i class="bi bi-upload"></i></button>
               </form>
             <?php else: ?>
               <span class="text-muted" style="font-size:11.5px">Sin archivo</span>
@@ -156,11 +151,11 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="archivo_id" value="<?= (int) $arc['id'] ?>">
                 <input type="hidden" name="volver" value="/gestion-documental">
-                <button type="submit" class="doc-btn doc-btn--secondary doc-btn--icon" title="<?= $arc['visibilidad'] === 'publico' ? 'Hacer privado' : 'Hacer público' ?>">
+                <button type="submit" class="btn btn-icon" title="<?= $arc['visibilidad'] === 'publico' ? 'Hacer privado' : 'Hacer público' ?>">
                   <i class="bi <?= $arc['visibilidad'] === 'publico' ? 'bi-lock' : 'bi-globe2' ?>"></i>
                 </button>
               </form>
-              <button type="button" class="doc-btn doc-btn--secondary doc-btn--icon" title="Editar"
+              <button type="button" class="btn btn-icon" title="Editar"
                       onclick='gdEditarDoc(<?= (int) $arc["id"] ?>, <?= json_encode($arc["nombre"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["tipo"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["version"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["responsable"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= json_encode($arc["fecha"], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                 <i class="bi bi-pencil-square"></i>
               </button>
@@ -168,7 +163,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="archivo_id" value="<?= (int) $arc['id'] ?>">
                 <input type="hidden" name="volver" value="/gestion-documental">
-                <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" title="Eliminar"><i class="bi bi-trash"></i></button>
+                <button type="submit" class="btn btn-danger-soft btn-icon" title="Eliminar"><i class="bi bi-trash"></i></button>
               </form>
             <?php endif; ?>
           </span>

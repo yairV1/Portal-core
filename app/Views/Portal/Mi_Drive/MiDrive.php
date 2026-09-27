@@ -28,10 +28,10 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
 <p class="page-desc">Conecta tu cuenta personal para ver tus propios archivos acá y llevarlos a una carpeta real del portal — no tiene relación con el repositorio institucional de Gestión Documental.</p>
 
 <?php if (!$miDriveOauthConfigurado): ?>
-  <p class="widget-empty"><i class="bi bi-google"></i> Conectar tu Drive personal necesita tener configurado el login con Google (ver .env.example) — pregúntale al administrador del portal.</p>
+  <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-google"></i></div><p>Conectar tu Drive personal necesita tener configurado el login con Google (ver .env.example) — pregúntale al administrador del portal.</p></div>
 <?php elseif (!$miDriveConectado): ?>
   <p class="text-muted" style="margin:0 0 10px">Conecta tu cuenta para ver tus propios archivos de Drive acá y llevarlos a la carpeta que quieras — sin compartir nada con nadie primero.</p>
-  <a href="<?= BASE_URL ?>/gestion-documental/drive/conectar" class="doc-btn doc-btn--primary" style="text-decoration:none;display:inline-flex">
+  <a href="<?= BASE_URL ?>/gestion-documental/drive/conectar" class="btn btn-primary" style="text-decoration:none;display:inline-flex">
     <i class="bi bi-google"></i> Conectar mi Google Drive
   </a>
 <?php else: ?>
@@ -39,14 +39,14 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
     <span class="text-muted"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu Google Drive está conectado.</span>
     <form action="<?= BASE_URL ?>/gestion-documental/drive/desconectar" method="post" data-confirm="¿Desconectar tu Google Drive?" data-confirm-text="Podrás volver a conectarlo cuando quieras." data-confirm-ok="Desconectar">
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-      <button type="submit" class="doc-btn doc-btn--secondary"><i class="bi bi-x-circle"></i> Desconectar</button>
+      <button type="submit" class="btn"><i class="bi bi-x-circle"></i> Desconectar</button>
     </form>
   </div>
 
   <?php if (!$misArchivosDrive): ?>
-    <p class="widget-empty"><i class="bi bi-folder2-open"></i> No encontramos archivos en tu Drive — o Google tardó en responder, intenta de nuevo en un momento.</p>
+    <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-folder2-open"></i></div><p>No encontramos archivos en tu Drive — o Google tardó en responder, intenta de nuevo en un momento.</p></div>
   <?php elseif (!$carpetasDestinoDrive): ?>
-    <p class="widget-empty"><i class="bi bi-lock"></i> Puedes ver tus archivos, pero no administras ninguna carpeta a la que llevarlos — pídele a un administrador que te asigne una dirección.</p>
+    <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-lock"></i></div><p>Puedes ver tus archivos, pero no administras ninguna carpeta a la que llevarlos — pídele a un administrador que te asigne una dirección.</p></div>
   <?php else: ?>
     <div class="doc-archivos" style="margin-bottom:10px">
       <?php foreach ($misArchivosDrive as $af): ?>
@@ -58,25 +58,25 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
           </span>
           <span class="doc-actions">
             <?php if (!empty($af['webViewLink'])): ?>
-              <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= e($af['webViewLink']) ?>" target="_blank" rel="noopener" title="Ver en Drive"><i class="bi bi-eye"></i></a>
+              <a class="btn btn-sm btn-icon" href="<?= e($af['webViewLink']) ?>" target="_blank" rel="noopener" title="Ver en Drive"><i class="bi bi-eye"></i></a>
             <?php endif; ?>
             <form action="<?= BASE_URL ?>/gestion-documental/drive/importar" method="post" style="display:flex;gap:6px;align-items:center">
               <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
               <input type="hidden" name="file_id" value="<?= e($af['id']) ?>">
-              <select name="carpeta_id" required class="doc-select" style="max-width:200px">
+              <select name="carpeta_id" required class="select select-inline">
                 <option value="">Llevar a...</option>
                 <?php foreach ($carpetasDestinoDrive as $cd): ?>
                   <option value="<?= (int) $cd['id'] ?>"><?= e($cd['label']) ?></option>
                 <?php endforeach; ?>
               </select>
-              <button type="submit" class="doc-btn doc-btn--secondary doc-btn--icon" title="Llevar a la carpeta elegida"><i class="bi bi-box-arrow-in-down"></i></button>
+              <button type="submit" class="btn btn-sm btn-icon" title="Llevar a la carpeta elegida"><i class="bi bi-box-arrow-in-down"></i></button>
             </form>
           </span>
         </div>
       <?php endforeach; ?>
     </div>
     <?php if ($miDriveSiguientePagina): ?>
-      <a href="<?= BASE_URL ?>/mi-drive?drive_token=<?= urlencode($miDriveSiguientePagina) ?>" class="doc-btn doc-btn--secondary" style="text-decoration:none;display:inline-flex">Ver más archivos</a>
+      <a href="<?= BASE_URL ?>/mi-drive?drive_token=<?= urlencode($miDriveSiguientePagina) ?>" class="btn" style="text-decoration:none;display:inline-flex">Ver más archivos</a>
     <?php endif; ?>
   <?php endif; ?>
 
@@ -110,7 +110,7 @@ require ROOT_PATH . '/app/Views/layouts/portal-header.php';
       })();
     </script>
   <?php elseif ($miDriveCarpetas || $miDriveArchivosPorCarpeta): ?>
-    <div class="doc-section-head" style="margin:18px 0 10px"><h4><i class="bi bi-folder2"></i> Mi Drive (copia local)</h4></div>
+    <div class="section-header" style="margin:18px 0 10px"><h2 class="section-heading"><i class="bi bi-folder2"></i> Mi Drive (copia local)</h2></div>
     <?php
       $miDriveHijosDe = [];
       foreach ($miDriveCarpetas as $c) { $miDriveHijosDe[$c['parent_id']][] = $c; }

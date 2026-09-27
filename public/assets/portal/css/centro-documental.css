@@ -1,6 +1,6 @@
   /* ── Centro documental (Administrativa y Financiera) ──
-     Específico de esta página — .pill-tabs/.pill-tab (paneles.css) y
-     .empty-state (paneles.css) ya son compartidos y se reusan tal cual,
+     Específico de esta página — .segmented/.segmented-item (core/components.css) y
+     .empty-state (core/components.css) ya son compartidos y se reusan tal cual,
      nada de eso se duplica acá. */
 
   .doc-hero{
@@ -23,10 +23,16 @@
     pointer-events:none; opacity:.55;
   }
   .doc-hero-orb-canvas{ width:100%; height:100%; display:block; }
+  /* .doc-hero ya es la única caja con sombra de la pantalla (regla del
+     proyecto) — en Contratos/Certificaciones/Hojas de vida (Talento
+     Humano) el listado de empleados usa .table-wrap (core/components.css),
+     que trae su propia sombra base; se apaga acá para no sumar una
+     segunda caja elevada bajo el hero. Sin efecto en páginas sin .doc-hero. */
+  .doc-hero ~ .table-wrap{ box-shadow:none; }
   .doc-hero-titulo{font-size:clamp(25px,3vw,34px);letter-spacing:-.035em;margin:0 0 7px;position:relative}
   .doc-hero-desc{opacity:.72;max-width:650px;margin:0 0 20px;font-size:14px;line-height:1.65;position:relative}
-  .doc-hero .pill-tabs{position:relative;background:color-mix(in srgb,var(--color-bg) 76%,transparent)}
-  .doc-hero .pill-tab{display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+  .doc-hero .segmented{position:relative;background:color-mix(in srgb,var(--color-bg) 76%,transparent)}
+  .doc-hero .segmented-item{display:inline-flex;align-items:center;gap:7px;text-decoration:none}
 
   .doc-search{display:flex;gap:10px;margin:0 0 30px;flex-wrap:wrap}
   .doc-search-form{position:relative;flex:1 1 320px}
@@ -37,13 +43,9 @@
   }
   .doc-search-form input:focus{outline:none;border-color:var(--color-accent);box-shadow:var(--shadow-focus)}
 
-  /* .doc-btn/.doc-input: ahora son alias heredados de .btn/.input en
+  /* .btn/.input: ahora son alias heredados de .btn/.input en
      core/components.css — no se redefinen acá. */
 
-  .doc-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 14px;flex-wrap:wrap}
-  .doc-section-head h4{margin:0}
-  .doc-section-head .text-muted{font-size:12.5px}
-  .doc-section-head--spaced{margin-top:30px}
   .doc-clear-search{font-size:12.5px;color:var(--color-neutral-700);text-decoration:none;font-weight:700}
   .doc-clear-search:hover{color:var(--color-accent)}
 
@@ -67,7 +69,7 @@
   .doc-categoria-card .doc-cat-borrar:hover{opacity:1}
   .doc-categoria-card--create{border-style:dashed;justify-content:space-between}
   .doc-categoria-card--create:hover{border-style:dashed}
-  .doc-categoria-card--create .doc-input{min-width:0}
+  .doc-categoria-card--create .input{min-width:0}
   .doc-categoria-link{display:flex;flex-direction:column;gap:8px;min-height:100%;text-decoration:none;color:inherit}
 
   /* ── Archivos recientes / resultados de búsqueda ── */
@@ -100,11 +102,11 @@
   @media (max-width: 720px){
     .doc-hero{padding:22px 18px}
     .doc-hero::after{display:none}
-    .doc-hero .pill-tabs{width:100%;overflow:auto;flex-wrap:nowrap}
-    .doc-hero .pill-tab{flex:1 0 auto;justify-content:center}
+    .doc-hero .segmented{width:100%;overflow:auto;flex-wrap:nowrap}
+    .doc-hero .segmented-item{flex:1 0 auto;justify-content:center}
     .doc-search{flex-direction:column}
     .doc-search-form{flex:0 1 auto}
-    .doc-search .doc-btn{width:100%}
+    .doc-search .btn{width:100%}
     .doc-archivo-row{flex-wrap:wrap}
     .doc-archivo-row .doc-actions{flex:1 1 100%;justify-content:flex-end}
     .doc-categorias{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}

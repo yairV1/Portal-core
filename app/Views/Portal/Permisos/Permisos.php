@@ -1,4 +1,5 @@
 <?php $titulo = 'Permisos por rol'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
+<link rel="stylesheet" href="<?= v('/assets/portal/css/permisos.css') ?>">
 
 <h1 class="page-title">Permisos por rol</h1>
 <p class="page-desc">
@@ -36,40 +37,40 @@
 <form action="<?= BASE_URL ?>/permisos-por-rol/guardar" method="post">
   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
-  <div style="overflow-x:auto">
-    <table class="table">
+  <div class="table-wrap table-wrap--sticky permisos-matriz">
+    <table class="table table--compact">
       <thead>
         <tr>
-          <th>Módulo</th>
+          <th class="col-sticky">Módulo</th>
           <?php foreach (PERMISOS_ROLES as $rolLabel): ?>
-            <th style="text-align:center"><?= e($rolLabel) ?></th>
+            <th class="col-center"><?= e($rolLabel) ?></th>
           <?php endforeach; ?>
           <?php foreach ($cargos as $c): ?>
-            <th style="text-align:center"><?= e($c['nombre']) ?></th>
+            <th class="col-center"><?= e($c['nombre']) ?></th>
           <?php endforeach; ?>
         </tr>
       </thead>
       <tbody>
         <?php $seccionActual = null; foreach ($modulos as $clave => $m): ?>
           <?php if ($m['seccion'] !== $seccionActual): $seccionActual = $m['seccion']; ?>
-            <tr>
-              <td colspan="<?= 1 + count(PERMISOS_ROLES) + count($cargos) ?>" style="opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;background:var(--color-surface)">
+            <tr class="table-section-row">
+              <td colspan="<?= 1 + count(PERMISOS_ROLES) + count($cargos) ?>">
                 <?= e($seccionActual) ?>
               </td>
             </tr>
           <?php endif; ?>
           <tr>
-            <td><i class="bi bi-<?= e($m['icono'] ?: 'dot') ?>" style="opacity:.6;margin-right:8px"></i><?= e($m['label']) ?></td>
+            <td class="col-sticky"><i class="bi bi-<?= e($m['icono'] ?: 'dot') ?> permisos-ic" aria-hidden="true"></i><?= e($m['label']) ?></td>
             <?php foreach (array_keys(PERMISOS_ROLES) as $rol): ?>
-              <td style="text-align:center">
-                <input type="checkbox" name="permitido[<?= e($clave) ?>][<?= e($rol) ?>]" value="1"
+              <td class="col-center">
+                <input type="checkbox" class="checkbox" name="permitido[<?= e($clave) ?>][<?= e($rol) ?>]" value="1"
                   <?= empty($negados[$clave][$rol]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
             <?php foreach ($cargos as $c): ?>
               <?php if ((int) $m['id'] === 0) continue; ?>
-              <td style="text-align:center">
-                <input type="checkbox" name="permitido_cargo[<?= (int) $m['id'] ?>][<?= (int) $c['id'] ?>]" value="1"
+              <td class="col-center">
+                <input type="checkbox" class="checkbox" name="permitido_cargo[<?= (int) $m['id'] ?>][<?= (int) $c['id'] ?>]" value="1"
                   <?= empty($negadosCargo[$m['id']][$c['id']]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
@@ -86,32 +87,32 @@
     aplicando igual; esto solo puede quitar una acción puntual, nunca dar acceso a otra dirección.
   </p>
 
-  <div style="overflow-x:auto">
-    <table class="table">
+  <div class="table-wrap table-wrap--sticky permisos-matriz">
+    <table class="table table--compact">
       <thead>
         <tr>
-          <th>Acción</th>
+          <th class="col-sticky">Acción</th>
           <?php foreach (PERMISOS_ROLES as $rolLabel): ?>
-            <th style="text-align:center"><?= e($rolLabel) ?></th>
+            <th class="col-center"><?= e($rolLabel) ?></th>
           <?php endforeach; ?>
           <?php foreach ($cargos as $c): ?>
-            <th style="text-align:center"><?= e($c['nombre']) ?></th>
+            <th class="col-center"><?= e($c['nombre']) ?></th>
           <?php endforeach; ?>
         </tr>
       </thead>
       <tbody>
         <?php foreach (ACCIONES_PERMISOS as $accionClave => $accionLabel): ?>
           <tr>
-            <td><?= e($accionLabel) ?></td>
+            <td class="col-sticky"><?= e($accionLabel) ?></td>
             <?php foreach (array_keys(PERMISOS_ROLES) as $rol): ?>
-              <td style="text-align:center">
-                <input type="checkbox" name="accion_permitida[<?= e($accionClave) ?>][<?= e($rol) ?>]" value="1"
+              <td class="col-center">
+                <input type="checkbox" class="checkbox" name="accion_permitida[<?= e($accionClave) ?>][<?= e($rol) ?>]" value="1"
                   <?= empty($accionesNegadas[$accionClave][$rol]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
             <?php foreach ($cargos as $c): ?>
-              <td style="text-align:center">
-                <input type="checkbox" name="accion_permitida_cargo[<?= e($accionClave) ?>][<?= (int) $c['id'] ?>]" value="1"
+              <td class="col-center">
+                <input type="checkbox" class="checkbox" name="accion_permitida_cargo[<?= e($accionClave) ?>][<?= (int) $c['id'] ?>]" value="1"
                   <?= empty($accionesNegadasCargo[$accionClave][$c['id']]) ? 'checked' : '' ?>>
               </td>
             <?php endforeach; ?>
@@ -121,7 +122,7 @@
     </table>
   </div>
 
-  <button type="submit" class="doc-btn doc-btn--primary" style="margin-top:20px"><i class="bi bi-check-lg"></i> Guardar permisos</button>
+  <button type="submit" class="btn btn-primary" style="margin-top:20px"><i class="bi bi-check-lg"></i> Guardar permisos</button>
 </form>
 
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

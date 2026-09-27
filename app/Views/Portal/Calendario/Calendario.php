@@ -93,9 +93,9 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
   </div>
 
   <aside class="cal-agenda box-card box-card--flat">
-    <div class="pill-tabs cal-agenda-tabs" id="calAgendaTabs">
-      <button type="button" class="pill-tab active" data-tab="dia">Hoy</button>
-      <button type="button" class="pill-tab" data-tab="mes">Este mes</button>
+    <div class="segmented cal-agenda-tabs" id="calAgendaTabs">
+      <button type="button" class="segmented-item active" data-tab="dia">Hoy</button>
+      <button type="button" class="segmented-item" data-tab="mes">Este mes</button>
     </div>
 
     <div class="cal-agenda-panel" id="calPanelDia">
@@ -154,9 +154,9 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
 
     <?php if ($esAdmin): ?>
       <span class="cal-pop-label">Visibilidad</span>
-      <div class="pill-tabs cal-pop-visibilidad" id="calPopVisibilidad">
-        <button type="button" class="pill-tab active" data-valor="publico"><i class="bi bi-globe2"></i> Público</button>
-        <button type="button" class="pill-tab" data-valor="privado"><i class="bi bi-lock-fill"></i> Privado</button>
+      <div class="segmented cal-pop-visibilidad" id="calPopVisibilidad">
+        <button type="button" class="segmented-item active" data-valor="publico"><i class="bi bi-globe2"></i> Público</button>
+        <button type="button" class="segmented-item" data-valor="privado"><i class="bi bi-lock-fill"></i> Privado</button>
       </div>
       <input type="hidden" name="visibilidad" id="calPopVisibilidadInput" value="publico">
     <?php else: ?>

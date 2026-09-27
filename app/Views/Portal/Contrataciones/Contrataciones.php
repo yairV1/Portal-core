@@ -10,7 +10,7 @@
       <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
         <input type="text" readonly value="<?= e($origenAbsoluto . BASE_URL . '/contratacion?token=' . $nuevoToken) ?>"
                id="enlaceNuevo" style="flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--color-divider); font-size:12.5px">
-        <button type="button" class="tag tag-accent" id="btnCopiarEnlace" style="border:none; cursor:pointer">
+        <button type="button" class="btn btn-sm" id="btnCopiarEnlace" >
           <i class="bi bi-clipboard"></i> Copiar
         </button>
       </div>
@@ -18,7 +18,7 @@
   </div>
 <?php endif; ?>
 
-<div class="section-head"><h4>Generar nuevo enlace</h4></div>
+<div class="section-header"><h2 class="section-heading">Generar nuevo enlace</h2></div>
 <form action="<?= BASE_URL ?>/contrataciones/generar" method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:32px">
   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
   <input type="text" name="nombre_referencia" placeholder="Nombre del candidato (referencia interna)" style="flex:1 1 260px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider)">
@@ -32,12 +32,12 @@
     Vigencia (días, mínimo 15)
     <input type="number" name="dias_vigencia" value="15" min="15" style="width:70px; padding:9px 10px; border-radius:8px; border:1px solid var(--color-divider)">
   </label>
-  <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer">
+  <button type="submit" class="btn btn-sm btn-primary">
     <i class="bi bi-plus-lg"></i> Generar enlace
   </button>
 </form>
 
-<div class="section-head"><h4>Enlaces e información recibida</h4></div>
+<div class="section-header"><h2 class="section-heading">Enlaces e información recibida</h2></div>
 <?php if (!$contrataciones): ?>
   <p class="text-muted">Todavía no se ha generado ningún enlace.</p>
 <?php else: foreach ($contrataciones as $c): ?>
@@ -46,7 +46,7 @@
       <?php $expirado = strtotime($c['expira_en']) < time(); ?>
       <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap">
         <div>
-          <span class="tag <?= $expirado ? 'tag-danger' : 'tag-warning' ?>"><?= $expirado ? 'Expirado' : 'Pendiente' ?></span>
+          <span class="badge <?= $expirado ? 'badge-danger' : 'badge-warning' ?>"><?= $expirado ? 'Expirado' : 'Pendiente' ?></span>
           <strong style="margin-left:8px"><?= e($c['nombre_referencia'] ?: 'Sin referencia') ?></strong>
           <?php if ($c['postulacion_nombre']): ?><span class="text-muted"> · vinculado a <?= e($c['postulacion_nombre']) ?></span><?php endif; ?>
           <span class="text-muted"> · vence <?= (new DateTime($c['expira_en']))->format('d/m/Y') ?></span>
@@ -54,7 +54,7 @@
         <form action="<?= BASE_URL ?>/contrataciones/eliminar" method="post" data-confirm="¿Eliminar este enlace sin usar?" data-confirm-ok="Eliminar">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
           <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
-          <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer"><i class="bi bi-trash"></i></button>
+          <button type="submit" class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
         </form>
       </div>
       <div style="margin-top:10px; font-size:12.5px; opacity:.7; word-break:break-all">
@@ -63,7 +63,7 @@
     <?php else: ?>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap">
         <div>
-          <span class="tag tag-success">Completado</span>
+          <span class="badge badge-success">Completado</span>
           <strong style="margin-left:8px"><?= e($c['nombre']) ?></strong>
           <span class="text-muted"> · <?= e($c['cedula']) ?> · <?= e($c['celular']) ?> · <?= e($c['email']) ?></span>
         </div>
@@ -71,7 +71,7 @@
       </div>
       <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
         <?php foreach ($documentosPorContratacion[$c['id']] ?? [] as $doc): ?>
-          <a class="tag tag-accent" href="<?= BASE_URL ?>/contrataciones/descargar?id=<?= (int) $doc['id'] ?>">
+          <a class="btn btn-sm" href="<?= BASE_URL ?>/contrataciones/descargar?id=<?= (int) $doc['id'] ?>">
             <i class="bi bi-download"></i> <?= e($doc['tipo']) ?>
           </a>
         <?php endforeach; ?>

@@ -14,7 +14,7 @@
      7. Encabezado de página
 
    Nombres heredados: algunas reglas también cubren clases viejas
-   (.doc-btn, .doc-input, .tag…) para que todo el Portal se vea igual YA,
+   para que todo el Portal se vea igual YA,
    antes de migrar cada vista. Están marcadas "heredado" — no usarlas en
    código nuevo; se borran cuando la última vista deje de usarlas.
    ══════════════════════════════════════════════════════════ */
@@ -73,7 +73,7 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
    .btn-link          acción de texto
    Tamaños: .btn-sm / .btn-lg · Forma: .btn-icon · .btn-block
    Estado: .is-loading (lo pone core/ui.js al enviar un formulario)   */
-.btn, .doc-btn /* heredado */{
+.btn{
   --btn-bg: var(--bg-surface);
   --btn-bg-hover: var(--bg-subtle);
   --btn-fg: var(--text);
@@ -93,19 +93,19 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
   transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease,
               color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
-.btn:hover, .doc-btn:hover{
+.btn:hover{
   background: var(--btn-bg-hover); border-color: var(--btn-border-hover); color: var(--btn-fg);
 }
-.btn:active, .doc-btn:active{ box-shadow: none; }
-.btn:focus-visible, .doc-btn:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
-.btn i, .doc-btn i{ font-size: 1.05em; line-height: 1; }
+.btn:active{ box-shadow: none; }
+.btn:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+.btn i{ font-size: 1.05em; line-height: 1; }
 
-.btn-primary, .doc-btn--primary{
+.btn-primary{
   --btn-bg: var(--primary-solid); --btn-bg-hover: var(--primary-solid-hover);
   --btn-fg: var(--text-on-primary);
   --btn-border: var(--primary-solid); --btn-border-hover: var(--primary-solid-hover);
 }
-.btn-secondary, .doc-btn--secondary{ /* igual al base: nombre explícito para legibilidad */ }
+.btn-secondary{ /* igual al base: nombre explícito para legibilidad */ }
 .btn-ghost{
   --btn-bg: transparent; --btn-bg-hover: var(--bg-muted);
   --btn-border: transparent; --btn-border-hover: transparent; --btn-shadow: none;
@@ -116,7 +116,7 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
   --btn-bg: var(--danger-solid); --btn-bg-hover: color-mix(in srgb, var(--danger-solid) 86%, #000);
   --btn-fg: var(--text-on-primary); --btn-border: var(--danger-solid); --btn-border-hover: color-mix(in srgb, var(--danger-solid) 86%, #000);
 }
-.btn-danger-soft, .doc-btn--danger{
+.btn-danger-soft{
   --btn-bg: var(--bg-surface); --btn-bg-hover: var(--danger-subtle);
   --btn-fg: var(--danger-text);
   --btn-border: color-mix(in srgb, var(--danger) 30%, var(--border));
@@ -131,17 +131,16 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
 
 .btn-sm{ min-height: var(--control-sm); padding: 0 10px; font-size: var(--text-sm); gap: 6px; }
 .btn-lg{ min-height: var(--control-lg); padding: 0 20px; font-size: 14.5px; }
-.btn-icon, .doc-btn--icon{ width: var(--control-md); min-width: var(--control-md); padding: 0; }
+.btn-icon{ width: var(--control-md); min-width: var(--control-md); padding: 0; }
 .btn-sm.btn-icon{ width: var(--control-sm); min-width: var(--control-sm); }
 .btn-lg.btn-icon{ width: var(--control-lg); min-width: var(--control-lg); }
 .btn-block{ display: flex; width: 100%; }
 
-.btn:is([disabled], [aria-disabled="true"], .is-disabled),
-.doc-btn:is([disabled], [aria-disabled="true"]){
+.btn:is([disabled], [aria-disabled="true"], .is-disabled){
   opacity: .5; cursor: not-allowed; pointer-events: none; box-shadow: none;
 }
-.btn.is-loading, .doc-btn.is-loading{ color: transparent !important; pointer-events: none; }
-.btn.is-loading::after, .doc-btn.is-loading::after{
+.btn.is-loading{ color: transparent !important; pointer-events: none; }
+.btn.is-loading::after{
   content: ""; position: absolute; inset: 0; margin: auto;
   width: 16px; height: 16px; border-radius: 50%;
   border: 2px solid var(--btn-fg); border-right-color: transparent;
@@ -175,8 +174,7 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
   display: flex; align-items: flex-start; gap: 6px;
 }
 
-.input, .select, .textarea,
-.doc-input, .doc-select /* heredado */{
+.input, .select, .textarea{
   display: block; width: 100%;
   min-height: var(--control-md); padding: 8px 12px;
   border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
@@ -184,9 +182,9 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
   font: inherit; font-size: var(--text-base); line-height: 1.4;
   transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, background-color var(--duration-fast) ease;
 }
-.input::placeholder, .textarea::placeholder, .doc-input::placeholder{ color: var(--text-subtle); opacity: 1; }
-.input:hover, .select:hover, .textarea:hover, .doc-input:hover, .doc-select:hover{ border-color: var(--text-subtle); }
-.input:focus, .select:focus, .textarea:focus, .doc-input:focus, .doc-select:focus{
+.input::placeholder, .textarea::placeholder{ color: var(--text-subtle); opacity: 1; }
+.input:hover, .select:hover, .textarea:hover{ border-color: var(--text-subtle); }
+.input:focus, .select:focus, .textarea:focus{
   outline: none; border-color: var(--primary); box-shadow: var(--focus-ring);
 }
 .input:is(:disabled, [readonly]), .select:disabled, .textarea:is(:disabled, [readonly]){
@@ -199,13 +197,14 @@ html:has(dialog.modal[open], dialog.drawer[open]){ overflow: hidden; }
 :is(.input, .select, .textarea)[aria-invalid="true"]:focus{
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent);
 }
-.select, select.doc-input, .doc-select{
+.select{
   appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23857f84' viewBox='0 0 16 16'%3E%3Cpath d='M1.65 5.65a.5.5 0 0 1 .7 0L8 11.29l5.65-5.64a.5.5 0 0 1 .7.7l-6 6a.5.5 0 0 1-.7 0l-6-6a.5.5 0 0 1 0-.7'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; background-size: 12px;
 }
 .textarea{ min-height: 92px; padding: 10px 12px; resize: vertical; line-height: var(--leading-normal); }
 .input-sm{ min-height: var(--control-sm); padding: 4px 10px; font-size: var(--text-sm); }
+.select-inline{ display: inline-block; width: auto; max-width: 240px; }
 
 /* Campo con ícono dentro (búsqueda, etc.) */
 .input-group{ position: relative; display: flex; align-items: center; min-width: 0; }
@@ -276,14 +275,14 @@ input[type="checkbox"].checkbox, input[type="radio"].radio{
 /* ── 3. Control segmentado / pestañas en píldora ─────────────
    Botones:  <div class="segmented" role="tablist"><button class="segmented-item is-active">…
    Radios:   <div class="segmented"><input type="radio" id=a><label for=a>…
-   .pill-tabs/.pill-tab son el nombre heredado del mismo componente.   */
-.segmented, .pill-tabs{
+   */
+.segmented{
   display: inline-flex; gap: 2px; padding: 3px; max-width: 100%;
   background: var(--bg-muted); border-radius: 10px;
   overflow-x: auto; scrollbar-width: none;
 }
-.segmented::-webkit-scrollbar, .pill-tabs::-webkit-scrollbar{ display: none; }
-.segmented-item, .pill-tab, .segmented > label{
+.segmented::-webkit-scrollbar{ display: none; }
+.segmented-item, .segmented > label{
   flex: 0 0 auto;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 32px; padding: 0 14px; border: 0; border-radius: 8px;
@@ -292,13 +291,12 @@ input[type="checkbox"].checkbox, input[type="radio"].radio{
   text-decoration: none; cursor: pointer;
   transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
 }
-.segmented-item:hover, .pill-tab:hover, .segmented > label:hover{ color: var(--text); }
+.segmented-item:hover, .segmented > label:hover{ color: var(--text); }
 .segmented-item:is(.is-active, .active, [aria-selected="true"]),
-.pill-tab:is(.is-active, .active, [aria-selected="true"]),
 .segmented > input:checked + label{
   background: var(--bg-raised); color: var(--primary-text); box-shadow: var(--shadow-xs);
 }
-.segmented-item:focus-visible, .pill-tab:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+.segmented-item:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
 .segmented > input{ position: absolute; opacity: 0; pointer-events: none; }
 .segmented > input:focus-visible + label{ box-shadow: var(--focus-ring); }
 .segmented--block{ display: flex; width: 100%; }
@@ -307,33 +305,28 @@ input[type="checkbox"].checkbox, input[type="radio"].radio{
 
 /* ── 4. Badges ───────────────────────────────────────────────
    .badge + .badge-{primary|success|warning|danger|info} · .badge-dot
-   .tag/.tag-* son el nombre heredado.                                 */
-.badge, .tag{
+   .badge-accent = .badge-primary (nombre que llega desde la BD en KPIs). */
+.badge{
   display: inline-flex; align-items: center; gap: 5px;
   min-height: 22px; padding: 2px 9px; border-radius: var(--radius-full);
   background: var(--bg-muted); color: var(--text);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); line-height: 1.3;
   white-space: nowrap; vertical-align: middle;
 }
-.badge-primary, .tag-accent{ background: var(--primary-subtle); color: var(--primary-text); }
-.badge-success, .tag-success{ background: var(--success-subtle); color: var(--success-text); }
-.badge-warning, .tag-warning{ background: var(--warning-subtle); color: var(--warning-text); }
-.badge-danger, .tag-danger{ background: var(--danger-subtle); color: var(--danger-text); }
-.badge-info, .tag-info{ background: var(--info-subtle); color: var(--info-text); }
-.badge-neutral, .tag-neutral{ background: var(--bg-muted); color: var(--text-muted); }
-.badge-outline, .tag-outline{
+.badge-primary, .badge-accent{ background: var(--primary-subtle); color: var(--primary-text); }
+.badge-success{ background: var(--success-subtle); color: var(--success-text); }
+.badge-warning{ background: var(--warning-subtle); color: var(--warning-text); }
+.badge-danger{ background: var(--danger-subtle); color: var(--danger-text); }
+.badge-info{ background: var(--info-subtle); color: var(--info-text); }
+.badge-neutral{ background: var(--bg-muted); color: var(--text-muted); }
+.badge-outline{
   background: transparent; border: 1px solid var(--primary); color: var(--primary-text);
   transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
 }
-a.tag-outline:hover{ background: var(--primary-solid); color: var(--text-on-primary); }
+a.badge-outline:hover{ background: var(--primary-solid); color: var(--text-on-primary); }
 .badge-dot::before{
   content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: 0 0 auto;
 }
-/* heredado: .tag usado como botón/enlace en vistas aún sin migrar */
-a.tag, button.tag{ border: 0; font-family: inherit; cursor: pointer; text-decoration: none; transition: filter var(--duration-fast) ease; }
-a.tag:hover, button.tag:hover{ filter: brightness(.95); }
-button.tag:focus-visible, a.tag:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
-
 /* Sello de versión de documento (tabla de documentos recientes) */
 .tag-stamp{
   display: inline-block; border: 1.5px solid var(--primary); color: var(--primary-text);
@@ -468,6 +461,9 @@ button.tag:focus-visible, a.tag:focus-visible{ outline: none; box-shadow: var(--
 .section-heading i{ color: var(--primary); font-size: .95em; }
 .section-desc{ margin: 2px 0 0; font-size: var(--text-sm); color: var(--text-muted); }
 .section-header + .section-desc{ margin: -4px 0 var(--space-3); }
+.section-header--spaced{ margin-top: var(--space-10); }
+.section-header .section-desc{ margin: 0; }
+.section-header .btn-link{ min-height: var(--control-sm); font-size: var(--text-sm); }
 .page-section + .page-section{ margin-top: var(--space-10); }
 
 .section-title{ margin: 0 0 14px; }
@@ -858,3 +854,7 @@ dialog.drawer.is-closing::backdrop{ animation: ui-fade-out 180ms ease forwards; 
 .progress-cell{ width: 180px; }
 .progress-track{ display: block; height: 6px; background: var(--bg-muted); border-radius: var(--radius-full); overflow: hidden; }
 .progress-fill{ display: block; height: 6px; background: var(--primary); border-radius: var(--radius-full); transition: width .6s var(--ease-out); }
+
+/* Estado vacío dentro de una grilla de KPIs: ocupa toda la fila, sin
+   borde propio (la grilla ya es la caja). */
+:is(.kpis, .modulo-kpis) > .empty-state{ grid-column: 1 / -1; border: 0; }

@@ -1,7 +1,7 @@
 /* Gestión Documental — repositorio institucional público (ver migración
    053_gestion_documental_publico.sql). Reusa .doc-categoria-card/
-   .doc-archivo-row/.doc-actions/.doc-btn/.tag ya definidos en
-   centro-documental.css y paneles.css; esto solo agrega lo específico de
+   .doc-archivo-row/.doc-actions ya definidos en
+   centro-documental.css y core/components.css; esto solo agrega lo específico de
    esta vista: el grupo de iconos de acción que se revela al pasar el mouse
    o al enfocar por teclado (nunca texto siempre visible), y la zona de
    carga en línea para un documento recién creado sin archivo todavía. */

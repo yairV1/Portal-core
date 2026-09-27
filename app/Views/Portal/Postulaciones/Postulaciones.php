@@ -9,7 +9,8 @@
     <p>Cuando alguien se postule desde la landing pública, aparecerá acá.</p>
   </div>
 <?php else: ?>
-  <table class="table">
+  <div class="table-wrap">
+  <table class="table table--stack">
     <thead>
       <tr>
         <th>Candidato</th>
@@ -24,22 +25,22 @@
       <?php foreach ($postulaciones as $p): ?>
         <tr>
           <td><strong><?= e($p['nombre']) ?></strong></td>
-          <td style="opacity:.8">
+          <td class="cell-muted">
             <?= e($p['correo']) ?><br>
             <span style="opacity:.7"><?= e($p['telefono']) ?></span>
           </td>
           <td><?= e($p['cargo_aplicado']) ?></td>
-          <td style="opacity:.7"><?= $p['vacante_titulo'] ? e($p['vacante_titulo']) : '—' ?></td>
-          <td style="opacity:.7"><?= (new DateTime($p['creado_en']))->format('d/m/Y H:i') ?></td>
+          <td class="cell-muted"><?= $p['vacante_titulo'] ? e($p['vacante_titulo']) : '—' ?></td>
+          <td class="cell-muted"><?= (new DateTime($p['creado_en']))->format('d/m/Y H:i') ?></td>
           <td>
             <div style="display:flex; gap:8px; flex-wrap:wrap">
               <?php if ($p['hoja_vida_archivo']): ?>
-                <a class="tag tag-accent" href="<?= BASE_URL ?>/postulaciones/descargar?tipo=cv&id=<?= (int) $p['id'] ?>">
+                <a class="btn btn-sm" href="<?= BASE_URL ?>/postulaciones/descargar?tipo=cv&id=<?= (int) $p['id'] ?>">
                   <i class="bi bi-file-earmark-pdf"></i> CV
                 </a>
               <?php endif; ?>
               <?php if ($p['foto_archivo']): ?>
-                <a class="tag tag-neutral" href="<?= BASE_URL ?>/postulaciones/descargar?tipo=foto&id=<?= (int) $p['id'] ?>">
+                <a class="btn btn-sm" href="<?= BASE_URL ?>/postulaciones/descargar?tipo=foto&id=<?= (int) $p['id'] ?>">
                   <i class="bi bi-image"></i> Foto
                 </a>
               <?php endif; ?>
@@ -49,5 +50,6 @@
       <?php endforeach; ?>
     </tbody>
   </table>
+  </div>
 <?php endif; ?>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

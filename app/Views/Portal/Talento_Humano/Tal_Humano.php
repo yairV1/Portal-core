@@ -13,7 +13,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 </div>
 
 <?php if ($esAdminDoc && usuario_puede_ver_archivo_de('contrataciones')): ?>
-  <a href="<?= BASE_URL ?>/contrataciones" class="doc-btn doc-btn--secondary" style="margin-bottom:20px">
+  <a href="<?= BASE_URL ?>/contrataciones" class="btn" style="margin-bottom:20px">
     <i class="bi bi-file-earmark-person"></i> Contrataciones — generar enlace para un candidato
   </a>
 <?php endif; ?>
@@ -34,7 +34,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
   </div>
 
   <?php if ($terminoBusqueda === ''): ?>
-    <div class="doc-section-head"><h4>Organigrama</h4></div>
+    <div class="section-header"><h2 class="section-heading">Organigrama</h2></div>
     <?php foreach ($organigrama as $nivel): ?>
       <p class="section-title" style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:18px 0 10px"><?= e($nivel['label']) ?></p>
       <div class="tile-grid" style="margin-bottom:8px">
@@ -47,7 +47,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
       </div>
     <?php endforeach; ?>
 
-    <div class="doc-section-head" style="margin-top:28px"><h4>Competencias institucionales</h4></div>
+    <div class="section-header section-header--spaced"><h2 class="section-heading">Competencias institucionales</h2></div>
     <div class="box-card box-card--flat" style="margin-bottom:28px">
       <?php foreach ($competencias as $c): ?>
         <div class="exec-row">
@@ -60,7 +60,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 
   <?php if ($terminoBusqueda !== ''): ?>
 
-    <div class="doc-section-head"><h4>Resultados para "<?= e($terminoBusqueda) ?>"</h4>
+    <div class="section-header"><h2 class="section-heading">Resultados para "<?= e($terminoBusqueda) ?>"</h2>
       <a href="<?= BASE_URL ?>/talento-humano" class="doc-clear-search">Limpiar búsqueda</a>
     </div>
     <?php if (!$resultadosBusqueda): ?>
@@ -85,9 +85,9 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
             <span class="doc-actions">
               <?php $urlVer = BASE_URL . '/talento-humano/carpetas/descargar?id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
-              <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <a class="btn btn-sm" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
               <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
-                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/talento-humano') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+                <a class="btn btn-sm btn-icon" href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/talento-humano') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
               <?php endif; ?>
             </span>
           </div>
@@ -97,7 +97,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
 
   <?php else: ?>
 
-    <div class="doc-section-head"><h4>Categorías</h4></div>
+    <div class="section-header"><h2 class="section-heading">Categorías</h2></div>
     <?php if (!$subcarpetas): ?>
       <div class="empty-state">
         <div class="ic"><i class="bi bi-folder2"></i></div>
@@ -107,8 +107,8 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
           <form action="<?= BASE_URL ?>/talento-humano/carpetas/crear" method="post" class="doc-empty-create">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
-            <input type="text" name="nombre" placeholder="Nombre de la categoría" required class="doc-input">
-            <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-plus-lg"></i> Crear categoría</button>
+            <input type="text" name="nombre" placeholder="Nombre de la categoría" required class="input">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Crear categoría</button>
           </form>
         <?php endif; ?>
       </div>
@@ -126,7 +126,7 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
                 <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                 <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                 <input type="hidden" name="carpeta_id" value="<?= (int) $c['id'] ?>">
-                <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon doc-cat-borrar" aria-label="Eliminar categoría"><i class="bi bi-trash"></i></button>
+                <button type="submit" class="btn btn-danger-soft btn-icon doc-cat-borrar" aria-label="Eliminar categoría"><i class="bi bi-trash"></i></button>
               </form>
             <?php endif; ?>
           </article>
@@ -136,14 +136,14 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
             <span class="ic"><i class="bi bi-folder-plus"></i></span>
-            <input type="text" name="nombre" placeholder="Nueva categoría" required class="doc-input">
-            <button type="submit" class="doc-btn doc-btn--secondary">Crear</button>
+            <input type="text" name="nombre" placeholder="Nueva categoría" required class="input">
+            <button type="submit" class="btn">Crear</button>
           </form>
         <?php endif; ?>
       </div>
     <?php endif; ?>
 
-    <div class="doc-section-head"><h4>Archivos recientes</h4></div>
+    <div class="section-header"><h2 class="section-heading">Archivos recientes</h2></div>
     <?php if (!$archivosRecientes): ?>
       <div class="empty-state">
         <div class="ic"><i class="bi bi-file-earmark-text"></i></div>
@@ -165,16 +165,16 @@ $esAdminDoc = usuario_admin_de($direccion['id'] ?? null);
             <span class="doc-actions">
               <?php $urlVer = BASE_URL . '/talento-humano/carpetas/descargar?id=' . (int) $a['id'];
               $esPdf = strtolower(pathinfo($a['archivo'], PATHINFO_EXTENSION)) === 'pdf'; ?>
-              <a class="doc-btn doc-btn--secondary" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
+              <a class="btn btn-sm" href="<?= e($urlVer) ?>" target="_blank" rel="noopener"><i class="bi <?= $esPdf ? 'bi-eye' : 'bi-download' ?>"></i> <?= $esPdf ? 'Ver' : 'Descargar' ?></a>
               <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
-                <a class="doc-btn doc-btn--secondary doc-btn--icon" href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/talento-humano') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
+                <a class="btn btn-sm btn-icon" href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode(BASE_URL . '/talento-humano') ?>" title="<?= $esAdminDoc ? 'Editar' : 'Abrir' ?> dentro del portal"><i class="bi <?= $esAdminDoc ? 'bi-pencil-square' : 'bi-eye' ?>"></i></a>
               <?php endif; ?>
               <?php if ($esAdminDoc): ?>
                 <form action="<?= BASE_URL ?>/talento-humano/carpetas/eliminar" method="post" data-confirm="¿Eliminar este documento?" data-confirm-ok="Eliminar">
                   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                   <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
                   <input type="hidden" name="archivo_id" value="<?= (int) $a['id'] ?>">
-                  <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
+                  <button type="submit" class="btn btn-sm btn-danger-soft btn-icon" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
                 </form>
               <?php endif; ?>
             </span>

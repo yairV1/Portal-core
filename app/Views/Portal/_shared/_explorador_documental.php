@@ -19,7 +19,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
 <link rel="stylesheet" href="<?= v('/assets/portal/css/explorador.css') ?>">
 
 <section class="explorador" id="explorador">
-  <div class="section-head"><h4><?= e($carpetaActual['nombre']) ?></h4></div>
+  <div class="section-header"><h2 class="section-heading"><?= e($carpetaActual['nombre']) ?></h2></div>
 
   <?php if (count($rutaCarpetas) > 1): // solo suma valor cuando de verdad hay subcarpetas de por medio. ?>
     <nav class="explorador-breadcrumb" aria-label="Ruta de carpetas">
@@ -186,7 +186,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
           </a>
           <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
             <a href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode($urlVolverExplorador) ?>"
-               class="doc-btn doc-btn--secondary doc-btn--icon explorador-item-editar" aria-label="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal" title="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal">
+               class="btn btn-icon explorador-item-editar" aria-label="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal" title="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal">
               <i class="bi <?= $esAdminExplorador ? 'bi-pencil-square' : 'bi-eye' ?>"></i>
             </a>
           <?php endif; ?>
@@ -195,7 +195,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
               <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
               <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
               <input type="hidden" name="archivo_id" value="<?= (int) $a['id'] ?>">
-              <button type="submit" class="doc-btn doc-btn--danger doc-btn--icon explorador-item-borrar" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
+              <button type="submit" class="btn btn-danger-soft btn-icon explorador-item-borrar" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
             </form>
           <?php endif; ?>
         </div>
@@ -209,7 +209,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
       <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
       <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActual['id'] ?>">
-      <button type="submit" class="doc-btn doc-btn--danger">
+      <button type="submit" class="btn btn-danger-soft">
         <i class="bi bi-trash"></i> Eliminar esta carpeta
       </button>
     </form>

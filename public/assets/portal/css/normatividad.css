@@ -1,8 +1,2 @@
-  /* .table y .tag base ya viven en paneles.css. */
-  .tag-ok{background:var(--color-success-bg);color:var(--color-success)}
-  .tag-neutral{background:var(--color-surface);color:rgba(32,30,29,.75)}
-
-  /* ── normatividad ── */
-  .norma-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
-  .norma-chip{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:6px 11px;cursor:pointer;border:1px solid var(--color-divider);background:transparent;color:var(--color-text);border-radius:999px}
-  .norma-chip.active{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+  /* .table, .badge y .chip vienen de core/components.css. */
+  .norma-chips{margin-bottom:var(--space-5)}

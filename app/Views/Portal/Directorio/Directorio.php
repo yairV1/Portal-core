@@ -10,8 +10,8 @@
     <p>Este módulo todavía no tiene contenido cargado. Vuelve pronto.</p>
   </div>
 <?php else: foreach ($directorioPorNivel as $nivel => $cargos): ?>
-  <div class="section-head" style="margin-top:28px">
-    <h4><?= e($nivel) ?></h4>
+  <div class="section-header section-header--spaced">
+    <h2 class="section-heading"><?= e($nivel) ?></h2>
   </div>
   <div class="dir-lista">
     <?php foreach ($cargos as $c): ?>

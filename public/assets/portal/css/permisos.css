@@ -1,0 +1,4 @@
+/* Permisos por rol (ver Permisos.php). La matriz usa .table-wrap--sticky,
+   .col-sticky y .table-section-row de core/components.css; acá solo lo
+   propio de esta página. */
+.permisos-ic{ margin-right: var(--space-2); color: var(--text-muted); }

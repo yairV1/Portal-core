@@ -28,18 +28,18 @@
   function pad(n) { return String(n).padStart(2, '0'); }
   function puedeEditar(ev) { return esAdmin || ev.usuario_id === miId; }
 
-  // ── Selector de visibilidad (pill-tabs, dentro del formulario) ──
+  // ── Selector de visibilidad (segmented, dentro del formulario) ──
   var visibilidadGrupo = document.getElementById('calPopVisibilidad');
   var visibilidadInput = document.getElementById('calPopVisibilidadInput');
   function marcarVisibilidad(valor) {
     if (!visibilidadGrupo) return;
-    visibilidadGrupo.querySelectorAll('.pill-tab').forEach(function (b) {
+    visibilidadGrupo.querySelectorAll('.segmented-item').forEach(function (b) {
       b.classList.toggle('active', b.dataset.valor === valor);
     });
     visibilidadInput.value = valor;
   }
   if (visibilidadGrupo) {
-    visibilidadGrupo.querySelectorAll('.pill-tab').forEach(function (boton) {
+    visibilidadGrupo.querySelectorAll('.segmented-item').forEach(function (boton) {
       boton.addEventListener('click', function () { marcarVisibilidad(boton.dataset.valor); });
     });
   }
@@ -132,9 +132,9 @@
   var panelDia = document.getElementById('calPanelDia');
   var panelMes = document.getElementById('calPanelMes');
   if (tabs) {
-    tabs.querySelectorAll('.pill-tab').forEach(function (tab) {
+    tabs.querySelectorAll('.segmented-item').forEach(function (tab) {
       tab.addEventListener('click', function () {
-        tabs.querySelectorAll('.pill-tab').forEach(function (t) { t.classList.remove('active'); });
+        tabs.querySelectorAll('.segmented-item').forEach(function (t) { t.classList.remove('active'); });
         tab.classList.add('active');
         var esDia = tab.dataset.tab === 'dia';
         panelDia.hidden = !esDia;

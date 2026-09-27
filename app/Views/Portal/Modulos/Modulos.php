@@ -5,7 +5,7 @@
 <p class="page-desc">Todo el Portal, agrupado en un solo lugar — cada tarjeta te lleva a su propia página.</p>
 
 <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
-  <div class="section-head"><h4>Administración</h4></div>
+  <div class="section-header"><h2 class="section-heading">Administración</h2></div>
   <div class="doc-categorias">
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/usuarios" class="doc-categoria-link">
@@ -64,7 +64,7 @@ foreach (modulos_config() as $clave => $m) {
   }
   if (!$modulosSeccion) continue;
   ?>
-<div class="section-head"<?= $nombreSeccion === 'Direcciones' ? '' : ' style="margin-top:32px"' ?>><h4><?= e($nombreSeccion) ?></h4></div>
+<div class="section-header<?= $nombreSeccion === 'Direcciones' ? '' : ' section-header--spaced' ?>"><h2 class="section-heading"><?= e($nombreSeccion) ?></h2></div>
 <div class="doc-categorias">
   <?php foreach ($modulosSeccion as $clave => $m): ?>
     <article class="doc-categoria-card">

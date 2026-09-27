@@ -1,4 +1,4 @@
-  /* Tokens de color/profundidad, .table y .tag ya viven en paneles.css
+  /* Tokens y componentes (.table, .badge…) vienen de core/tokens.css y core/components.css
      (componente único) — acá solo lo específico de esta página. */
 * {
   box-sizing: border-box;
@@ -50,7 +50,6 @@
     background:linear-gradient(135deg, #4d0c2c 0%, #9e1f63 62%, #f15a29 100%);
     display:flex; align-items:flex-start; justify-content:space-between; gap:36px; flex-wrap:wrap;
   }
-  .inicio-page .hero{background:linear-gradient(135deg, #4d0c2c 0%, #9e1f63 62%, #f15a29 100%) !important}
   .hero-rio{position:absolute; inset:0; opacity:.35; pointer-events:none}
   .hero-main{position:relative; max-width:600px}
   .hero .kicker{background:rgba(255,255,255,.16); color:#fff}
@@ -67,7 +66,7 @@
      hero, así que esta franja va deliberadamente sin sombra/acento propio
      (evita un segundo elemento "elevado" compitiendo con el hero). Se
      sobreescribe solo por id para no tocar el componente compartido
-     .kpis/.kpi de paneles.css que usan Tableros/SGI/Talento Humano. */
+     .kpis/.kpi de core/components.css que usan Tableros/SGI/Talento Humano. */
   #kpis {
     box-shadow: none;
     border: none;
@@ -97,62 +96,8 @@
     align-items: start
   }
 
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--color-divider);
-    padding-bottom: 10px;
-    margin-bottom: 20px
-  }
+  .accesos > .empty-state, .noticias > .empty-state { grid-column: 1 / -1; }
 
-  /* Icono delante del título de cada widget — más apoyo visual, menos
-     "solo texto" (ver también .widget-empty debajo). */
-  .section-head h4 {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px
-  }
-
-  .section-head h4 i {
-    color: var(--color-accent);
-    font-size: 15px
-  }
-
-  /* Estado vacío liviano: un widget sin datos no debe pesar como uno con
-     contenido real (antes era título + un párrafo de texto largo) — acá es
-     un icono chico + una sola línea corta, sin ocupar más espacio del que
-     ocuparía una fila real de contenido. */
-  .widget-empty {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 0;
-    margin: 0;
-    opacity: .5;
-    font-size: 12.5px;
-    /* Cuando el vacío cae dentro de un grid (#kpis/.accesos/.noticias),
-       que ocupe todas las columnas en vez de una sola — sin esto, .accesos
-       (grid-template-columns con auto-fill, no auto-fit) mete la línea en
-       la primera pista de 150px y el texto se parte en 3 renglones en vez
-       de quedar en una sola línea corta como en el resto de widgets. */
-    grid-column: 1 / -1;
-    white-space: nowrap
-  }
-
-  .widget-empty i { font-size: 15px }
-
-  .section-note {
-    font-size: 12px;
-    color: var(--color-neutral-700);
-    font-weight: 700
-  }
-
-  .section-head--spaced { margin-top: 44px; }
-  .section-head--spaced-small { margin-top: 34px; }
-  .section-head--compact { margin-bottom: 6px; }
-  .section-head .btn-link { min-height: 32px; padding: 5px 9px; font-size: 12px; }
-  .cell-muted { opacity: .7; }
   .document-status { display: inline-flex; align-items: center; gap: 8px; }
   .item-copy { flex: 1; min-width: 0; }
   .item-copy .t, .item-copy .m, .evento .dia, .evento .mes, .evento .h { display: block; }
@@ -212,10 +157,19 @@
     margin-top: 4px
   }
 
+  /* var(--color-text) en vez del #201e1d fijo de antes: ese hex es
+     exactamente --text en tema claro, pero en oscuro --text pasa a casi
+     blanco — con el valor fijo el borde "sugerido" quedaba invisible sobre
+     el fondo oscuro (mismo color casi que --bg-canvas). Con el token se ve
+     en los dos temas. */
   .acceso-sugerido {
-    border-top-color: #201e1d
+    border-top-color: var(--color-text)
   }
 
+  /* background/color: antes var(--color-accent-2) (naranja sólido) + #fff
+     — contraste ~2.7:1 a 3.4:1 según tema, por debajo del 4.5:1 que pide un
+     texto de este tamaño. Con el par subtle/text (mismo patrón que ya usan
+     los badges de estado) queda con contraste AA en los dos temas. */
   .acceso-badge {
     position: absolute;
     top: -9px;
@@ -224,8 +178,8 @@
     font-weight: 800;
     letter-spacing: .06em;
     text-transform: uppercase;
-    background: var(--color-accent-2);
-    color: #fff;
+    background: var(--secondary-subtle);
+    color: var(--secondary-text);
     padding: 3px 8px;
     border-radius: 999px;
   }
@@ -276,10 +230,10 @@
     opacity: .55
   }
 
-  /* .tag-stamp ya vive en paneles.css (componente único — lo usan
+  /* .tag-stamp viene de core/components.css (componente único — lo usan
      Inicio y Gestión Documental). */
 
-  /* — columna lateral: sin caja, mismo patrón de .section-head que ya
+  /* — columna lateral: sin caja, mismo patrón de .section-header que ya
      usan Accesos/Documentos en la columna principal — */
 
   .pendiente {

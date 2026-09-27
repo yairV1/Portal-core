@@ -7,9 +7,9 @@
 
 <?php
 $ROL_LABEL = [
-    'admin'           => ['Administrador global', 'tag-accent'],
-    'admin_direccion' => ['Administrador de dirección', 'tag-info'],
-    'usuario'         => ['Usuario (solo lectura)', 'tag'],
+    'admin'           => ['Administrador global', 'badge-primary'],
+    'admin_direccion' => ['Administrador de dirección', 'badge-info'],
+    'usuario'         => ['Usuario (solo lectura)', 'badge-neutral'],
 ];
 $campoTexto = function (string $name, string $valor = '', string $placeholder = '', string $tipo = 'text', bool $required = false) {
     ?>
@@ -58,7 +58,7 @@ $campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibl
 };
 ?>
 
-<div class="section-head"><h4>Nuevo usuario</h4></div>
+<div class="section-header"><h2 class="section-heading">Nuevo usuario</h2></div>
 <form action="<?= BASE_URL ?>/usuarios/crear" method="post" class="usuarios-form" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px;align-items:flex-start">
   <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
   <?php $campoTexto('nombre', '', 'Nombre completo', 'text', true); ?>
@@ -70,7 +70,7 @@ $campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibl
   <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus"></i> Crear usuario</button>
 </form>
 
-<div class="section-head"><h4>Todos los usuarios</h4></div>
+<div class="section-header"><h2 class="section-heading">Todos los usuarios</h2></div>
 <?php if (!$usuarios): ?>
   <div class="empty-state">
     <div class="ic"><i class="bi bi-people"></i></div>
@@ -78,22 +78,23 @@ $campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibl
     <p>Crea el primero con el formulario de arriba.</p>
   </div>
 <?php else: ?>
-  <table class="table">
-    <thead><tr><th>Nombre</th><th>Correo</th><th>Cargo</th><th>Rol</th><th>Creado</th><th></th></tr></thead>
+  <div class="table-wrap">
+  <table class="table table--stack">
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Cargo</th><th>Rol</th><th>Creado</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
     <tbody>
-      <?php foreach ($usuarios as $u): [$rolLabel, $rolClase] = $ROL_LABEL[$u['rol']] ?? ['Desconocido', 'tag']; ?>
+      <?php foreach ($usuarios as $u): [$rolLabel, $rolClase] = $ROL_LABEL[$u['rol']] ?? ['Desconocido', 'badge-neutral']; ?>
         <tr>
           <td><strong><?= e($u['nombre']) ?></strong><?= (int) $u['id'] === (int) $_SESSION['usuario_id'] ? ' <span class="text-muted">(tú)</span>' : '' ?></td>
-          <td style="opacity:.75"><?= e($u['correo']) ?></td>
-          <td style="opacity:.75"><?= e($u['cargo_nombre'] ?? '—') ?></td>
+          <td class="cell-muted"><?= e($u['correo']) ?></td>
+          <td class="cell-muted"><?= e($u['cargo_nombre'] ?? '—') ?></td>
           <td>
-            <span class="tag <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
+            <span class="badge <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
             <?php if ($u['direccion_id'] !== null): ?>
-              <span class="tag" style="margin-left:4px" title="Solo ve esta dirección"><i class="bi bi-eye"></i> <?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
+              <span class="badge" style="margin-left:4px" title="Solo ve esta dirección"><i class="bi bi-eye"></i> <?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
             <?php endif; ?>
           </td>
-          <td style="opacity:.6"><?= e((new DateTime($u['creado_en']))->format('d/m/Y')) ?></td>
-          <td style="white-space:nowrap">
+          <td class="cell-muted"><?= e((new DateTime($u['creado_en']))->format('d/m/Y')) ?></td>
+          <td class="col-actions">
             <details class="usuarios-editar-details">
               <summary class="btn" style="display:inline-flex;cursor:pointer"><i class="bi bi-pencil"></i> Editar</summary>
               <form action="<?= BASE_URL ?>/usuarios/editar" method="post" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding:14px;border:1px solid var(--color-divider);border-radius:10px;background:var(--color-surface)">
@@ -120,6 +121,7 @@ $campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibl
       <?php endforeach; ?>
     </tbody>
   </table>
+  </div>
 <?php endif; ?>
 
 <script>

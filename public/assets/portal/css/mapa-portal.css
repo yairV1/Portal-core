@@ -12,4 +12,4 @@
   .sitemap-rule{height:2px;background:var(--color-divider);margin-bottom:12px}
   .sitemap-hijo{font-size:12.5px;padding:5px 0;opacity:.75}
 
-  /* .tag-outline ya vive en paneles.css. */
+  /* .badge-outline viene de core/components.css. */

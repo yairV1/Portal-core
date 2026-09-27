@@ -31,9 +31,9 @@ $TABS = [
 ];
 ?>
 
-<div class="pill-tabs" id="landingTabs" style="margin-bottom:22px;">
+<div class="segmented" id="landingTabs" style="margin-bottom:22px;">
   <?php foreach ($TABS as $tabId => $tabDef): ?>
-    <button type="button" class="pill-tab" data-tab="<?= e($tabId) ?>"><i class="bi <?= e($tabDef['icono']) ?>"></i> <?= e($tabDef['label']) ?></button>
+    <button type="button" class="segmented-item" data-tab="<?= e($tabId) ?>"><i class="bi <?= e($tabDef['icono']) ?>"></i> <?= e($tabDef['label']) ?></button>
   <?php endforeach; ?>
 </div>
 
@@ -58,7 +58,7 @@ $TABS = [
                     style="padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); font-family:inherit;"><?= e($actual['descripcion']) ?></textarea>
         <?php endif; ?>
         <div>
-          <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;">
+          <button type="submit" class="btn btn-sm">
             <i class="bi bi-check-lg"></i> Guardar
           </button>
         </div>
@@ -88,7 +88,7 @@ $TABS = [
                     style="padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); font-family:inherit;"><?= e($actual['descripcion']) ?></textarea>
         <?php endif; ?>
         <div>
-          <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;">
+          <button type="submit" class="btn btn-sm">
             <i class="bi bi-check-lg"></i> Guardar
           </button>
         </div>
@@ -96,7 +96,7 @@ $TABS = [
     </div>
   <?php endforeach; ?>
 
-  <div class="section-head" style="margin-top:24px;"><h4>Estadísticas (franja "¿Por qué Portal CORE?")</h4></div>
+  <div class="section-header" style="margin-top:24px;"><h2 class="section-heading">Estadísticas (franja "¿Por qué Portal CORE?")</h2></div>
   <?php foreach ($landingEstadisticas as $item): ?>
     <div class="box-card" style="margin-bottom:10px; padding:14px 18px;">
       <form action="<?= BASE_URL ?>/contenido-landing/estadistica/guardar" method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -106,12 +106,12 @@ $TABS = [
         <?php $campoTexto('descripcion', $item['descripcion'], 'Descripción corta', '1 1 220px'); ?>
         <?php $campoTexto('icono', $item['icono'], 'Ícono Bootstrap (ej: shield-check)', '0 0 170px'); ?>
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
-        <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
+        <button type="submit" class="btn btn-sm btn-icon" aria-label="Guardar cambios"><i class="bi bi-check-lg"></i></button>
       </form>
       <form action="<?= BASE_URL ?>/contenido-landing/estadistica/eliminar" method="post" data-confirm="¿Eliminar esta estadística?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-        <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
+        <button type="submit" class="btn btn-sm btn-danger-soft"><i class="bi bi-trash"></i> Eliminar</button>
       </form>
     </div>
   <?php endforeach; ?>
@@ -122,7 +122,7 @@ $TABS = [
       <?php $campoTexto('descripcion', '', 'Descripción corta', '1 1 220px'); ?>
       <?php $campoTexto('icono', '', 'Ícono Bootstrap (ej: shield-check)', '0 0 170px'); ?>
       <?php $campoTexto('orden', '0', 'Orden', '0 0 70px'); ?>
-      <button type="submit" class="tag tag-accent" style="border:none; cursor:pointer;"><i class="bi bi-plus-lg"></i> Agregar</button>
+      <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar</button>
     </form>
   </div>
 </div>
@@ -143,13 +143,13 @@ $TABS = [
         <textarea name="descripcion" rows="2" placeholder="Descripción"
                   style="padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); font-family:inherit;"><?= e($actual['descripcion']) ?></textarea>
         <div>
-          <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i> Guardar</button>
+          <button type="submit" class="btn btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
         </div>
       </form>
     </div>
   <?php endforeach; ?>
 
-  <div class="section-head" style="margin-top:24px;"><h4>Módulos destacados</h4></div>
+  <div class="section-header" style="margin-top:24px;"><h2 class="section-heading">Módulos destacados</h2></div>
   <?php foreach ($landingModulos as $item): ?>
     <div class="box-card" style="margin-bottom:10px; padding:14px 18px;">
       <form action="<?= BASE_URL ?>/contenido-landing/modulo/guardar" method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -166,12 +166,12 @@ $TABS = [
           <?php endforeach; ?>
         </select>
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
-        <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
+        <button type="submit" class="btn btn-sm btn-icon" aria-label="Guardar cambios"><i class="bi bi-check-lg"></i></button>
       </form>
       <form action="<?= BASE_URL ?>/contenido-landing/modulo/eliminar" method="post" data-confirm="¿Eliminar este módulo de la portada?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-        <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
+        <button type="submit" class="btn btn-sm btn-danger-soft"><i class="bi bi-trash"></i> Eliminar</button>
       </form>
     </div>
   <?php endforeach; ?>
@@ -189,7 +189,7 @@ $TABS = [
         <option value="futuro" selected>Futuro (gris)</option>
       </select>
       <?php $campoTexto('orden', '0', 'Orden', '0 0 70px'); ?>
-      <button type="submit" class="tag tag-accent" style="border:none; cursor:pointer;"><i class="bi bi-plus-lg"></i> Agregar</button>
+      <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar</button>
     </form>
   </div>
 </div>
@@ -210,13 +210,13 @@ $TABS = [
         <textarea name="descripcion" rows="2" placeholder="Descripción"
                   style="padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); font-family:inherit;"><?= e($actual['descripcion']) ?></textarea>
         <div>
-          <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i> Guardar</button>
+          <button type="submit" class="btn btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
         </div>
       </form>
     </div>
   <?php endforeach; ?>
 
-  <div class="section-head" style="margin-top:24px;"><h4>Tarjetas "Para tu rol"</h4></div>
+  <div class="section-header" style="margin-top:24px;"><h2 class="section-heading">Tarjetas "Para tu rol"</h2></div>
   <?php foreach ($landingRoles as $item): ?>
     <div class="box-card" style="margin-bottom:10px; padding:14px 18px;">
       <form action="<?= BASE_URL ?>/contenido-landing/rol/guardar" method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -231,12 +231,12 @@ $TABS = [
           <?php endforeach; ?>
         </select>
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
-        <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
+        <button type="submit" class="btn btn-sm btn-icon" aria-label="Guardar cambios"><i class="bi bi-check-lg"></i></button>
       </form>
       <form action="<?= BASE_URL ?>/contenido-landing/rol/eliminar" method="post" data-confirm="¿Eliminar esta tarjeta de rol?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-        <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
+        <button type="submit" class="btn btn-sm btn-danger-soft"><i class="bi bi-trash"></i> Eliminar</button>
       </form>
     </div>
   <?php endforeach; ?>
@@ -252,7 +252,7 @@ $TABS = [
         <option value="dark">Oscuro</option>
       </select>
       <?php $campoTexto('orden', '0', 'Orden', '0 0 70px'); ?>
-      <button type="submit" class="tag tag-accent" style="border:none; cursor:pointer;"><i class="bi bi-plus-lg"></i> Agregar</button>
+      <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar</button>
     </form>
   </div>
 </div>
@@ -271,13 +271,13 @@ $TABS = [
           <?php $campoTexto('titulo', $actual['titulo'], 'Título', '2 1 320px'); ?>
         </div>
         <div>
-          <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i> Guardar</button>
+          <button type="submit" class="btn btn-sm"><i class="bi bi-check-lg"></i> Guardar</button>
         </div>
       </form>
     </div>
   <?php endforeach; ?>
 
-  <div class="section-head" style="margin-top:24px;"><h4>Pasos ("Cómo empiezas")</h4></div>
+  <div class="section-header" style="margin-top:24px;"><h2 class="section-heading">Pasos ("Cómo empiezas")</h2></div>
   <?php foreach ($landingPasos as $item): ?>
     <div class="box-card" style="margin-bottom:10px; padding:14px 18px;">
       <form action="<?= BASE_URL ?>/contenido-landing/paso/guardar" method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -287,12 +287,12 @@ $TABS = [
         <?php $campoTexto('descripcion', $item['descripcion'], 'Descripción', '2 1 260px'); ?>
         <?php $campoTexto('icono', $item['icono'], 'Ícono Bootstrap', '0 0 140px'); ?>
         <?php $campoTexto('orden', (string) $item['orden'], 'Orden', '0 0 70px'); ?>
-        <button type="submit" class="tag tag-neutral" style="border:none; cursor:pointer;"><i class="bi bi-check-lg"></i></button>
+        <button type="submit" class="btn btn-sm btn-icon" aria-label="Guardar cambios"><i class="bi bi-check-lg"></i></button>
       </form>
       <form action="<?= BASE_URL ?>/contenido-landing/paso/eliminar" method="post" data-confirm="¿Eliminar este paso?" data-confirm-ok="Eliminar" style="display:inline;">
         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-        <button type="submit" class="tag tag-danger" style="border:none; cursor:pointer; margin-top:8px;"><i class="bi bi-trash"></i> Eliminar</button>
+        <button type="submit" class="btn btn-sm btn-danger-soft"><i class="bi bi-trash"></i> Eliminar</button>
       </form>
     </div>
   <?php endforeach; ?>
@@ -303,7 +303,7 @@ $TABS = [
       <?php $campoTexto('descripcion', '', 'Descripción', '2 1 260px'); ?>
       <?php $campoTexto('icono', '', 'Ícono Bootstrap', '0 0 140px'); ?>
       <?php $campoTexto('orden', '0', 'Orden', '0 0 70px'); ?>
-      <button type="submit" class="tag tag-accent" style="border:none; cursor:pointer;"><i class="bi bi-plus-lg"></i> Agregar</button>
+      <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar</button>
     </form>
   </div>
 </div>
@@ -320,7 +320,7 @@ $TABS = [
   // estabas — no siempre en "Hero".
   (function () {
     var STORAGE_KEY = 'landingTabActiva';
-    var botones = document.querySelectorAll('#landingTabs .pill-tab');
+    var botones = document.querySelectorAll('#landingTabs .segmented-item');
     var paneles = document.querySelectorAll('.landing-tab-panel');
 
     function activar(tabId) {

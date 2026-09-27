@@ -1,11 +1,11 @@
 /* Mi Google Drive — página propia (ver MiDrive.php y
-   DriveUsuarioController.php). Reusa .doc-btn/.doc-archivos/.doc-archivo-row/
-   .doc-select/.doc-section-head ya definidos en centro-documental.css; esto
+   DriveUsuarioController.php). Reusa .btn/.doc-archivos/.doc-archivo-row/
+   .select/.section-header del sistema de diseño (core/components.css); esto
    solo agrega lo específico de esta página. */
 
 /* Estado vacío liviano (oauth sin configurar, sin archivos, sin carpeta
    asignada, importación en progreso). Mismo criterio visual que
-   .empty-state (paneles.css): un aviso sin datos reales no debe pesar como
+   .empty-state (core/components.css): un aviso sin datos reales no debe pesar como
    una fila de contenido real. No se reusa .empty-state tal cual porque esa
    es una CAJA con box-shadow (regla del proyecto: máximo una caja con
    sombra por pantalla) — esto es solo una línea de texto atenuada.
@@ -34,6 +34,6 @@
 }
 /* Los enlaces de descarga heredaban el azul subrayado por defecto del
    navegador (rgb(0,0,238)) — ninguna vista de este proyecto usa ese azul,
-   todo enlace/acción pasa por --color-accent (paneles.css). */
+   todo enlace/acción pasa por --color-accent (core/components.css). */
 .gd-drive-tree a{ color:var(--color-text); text-decoration:underline; text-decoration-color:var(--color-divider) }
 .gd-drive-tree a:hover{ color:var(--color-accent); text-decoration-color:var(--color-accent) }

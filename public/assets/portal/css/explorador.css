@@ -38,6 +38,6 @@
 
 @media (max-width:720px){
   .explorador-toolbar,.explorador-form-inline{ width:100%; flex-direction:column; align-items:stretch }
-  .explorador-form-inline .doc-input,.explorador-form-inline .doc-btn{ width:100% }
+  .explorador-form-inline .input,.explorador-form-inline .btn{ width:100% }
   .explorador-drive-input{ min-width:0 }
 }
