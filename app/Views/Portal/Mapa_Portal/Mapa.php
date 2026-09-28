@@ -1,15 +1,17 @@
 <?php $titulo = 'Mapa del portal'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/mapa-portal.css">
-<h1 class="page-title">Arquitectura de información</h1>
-      <p class="page-desc" style="max-width:700px">El Portal CORE replica la estructura organizacional de COREDUCACIÓN: cada Dirección es un módulo, cada área un espacio de trabajo con su documentación, indicadores y responsables. Máximo tres clics hasta cualquier contenido.</p>
+<link rel="stylesheet" href="<?= v('/assets/portal/css/mapa-portal.css') ?>">
+<?php ui_page_header([
+    'title' => 'Mapa del portal',
+    'desc'  => 'El Portal CORE replica la estructura organizacional de COREDUCACIÓN: cada Dirección es un módulo y cada área un espacio de trabajo con su documentación, indicadores y responsables.',
+]); ?>
 
       <div class="sitemap-grid" id="sitemapGrid">
         <?php if (!$sitemapModulos): ?>
-          <p class="text-muted">Sin módulos registrados por ahora.</p>
+<div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-diagram-3" aria-hidden="true"></i></div><p>Sin módulos registrados por ahora.</p></div>
         <?php else: foreach ($sitemapModulos as $m): ?>
           <div class="sitemap-card">
             <div class="sitemap-kicker">
-              <span><i class="bi bi-<?= e($m['icono'] ?: 'app') ?>"></i></span>
+              <span aria-hidden="true"><i class="bi bi-<?= e($m['icono'] ?: 'app') ?>" aria-hidden="true"></i></span>
               <span class="sitemap-nivel"><?= e($m['nivel']) ?></span>
             </div>
             <?php if ($m['ruta']): ?>
@@ -28,9 +30,7 @@
         <?php endforeach; endif; ?>
       </div>
 
-      <div class="subsection">
-        <h4 class="section-title">Contenido tipo de cada área</h4>
-        <div class="chip-row" id="contenidoTipo"></div>
-      </div>
-<script src="<?= BASE_URL ?>/assets/portal/js/mapa-portal.js"></script>
+      <div class="section-header section-header--spaced"><h2 class="section-heading">Contenido tipo de cada área</h2></div>
+      <div class="chip-row" id="contenidoTipo"></div>
+<script src="<?= v('/assets/portal/js/mapa-portal.js') ?>"></script>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

@@ -14,31 +14,38 @@
     { nombre: 'Suite ISO', categoria: 'Sistema de Gestión Integral', icon: '<i class="bi bi-folder2-open"></i>' }
   ];
 
-  const favoritos = new Set(); // ids marcados con estrella
+  // Favoritos: preferencia de cada persona en su navegador (antes se
+  // perdían al recargar). Los accesos todavía no abren el sistema real —
+  // ver el aviso de Aplicaciones.php — así que la tarjeta no finge hacerlo.
+  const CLAVE_FAV = 'appsFavoritas';
+  let favoritos = new Set();
+  try { favoritos = new Set(JSON.parse(localStorage.getItem(CLAVE_FAV) || '[]')); } catch (e) {}
+  const guardar = () => { try { localStorage.setItem(CLAVE_FAV, JSON.stringify([...favoritos])); } catch (e) {} };
 
   function renderApps(){
-    document.getElementById('appsGrid').innerHTML = APPS.map((a,i) => `
-      <div class="app-card" data-idx="${i}">
+    const orden = APPS.map((a, i) => ({ a, i })).sort((x, y) => (favoritos.has(y.i) - favoritos.has(x.i)));
+    document.getElementById('appsGrid').innerHTML = orden.map(({ a, i }) => `
+      <div class="app-card">
         <div class="app-card-top">
-          <span class="app-icon">${a.icon}</span>
-          <span class="app-star ${favoritos.has(i)?'fav':''}" data-star="${i}"><i class="bi bi-star-fill"></i></span>
+          <span class="app-icon" aria-hidden="true">${a.icon}</span>
+          <button type="button" class="btn btn-ghost btn-sm btn-icon app-star${favoritos.has(i) ? ' fav' : ''}" data-star="${i}"
+                  aria-pressed="${favoritos.has(i)}" aria-label="Marcar ${a.nombre} como favorita">
+            <i class="bi ${favoritos.has(i) ? 'bi-star-fill' : 'bi-star'}" aria-hidden="true"></i>
+          </button>
         </div>
         <span class="app-nombre">${a.nombre}</span>
         <span class="app-categoria">${a.categoria}</span>
-        <span class="app-abrir">Abrir ↗</span>
+        <span class="badge badge-neutral app-estado">Por conectar</span>
       </div>`).join('');
 
     document.querySelectorAll('.app-star').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
+      el.addEventListener('click', () => {
         const idx = Number(el.dataset.star);
         favoritos.has(idx) ? favoritos.delete(idx) : favoritos.add(idx);
+        guardar();
         renderApps();
-      });
-    });
-    document.querySelectorAll('.app-card').forEach(el => {
-      el.addEventListener('click', () => {
-        alert('Abrir "' + APPS[el.dataset.idx].nombre + '" (login federado — se conecta con el sistema real)');
+        const mismo = document.querySelector('.app-star[data-star="' + idx + '"]');
+        if (mismo) mismo.focus();
       });
     });
   }

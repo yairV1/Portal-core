@@ -1,7 +1,6 @@
 <?php $titulo = 'Calendario'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/calendario.css">
-<h1 class="page-title">Calendario</h1>
-<p class="page-desc">Agenda institucional — mismos eventos que ya ves en Inicio, ahora en calendario completo.</p>
+<link rel="stylesheet" href="<?= v('/assets/portal/css/calendario.css') ?>">
+<?php ui_page_header(['title' => 'Calendario', 'desc' => 'Agenda institucional: los mismos eventos de Inicio, en vista de calendario completo.']); ?>
 
 <?php
 // Cualquier usuario logueado puede crear eventos propios (privados por
@@ -44,7 +43,7 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
     echo '>';
     echo '<span class="agenda-item-text">';
     echo '<span class="agenda-item-t">';
-    if ($ev['visibilidad'] === 'privado') echo '<i class="bi bi-lock-fill" title="Privado"></i> ';
+    if ($ev['visibilidad'] === 'privado') echo '<i class="bi bi-lock-fill" title="Privado" aria-hidden="true"></i> ';
     echo e($ev['titulo']);
     echo '</span>';
     $sub = [];
@@ -52,10 +51,10 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
     if (!empty($ev['hora_lugar'])) $sub[] = $ev['hora_lugar'];
     if ($sub) echo '<span class="agenda-item-h">' . e(implode(' · ', $sub)) . '</span>';
     echo '</span>';
-    if ($puedeEditar) echo '<i class="bi bi-pencil-fill agenda-item-editar" title="Editar"></i>';
+    if ($puedeEditar) echo '<i class="bi bi-pencil-fill agenda-item-editar" title="Editar" aria-hidden="true"></i>';
     echo "</{$infoTag}>";
 
-    echo '<a class="evento-ics" href="' . BASE_URL . '/calendario/exportar?id=' . (int) $ev['id'] . '" title="Agregar a mi calendario (.ics)"><i class="bi bi-calendar-plus"></i></a>';
+    echo '<a class="evento-ics" href="' . BASE_URL . '/calendario/exportar?id=' . (int) $ev['id'] . '" title="Agregar a mi calendario (.ics)"><i class="bi bi-calendar-plus" aria-hidden="true"></i></a>';
     echo '</div>';
 }
 ?>
@@ -63,9 +62,9 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
 <div class="cal-layout">
   <div class="cal-main box-card">
     <div class="cal-toolbar">
-      <a class="cal-nav" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesAnterior) ?>"><i class="bi bi-chevron-left"></i></a>
+      <a class="cal-nav" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesAnterior) ?>"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
       <h4 class="cal-titulo"><?= e(ucfirst($calTituloMes)) ?></h4>
-      <a class="cal-nav" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesSiguiente) ?>"><i class="bi bi-chevron-right"></i></a>
+      <a class="cal-nav" href="<?= BASE_URL ?>/calendario?mes=<?= e($calMesSiguiente) ?>"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
       <a class="cal-hoy" href="<?= BASE_URL ?>/calendario">Hoy</a>
     </div>
 
@@ -84,7 +83,7 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
           <?php if ($dia !== null): ?>
             <span class="cal-num"><?= $dia ?></span>
             <?php foreach ($eventosPorDia[$dia] ?? [] as $ev): ?>
-              <span class="cal-evento<?= $ev['visibilidad'] === 'privado' ? ' cal-evento-privado' : '' ?>" title="<?= e($ev['titulo'] . ' · ' . $ev['hora_lugar']) ?>"><?php if ($ev['visibilidad'] === 'privado'): ?><i class="bi bi-lock-fill"></i> <?php endif; ?><?= e($ev['titulo']) ?></span>
+              <span class="cal-evento<?= $ev['visibilidad'] === 'privado' ? ' cal-evento-privado' : '' ?>" title="<?= e($ev['titulo'] . ' · ' . $ev['hora_lugar']) ?>"><?php if ($ev['visibilidad'] === 'privado'): ?><i class="bi bi-lock-fill" aria-hidden="true"></i> <?php endif; ?><?= e($ev['titulo']) ?></span>
             <?php endforeach; ?>
           <?php endif; ?>
         </<?= $tag ?>>
@@ -93,9 +92,9 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
   </div>
 
   <aside class="cal-agenda box-card box-card--flat">
-    <div class="pill-tabs cal-agenda-tabs" id="calAgendaTabs">
-      <button type="button" class="pill-tab active" data-tab="dia">Hoy</button>
-      <button type="button" class="pill-tab" data-tab="mes">Este mes</button>
+    <div class="segmented cal-agenda-tabs" id="calAgendaTabs">
+      <button type="button" class="segmented-item active" data-tab="dia">Hoy</button>
+      <button type="button" class="segmented-item" data-tab="mes">Este mes</button>
     </div>
 
     <div class="cal-agenda-panel" id="calPanelDia">
@@ -126,50 +125,56 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
 
     <?php if ($puedeCrear): ?>
     <button type="button" class="btn btn-primary cal-agenda-nuevo" id="calNuevoBtn">
-      <i class="bi bi-plus-lg"></i> Nuevo evento
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo evento
     </button>
     <?php endif; ?>
   </aside>
 </div>
 
 <?php if ($puedeCrear): ?>
-<div class="cal-popover" id="calPopover" hidden>
+<div class="cal-popover" id="calPopover" role="dialog" aria-modal="false" aria-labelledby="calPopTituloModo" hidden>
   <div class="cal-pop-head">
-    <strong id="calPopTituloModo"><i class="bi bi-calendar-event"></i> Nuevo evento</strong>
-    <button type="button" class="cal-pop-close" id="calPopClose" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+    <h2 class="modal-title" id="calPopTituloModo"><i class="bi bi-calendar-event" aria-hidden="true"></i> Nuevo evento</h2>
+    <button type="button" class="modal-close" id="calPopClose" aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
   </div>
-  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-pop-form" id="calPopForm">
+  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-pop-form form-stack" id="calPopForm">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="hidden" name="id" id="calPopId" value="">
 
-    <label class="cal-pop-label" for="calPopTitulo">Título</label>
-    <input type="text" name="titulo" id="calPopTitulo" placeholder="Ej. Día de descanso institucional" maxlength="200" required>
-
-    <label class="cal-pop-label" for="calPopFecha">Fecha</label>
-    <input type="date" name="fecha" id="calPopFecha" required>
-
-    <label class="cal-pop-label" for="calPopHoraLugar">Hora y lugar</label>
-    <input type="text" name="hora_lugar" id="calPopHoraLugar" placeholder="Ej. 10:00 · Sala de juntas" maxlength="100">
+    <div class="field">
+      <label class="field-label" for="calPopTitulo">Título <span class="req" aria-hidden="true">*</span></label>
+      <input class="input" type="text" name="titulo" id="calPopTitulo" placeholder="Ej. Día de descanso institucional" maxlength="200" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="calPopFecha">Fecha <span class="req" aria-hidden="true">*</span></label>
+      <input class="input" type="date" name="fecha" id="calPopFecha" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="calPopHoraLugar">Hora y lugar <span class="opt">(opcional)</span></label>
+      <input class="input" type="text" name="hora_lugar" id="calPopHoraLugar" placeholder="Ej. 10:00 · Sala de juntas" maxlength="100">
+    </div>
 
     <?php if ($esAdmin): ?>
-      <span class="cal-pop-label">Visibilidad</span>
-      <div class="pill-tabs cal-pop-visibilidad" id="calPopVisibilidad">
-        <button type="button" class="pill-tab active" data-valor="publico"><i class="bi bi-globe2"></i> Público</button>
-        <button type="button" class="pill-tab" data-valor="privado"><i class="bi bi-lock-fill"></i> Privado</button>
+      <div class="field">
+        <span class="field-label" id="calPopVisibilidadL">Visibilidad</span>
+        <div class="segmented segmented--block cal-pop-visibilidad" id="calPopVisibilidad" role="group" aria-labelledby="calPopVisibilidadL">
+          <button type="button" class="segmented-item active" data-valor="publico"><i class="bi bi-globe2" aria-hidden="true"></i> Público</button>
+          <button type="button" class="segmented-item" data-valor="privado"><i class="bi bi-lock-fill" aria-hidden="true"></i> Privado</button>
+        </div>
+        <input type="hidden" name="visibilidad" id="calPopVisibilidadInput" value="publico">
       </div>
-      <input type="hidden" name="visibilidad" id="calPopVisibilidadInput" value="publico">
     <?php else: ?>
-      <p class="cal-pop-nota"><i class="bi bi-lock-fill"></i> Se crea como recordatorio privado, solo visible para ti.</p>
+      <p class="field-hint cal-pop-nota"><i class="bi bi-lock-fill" aria-hidden="true"></i> Se crea como recordatorio privado, solo visible para ti.</p>
     <?php endif; ?>
 
-    <button type="submit" class="btn btn-primary" id="calPopSubmitBtn"><i class="bi bi-check-lg"></i> Crear evento</button>
+    <button type="submit" class="btn btn-primary btn-block" id="calPopSubmitBtn"><i class="bi bi-check-lg" aria-hidden="true"></i> Crear evento</button>
   </form>
-  <form action="<?= BASE_URL ?>/calendario/eliminar-evento" method="post" class="cal-pop-delete" id="calPopDeleteForm" hidden onsubmit="return confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')">
+  <form action="<?= BASE_URL ?>/calendario/eliminar-evento" method="post" class="cal-pop-delete" id="calPopDeleteForm" hidden data-confirm="¿Eliminar este evento?" data-confirm-text="Esta acción no se puede deshacer." data-confirm-ok="Eliminar">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="hidden" name="id" id="calPopDeleteId" value="">
-    <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i> Eliminar evento</button>
+    <button type="submit" class="btn btn-danger-soft btn-block"><i class="bi bi-trash3" aria-hidden="true"></i> Eliminar evento</button>
   </form>
 </div>
 <?php endif; ?>
@@ -185,6 +190,6 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
   const CAL_MI_ID = <?= json_encode($miId) ?>;
   const CAL_ES_ADMIN = <?= json_encode($esAdmin) ?>;
 </script>
-<script src="<?= BASE_URL ?>/assets/portal/js/calendario.js"></script>
+<script src="<?= v('/assets/portal/js/calendario.js') ?>"></script>
 <?php endif; ?>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

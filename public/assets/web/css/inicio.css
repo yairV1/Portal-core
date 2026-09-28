@@ -1,6 +1,8 @@
-:root{
-    --magenta:#9E1F63; --magenta-dark:#6E1747;
-    --orange:#F15A29; --orange-dark:#C23F16;
+/* Colores de marca desde core/tokens.css (compartidos con Portal y Login);
+     papel, tinta y líneas son la personalidad propia de las landings. */
+  :root{
+    --magenta:var(--brand-magenta-600); --magenta-dark:var(--brand-magenta-800);
+    --orange:var(--brand-orange-500); --orange-dark:var(--brand-orange-700);
     --ink:#1A1A1A; --paper:#FBF8F6; --paper-2:#F1E6E0;
     --line:#E4D6DA; --text:#2B2226; --text-soft:#7C6A70;
   }
@@ -16,7 +18,20 @@
 
   /* ---------------- Nav ---------------- */
   .navbar{ position:sticky; top:0; z-index:60; background:rgba(251,248,246,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:16px 0; }
-  .nav-row{ display:flex; align-items:center; justify-content:space-between; }
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  /* Botón de menú (solo en pantallas angostas, ver @media 760px) */
+  .menu-toggle{
+    display:none; flex-direction:column; justify-content:center; align-items:center; gap:4px;
+    flex:0 0 auto; width:40px; height:40px; margin-left:auto; padding:0; cursor:pointer;
+    background:none; border:1px solid var(--line); border-radius:50%;
+  }
+  .menu-toggle span{ display:block; width:16px; height:2px; border-radius:2px; background:var(--ink); transition:transform .18s ease, opacity .18s ease; }
+  .navbar.is-open .menu-toggle span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+  .navbar.is-open .menu-toggle span:nth-child(2){ opacity:0; }
+  .navbar.is-open .menu-toggle span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+  .why-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:56px; align-items:start; }
+  .why-kicker{ color:var(--magenta-dark); }
+  .role-intro-titulo{ font-size:1.25rem; }
   .brand{ display:flex; align-items:center; gap:9px; font-size:1rem; color:var(--ink); }
   .brand img{ height:28px; width:auto; display:block; }
   .brand-logo-full{ height:42px !important; }
@@ -57,7 +72,17 @@
     .hero{ margin:12px 12px 0; min-height:460px; }
     .hero-content{ padding:36px 24px 40px; }
     nav.links{ display:none; }
-    .menu-toggle{ display:flex; background:none; border:1px solid var(--magenta); width:36px; height:36px; align-items:center; justify-content:center; border-radius:50%; }
+    .menu-toggle{ display:inline-flex; }
+    /* Menú desplegado (ver web/js/nav.js) */
+    .navbar.is-open nav.links{
+      display:flex; flex-direction:column; align-items:stretch; gap:0;
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--paper); border-bottom:1px solid var(--line); box-shadow:0 18px 30px -20px rgba(0,0,0,.35);
+      padding:8px 16px 16px;
+    }
+    .navbar.is-open nav.links a{ padding:12px 8px; border-radius:10px; font-size:1rem; }
+    .navbar.is-open nav.links a:hover{ background:var(--paper-2); }
+    .why-grid{ grid-template-columns:1fr; gap:32px; }
   }
 
   /* ---------------- Por qué / stats ---------------- */
@@ -120,8 +145,8 @@
   .role-intro .btn-pill{ margin-top:20px; align-self:flex-start; }
   .role-card{ position:relative; border-radius:14px; overflow:hidden; min-height:230px; display:flex; align-items:flex-end; padding:20px; color:#fff; }
   .role-card::before{ content:''; position:absolute; inset:0; z-index:0; }
-  .role-card-magenta{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(158,31,99,.75)),linear-gradient(135deg,#9E1F63,#6E1747); }
-  .role-card-orange{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(241,90,41,.75)),linear-gradient(135deg,#F15A29,#C23F16); }
+  .role-card-magenta{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(158,31,99,.75)),linear-gradient(135deg,var(--magenta),#6E1747); }
+  .role-card-orange{ background:linear-gradient(160deg,rgba(26,26,26,.15),rgba(241,90,41,.75)),linear-gradient(135deg,var(--orange),var(--orange-dark)); }
   .role-card-dark{ background:linear-gradient(160deg,rgba(26,26,26,.2),rgba(26,26,26,.85)),linear-gradient(135deg,#3A2A32,#1A1A1A); }
   .role-card > *{ position:relative; z-index:1; }
   .role-card h3{ font-size:1.05rem; }
@@ -144,3 +169,18 @@
   .step p{ font-size:.85rem; color:var(--text-soft); }
 
   /* ---------------- Acceso ---------------- */
+
+  /* Variantes de hero para las páginas internas (antes estilos en línea). */
+  .hero--compacto{ min-height:360px; }
+  .hero--mini{ min-height:220px; }
+  .hero-giant--sm{ font-size:clamp(2.2rem,7vw,4.2rem); }
+  .texto-suave{ color:var(--text-soft); }
+  .espaciador-pie{ height:70px; }
+
+  /* Teléfonos muy angostos (≤380px): logo + menú + "Iniciar sesión" no
+     caben con el tamaño normal. */
+  @media (max-width: 380px){
+    .brand-logo-full{ height:28px; width:auto; }
+    .navbar .btn-pill{ padding:8px 14px; font-size:.8rem; }
+    .nav-row{ gap:8px; }
+  }

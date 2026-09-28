@@ -19,35 +19,56 @@
 if (!$esAdminDoc) return;
 $idModal = 'modalAgregar' . abs(crc32($rutaModuloActual));
 ?>
-<button type="button" class="doc-btn doc-btn--primary doc-modal-trigger" onclick="document.getElementById('<?= e($idModal) ?>').showModal()">
-  <i class="bi bi-plus-lg"></i> Agregar
+<button type="button" class="btn btn-primary" data-open="<?= e($idModal) ?>" aria-haspopup="dialog">
+  <i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar
 </button>
 
-<dialog id="<?= e($idModal) ?>" class="doc-modal">
+<dialog id="<?= e($idModal) ?>" class="modal" aria-labelledby="<?= e($idModal) ?>-t">
   <form action="<?= BASE_URL ?>/documentos/crear" method="post">
-    <div class="doc-modal-body">
-      <h4>Agregar documento</h4>
-      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-      <input type="hidden" name="tipo" value="direccion">
-      <input type="hidden" name="volver" value="<?= e($rutaModuloActual) ?>">
-      <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
-      <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+    <input type="hidden" name="tipo" value="direccion">
+    <input type="hidden" name="volver" value="<?= e($rutaModuloActual) ?>">
+    <input type="hidden" name="area" value="<?= e($areaActiva) ?>">
+    <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
 
-      <div class="doc-modal-tabs">
-        <input type="radio" name="categoria" value="documento" id="<?= e($idModal) ?>-cat-doc" checked>
-        <label for="<?= e($idModal) ?>-cat-doc">Documento</label>
-        <input type="radio" name="categoria" value="formato" id="<?= e($idModal) ?>-cat-formato">
-        <label for="<?= e($idModal) ?>-cat-formato">Formato (plantilla en blanco)</label>
+    <header class="modal-header">
+      <div class="modal-heading">
+        <h2 class="modal-title" id="<?= e($idModal) ?>-t">Agregar documento</h2>
+        <p class="modal-desc">Regístralo primero; el archivo se adjunta después desde "Pendientes de adjuntar".</p>
       </div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </header>
 
-      <input type="text" name="nombre" placeholder="Nombre" required class="doc-input">
-      <input type="text" name="tipo_doc" placeholder="Tipo (opcional)" class="doc-input">
-      <input type="date" name="fecha" value="<?= date('Y-m-d') ?>" class="doc-input">
-
-      <div class="doc-modal-actions">
-        <button type="button" class="doc-btn doc-btn--secondary" onclick="this.closest('dialog').close()">Cancelar</button>
-        <button type="submit" class="doc-btn doc-btn--primary"><i class="bi bi-plus-lg"></i> Agregar</button>
+    <div class="modal-body form-stack">
+      <div class="field">
+        <span class="field-label" id="<?= e($idModal) ?>-cat-l">Categoría</span>
+        <div class="segmented segmented--block" role="radiogroup" aria-labelledby="<?= e($idModal) ?>-cat-l">
+          <input type="radio" name="categoria" value="documento" id="<?= e($idModal) ?>-cat-doc" checked>
+          <label for="<?= e($idModal) ?>-cat-doc"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Documento</label>
+          <input type="radio" name="categoria" value="formato" id="<?= e($idModal) ?>-cat-formato">
+          <label for="<?= e($idModal) ?>-cat-formato"><i class="bi bi-file-earmark" aria-hidden="true"></i> Formato</label>
+        </div>
+        <p class="field-hint">Un formato es una plantilla en blanco para que otros la diligencien.</p>
+      </div>
+      <div class="field">
+        <label class="field-label" for="<?= e($idModal) ?>-nombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+        <input class="input" type="text" id="<?= e($idModal) ?>-nombre" name="nombre" required placeholder="Ej. Manual de procesos financieros">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="<?= e($idModal) ?>-tipo">Tipo <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" id="<?= e($idModal) ?>-tipo" name="tipo_doc" placeholder="Ej. Manual">
+        </div>
+        <div class="field">
+          <label class="field-label" for="<?= e($idModal) ?>-fecha">Fecha</label>
+          <input class="input" type="date" id="<?= e($idModal) ?>-fecha" name="fecha" value="<?= date('Y-m-d') ?>">
+        </div>
       </div>
     </div>
+
+    <footer class="modal-footer">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar documento</button>
+    </footer>
   </form>
 </dialog>

@@ -35,6 +35,7 @@ $areasPorSlug = [];
 $navSecciones = [];
 $navItemsPorSeccion = [];
 $navHijosPorPadre = [];
+$breadcrumbs = [];
 if (isset($pdo)) {
     $filas = $pdo->query('
         SELECT d.slug, a.label
@@ -86,6 +87,47 @@ if (isset($pdo)) {
         } else {
             $navHijosPorPadre[$it['parent_id']][] = $it;
         }
+    }
+
+    // Ruta de navegación (breadcrumb, se pinta en portal-header.php arriba
+    // del contenido): sale de los mismos nav_items — la cadena de parent_id
+    // del ítem de la página actual (ej. Talento Humano › Hojas de vida). Las
+    // páginas del admin global que no están en el menú cuelgan de
+    // "Administración" (su panel real, /administracion). Un nivel al que el
+    // usuario no tiene acceso se muestra como texto, no como enlace.
+    $navPorId = [];
+    $navPorRuta = [];
+    foreach ($navItems as $it) {
+        $navPorId[$it['id']] = $it;
+        if ($it['ruta'] && !isset($navPorRuta[$it['ruta']])) $navPorRuta[$it['ruta']] = $it;
+    }
+    $sbRuta = rtrim($rutaActual, '/') ?: '/';
+    if ($sbRuta !== '/') {
+        $cadena = [];
+        $itemActual = $navPorRuta[$sbRuta] ?? null;
+        if ($itemActual) {
+            $padre = $itemActual['parent_id'] !== null ? ($navPorId[$itemActual['parent_id']] ?? null) : null;
+            while ($padre) {
+                array_unshift($cadena, ['label' => $padre['label'], 'ruta' => $padre['ruta']]);
+                $padre = $padre['parent_id'] !== null ? ($navPorId[$padre['parent_id']] ?? null) : null;
+            }
+        } elseif (in_array($sbRuta, ['/usuarios', '/permisos-por-rol', '/contenido-landing', '/postulaciones'], true)) {
+            $cadena[] = ['label' => 'Administración', 'ruta' => '/administracion'];
+        } else {
+            $primerSegmento = '/' . explode('/', trim($sbRuta, '/'))[0];
+            if ($primerSegmento !== $sbRuta && isset($navPorRuta[$primerSegmento])) {
+                $cadena[] = ['label' => $navPorRuta[$primerSegmento]['label'], 'ruta' => $primerSegmento];
+            }
+        }
+        array_unshift($cadena, ['label' => 'Inicio', 'ruta' => '/']);
+        foreach ($cadena as $i => $nivel) {
+            // Un padre sin página propia (ruta NULL) se muestra solo como texto.
+            if (empty($nivel['ruta'])) { $cadena[$i]['enlace'] = false; continue; }
+            $modNivel = modulo_de_ruta($nivel['ruta']);
+            $cadena[$i]['enlace'] = $modNivel === null || usuario_puede_ver_modulo($modNivel);
+        }
+        $breadcrumbs = $cadena;
+        $breadcrumbActual = $itemActual['label'] ?? null;
     }
 }
 ?>
@@ -171,8 +213,8 @@ if (isset($pdo)) {
             <a href="#<?= $idSub ?>" class="sidebar-item<?= $activo ? ' active' : '' ?>"
               data-bs-toggle="collapse" role="button"
               aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
-              <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
-              <i class="fa-solid fa-chevron-down chevron"></i>
+              <i class="bi bi-<?= e($item['icono']) ?>" aria-hidden="true"></i><span class="label"><?= e($item['label']) ?></span>
+              <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
             </a>
             <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
               <div class="collapse-inner">
@@ -184,7 +226,7 @@ if (isset($pdo)) {
           </div>
           <?php else: ?>
           <a href="<?= BASE_URL . e($ruta) ?>" class="sidebar-item<?= sb_activo($ruta, $rutaActual) ?>">
-            <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
+            <i class="bi bi-<?= e($item['icono']) ?>" aria-hidden="true"></i><span class="label"><?= e($item['label']) ?></span>
           </a>
           <?php endif; ?>
         <?php endforeach; ?>
@@ -200,7 +242,7 @@ if (isset($pdo)) {
        normal ya no sirve — el link dispara el submit de este form oculto. -->
   <div class="sidebar-nav sidebar-nav--logout">
     <a href="#" class="sidebar-item" id="btnCerrarSesion">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Cerrar sesión</span>
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="label">Cerrar sesión</span>
     </a>
     <form id="formCerrarSesion" method="POST" action="<?= BASE_URL ?>/logout" style="display:none">
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">

@@ -16,15 +16,5 @@
     window.sparkline(el, valores, { color: el.dataset.color, width: 60, height: 22, fill: true });
   });
 
-  // "+ Agregar" de Mis pendientes: solo abre/cierra el formulario — el
-  // guardado en sí es un POST normal a PendienteController.php (esta
-  // vista recarga página completa por navegación, no es una SPA).
-  (function () {
-    const btn = document.getElementById('btnNuevoPendiente');
-    const form = document.getElementById('formNuevoPendiente');
-    if (!btn || !form) return;
-    btn.addEventListener('click', function () {
-      form.hidden = !form.hidden;
-      if (!form.hidden) form.querySelector('input[name="titulo"]').focus();
-    });
-  })();
+  // "+ Agregar" de Mis pendientes lo maneja core/ui.js (data-reveal),
+  // ver _shared/_widget_pendientes.php.

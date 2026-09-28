@@ -1,0 +1,15 @@
+/* Contenido de la landing (ver ContenidoLanding.php). Formularios, tablas
+   y modales vienen de core/components.css; acá solo la maquetación propia. */
+.landing-tabs{ margin-bottom: var(--space-6); }
+.landing-secciones{ display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--space-4); }
+/* Sin sombra: cada pestaña puede mostrar varias tarjetas de sección a la
+   vez (ej. "Por qué" tiene 4: intro + 3 tarjetas) — con .box-card normal
+   se veían 4 cajas con sombra apiladas en la misma pantalla, contra la
+   regla del proyecto de máximo una caja con sombra por pantalla. */
+.landing-seccion{ box-shadow: none; }
+.landing-item{ display: inline-flex; align-items: center; gap: var(--space-3); }
+.landing-item-ic{
+  display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto;
+  border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary);
+}
+.landing-item-desc{ max-width: 420px; }

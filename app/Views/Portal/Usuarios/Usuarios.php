@@ -1,160 +1,252 @@
 <?php $titulo = 'Usuarios'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
-<h1 class="page-title">Usuarios y roles</h1>
-<p class="page-desc">
-  Crea cuentas para las demás direcciones y decide qué puede administrar cada una. Un <strong>administrador de dirección</strong> solo puede crear, subir y eliminar carpetas/documentos DENTRO de la dirección que le asignes acá — el resto del portal (Contenido Landing, Contrataciones, Calendario, etc.) sigue siendo exclusivo del administrador global.
-  Si le asignas un <strong>área de trabajo</strong> a un <strong>usuario</strong> normal, esa persona deja de ver las demás direcciones (ni la tarjeta en "Todos los módulos" ni la página si entra por la URL directa) — solo ve la suya. Sin área asignada, sigue viendo todo el portal como hasta ahora.
-</p>
-
 <?php
+/** Variables que llegan desde UsuariosController.php:
+ * @var array $usuarios
+ * @var array $direccionesDisponibles
+ * @var array $cargosDisponibles
+ */
 $ROL_LABEL = [
-    'admin'           => ['Administrador global', 'tag-accent'],
-    'admin_direccion' => ['Administrador de dirección', 'tag-info'],
-    'usuario'         => ['Usuario (solo lectura)', 'tag'],
+    'admin'           => ['Administrador global', 'badge-primary'],
+    'admin_direccion' => ['Administrador de dirección', 'badge-info'],
+    'usuario'         => ['Usuario (solo lectura)', 'badge-neutral'],
 ];
-$campoTexto = function (string $name, string $valor = '', string $placeholder = '', string $tipo = 'text', bool $required = false) {
+$miId = (int) $_SESSION['usuario_id'];
+
+// Campos de "Rol y acceso" — idénticos en crear y editar (mismos name= que
+// siempre lee UsuariosController.php); $pref distingue los id de cada drawer.
+$camposAcceso = function (string $pref, string $rolActual = 'usuario') use ($ROL_LABEL, $direccionesDisponibles, $cargosDisponibles) {
     ?>
-    <input type="<?= e($tipo) ?>" name="<?= e($name) ?>" value="<?= e($valor) ?>" placeholder="<?= e($placeholder) ?>" <?= $required ? 'required' : '' ?>
-           style="flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
-    <?php
-};
-$campoSelectRol = function (string $name, string $valor, string $claseJs) use ($ROL_LABEL) {
-    ?>
-    <select name="<?= e($name) ?>" class="<?= e($claseJs) ?>" required
-            style="flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
-      <?php foreach ($ROL_LABEL as $valorRol => $info): ?>
-        <option value="<?= e($valorRol) ?>" <?= $valorRol === $valor ? 'selected' : '' ?>><?= e($info[0]) ?></option>
-      <?php endforeach; ?>
-    </select>
-    <?php
-};
-$campoSelectDireccion = function (string $name, ?int $valor, string $claseJs) use ($direccionesDisponibles) {
-    ?>
-    <select name="<?= e($name) ?>" class="<?= e($claseJs) ?>"
-            style="flex:1 1 220px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
-      <option value="">— Sin área asignada (ve todo) —</option>
-      <?php foreach ($direccionesDisponibles as $d): ?>
-        <option value="<?= (int) $d['id'] ?>" <?= (int) $d['id'] === $valor ? 'selected' : '' ?>><?= e($d['titulo']) ?></option>
-      <?php endforeach; ?>
-    </select>
-    <?php
-};
-// El cargo es un catálogo fijo (ver migración 046_catalogo_cargos.sql) para
-// poder usarlo como llave de permisos sin que un typo cree un grupo nuevo
-// sin querer — "+ Agregar nuevo cargo..." revela el campo de texto de al
-// lado (ver <script> más abajo) para darlo de alta sobre la marcha.
-$campoSelectCargo = function (string $sufijo, ?int $valor) use ($cargosDisponibles) {
-    ?>
-    <select name="cargo_id" class="usuarios-cargo-<?= e($sufijo) ?>"
-            style="flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
-      <option value="">— Sin cargo —</option>
-      <?php foreach ($cargosDisponibles as $c): ?>
-        <option value="<?= (int) $c['id'] ?>" <?= (int) $c['id'] === $valor ? 'selected' : '' ?>><?= e($c['nombre']) ?></option>
-      <?php endforeach; ?>
-      <option value="__nuevo__">+ Agregar nuevo cargo...</option>
-    </select>
-    <input type="text" name="cargo_nuevo" placeholder="Nombre del cargo nuevo" class="usuarios-cargo-nuevo-<?= e($sufijo) ?>"
-           style="display:none; flex:1 1 200px; padding:9px 12px; border-radius:8px; border:1px solid var(--color-divider); background:var(--color-bg); color:var(--color-text)">
+    <section class="form-section">
+      <h3 class="form-section-title">Rol y acceso</h3>
+      <p class="form-section-desc">Define qué puede ver y administrar esta cuenta.</p>
+      <div class="form-stack">
+        <div class="field">
+          <label class="field-label" for="<?= $pref ?>Rol">Rol <span class="req" aria-hidden="true">*</span></label>
+          <select class="select" id="<?= $pref ?>Rol" name="rol" required data-rol-select>
+            <?php foreach ($ROL_LABEL as $valorRol => $info): ?>
+              <option value="<?= e($valorRol) ?>" <?= $valorRol === $rolActual ? 'selected' : '' ?>><?= e($info[0]) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <p class="field-hint">
+            <strong>Administrador de dirección:</strong> crea, sube y elimina carpetas y documentos solo dentro de su dirección.
+            <strong>Administrador global:</strong> administra todo el portal (Contenido landing, Contrataciones, Calendario…).
+          </p>
+        </div>
+        <div class="field" data-campo-direccion>
+          <label class="field-label" for="<?= $pref ?>Direccion">Área de trabajo</label>
+          <select class="select" id="<?= $pref ?>Direccion" name="direccion_id">
+            <option value="">— Sin área asignada (ve todo) —</option>
+            <?php foreach ($direccionesDisponibles as $d): ?>
+              <option value="<?= (int) $d['id'] ?>"><?= e($d['titulo']) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <p class="field-hint">Obligatoria para un administrador de dirección. Si asignas un área a un usuario normal, solo verá esa dirección; sin área, ve todo el portal.</p>
+        </div>
+        <div class="field">
+          <label class="field-label" for="<?= $pref ?>Cargo">Cargo <span class="opt">(opcional)</span></label>
+          <select class="select" id="<?= $pref ?>Cargo" name="cargo_id" data-cargo-select>
+            <option value="">— Sin cargo —</option>
+            <?php foreach ($cargosDisponibles as $c): ?>
+              <option value="<?= (int) $c['id'] ?>"><?= e($c['nombre']) ?></option>
+            <?php endforeach; ?>
+            <option value="__nuevo__">+ Agregar nuevo cargo…</option>
+          </select>
+        </div>
+        <div class="field" data-campo-cargo-nuevo hidden>
+          <label class="field-label" for="<?= $pref ?>CargoNuevo">Nombre del cargo nuevo</label>
+          <input class="input" type="text" id="<?= $pref ?>CargoNuevo" name="cargo_nuevo" placeholder="Ej. Coordinador de calidad">
+          <p class="field-hint">Se agrega al catálogo de cargos y queda disponible para otros usuarios.</p>
+        </div>
+      </div>
+    </section>
     <?php
 };
 ?>
 
-<div class="section-head"><h4>Nuevo usuario</h4></div>
-<form action="<?= BASE_URL ?>/usuarios/crear" method="post" class="usuarios-form" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px;align-items:flex-start">
-  <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-  <?php $campoTexto('nombre', '', 'Nombre completo', 'text', true); ?>
-  <?php $campoTexto('correo', '', 'correo@coreducacion.edu.co', 'email', true); ?>
-  <?php $campoSelectCargo('nuevo', null); ?>
-  <?php $campoTexto('password', '', 'Contraseña (mín. 8 caracteres)', 'password', true); ?>
-  <?php $campoSelectRol('rol', 'usuario', 'usuarios-rol-nuevo'); ?>
-  <?php $campoSelectDireccion('direccion_id', null, 'usuarios-direccion-nuevo'); ?>
-  <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus"></i> Crear usuario</button>
-</form>
+<?php ui_page_header([
+    'title'   => 'Usuarios y roles',
+    'desc'    => 'Crea cuentas para las direcciones y decide qué puede ver y administrar cada una.',
+    'actions' => function () { ?>
+        <button type="button" class="btn btn-primary" data-open="usuarioNuevo" aria-haspopup="dialog"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</button>
+    <?php },
+]); ?>
 
-<div class="section-head"><h4>Todos los usuarios</h4></div>
 <?php if (!$usuarios): ?>
-  <div class="empty-state">
-    <div class="ic"><i class="bi bi-people"></i></div>
-    <h4>No hay usuarios</h4>
-    <p>Crea el primero con el formulario de arriba.</p>
-  </div>
+  <?php ui_empty_state([
+      'icon' => 'people', 'title' => 'Aún no hay usuarios',
+      'text' => 'Crea la primera cuenta para darle acceso a una dirección.',
+      'actions' => function () { ?><button type="button" class="btn btn-primary" data-open="usuarioNuevo"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</button><?php },
+  ]); ?>
 <?php else: ?>
-  <table class="table">
-    <thead><tr><th>Nombre</th><th>Correo</th><th>Cargo</th><th>Rol</th><th>Creado</th><th></th></tr></thead>
-    <tbody>
-      <?php foreach ($usuarios as $u): [$rolLabel, $rolClase] = $ROL_LABEL[$u['rol']] ?? ['Desconocido', 'tag']; ?>
-        <tr>
-          <td><strong><?= e($u['nombre']) ?></strong><?= (int) $u['id'] === (int) $_SESSION['usuario_id'] ? ' <span class="text-muted">(tú)</span>' : '' ?></td>
-          <td style="opacity:.75"><?= e($u['correo']) ?></td>
-          <td style="opacity:.75"><?= e($u['cargo_nombre'] ?? '—') ?></td>
-          <td>
-            <span class="tag <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
-            <?php if ($u['direccion_id'] !== null): ?>
-              <span class="tag" style="margin-left:4px" title="Solo ve esta dirección"><i class="bi bi-eye"></i> <?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
-            <?php endif; ?>
-          </td>
-          <td style="opacity:.6"><?= e((new DateTime($u['creado_en']))->format('d/m/Y')) ?></td>
-          <td style="white-space:nowrap">
-            <details class="usuarios-editar-details">
-              <summary class="btn" style="display:inline-flex;cursor:pointer"><i class="bi bi-pencil"></i> Editar</summary>
-              <form action="<?= BASE_URL ?>/usuarios/editar" method="post" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding:14px;border:1px solid var(--color-divider);border-radius:10px;background:var(--color-surface)">
-                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
-                <?php $campoTexto('nombre', $u['nombre'], 'Nombre completo', 'text', true); ?>
-                <?php $campoTexto('correo', $u['correo'], 'Correo', 'email', true); ?>
-                <?php $campoSelectCargo((int) $u['id'], $u['cargo_id'] !== null ? (int) $u['cargo_id'] : null); ?>
-                <?php $campoTexto('password', '', 'Nueva contraseña (déjalo vacío para no cambiarla)', 'password'); ?>
-                <?php $campoSelectRol('rol', $u['rol'], 'usuarios-rol-' . (int) $u['id']); ?>
-                <?php $campoSelectDireccion('direccion_id', $u['direccion_id'] !== null ? (int) $u['direccion_id'] : null, 'usuarios-direccion-' . (int) $u['id']); ?>
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar cambios</button>
-              </form>
-            </details>
-            <?php if ((int) $u['id'] !== (int) $_SESSION['usuario_id']): ?>
-              <form action="<?= BASE_URL ?>/usuarios/eliminar" method="post" style="display:inline-block" onsubmit="return confirm('¿Eliminar a <?= e(addslashes($u['nombre'])) ?>? No podrá volver a iniciar sesión.')">
-                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
-                <button type="submit" class="btn btn-danger btn-icon" aria-label="Eliminar usuario"><i class="bi bi-trash"></i></button>
-              </form>
-            <?php endif; ?>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+  <div class="filter-bar">
+    <div class="input-group search-field">
+      <i class="bi bi-search input-icon" aria-hidden="true"></i>
+      <input class="input" type="search" placeholder="Buscar por nombre, correo o cargo" aria-label="Buscar usuarios" data-table-filter="tablaUsuarios">
+    </div>
+    <span class="filter-bar-end text-muted"><?= count($usuarios) ?> usuario<?= count($usuarios) === 1 ? '' : 's' ?></span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table table--stack table--stack-md" id="tablaUsuarios">
+      <thead><tr><th>Nombre</th><th>Correo</th><th>Cargo</th><th>Rol</th><th>Creado</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
+      <tbody>
+        <?php foreach ($usuarios as $u): [$rolLabel, $rolClase] = $ROL_LABEL[$u['rol']] ?? ['Desconocido', 'badge-neutral']; $esYo = (int) $u['id'] === $miId; ?>
+          <tr>
+            <td class="cell-strong"><?= e($u['nombre']) ?><?php if ($esYo): ?> <span class="badge badge-neutral">Tú</span><?php endif; ?></td>
+            <td class="cell-muted"><?= e($u['correo']) ?></td>
+            <td class="cell-muted"><?= e($u['cargo_nombre'] ?? '—') ?></td>
+            <td>
+              <span class="badge <?= e($rolClase) ?>"><?= e($rolLabel) ?></span>
+              <?php if ($u['direccion_id'] !== null): ?>
+                <span class="badge badge-outline" title="Solo ve esta dirección"><i class="bi bi-eye" aria-hidden="true"></i> <?= e($u['direccion_titulo'] ?? 'sin dirección') ?></span>
+              <?php endif; ?>
+            </td>
+            <td class="cell-muted"><?= e((new DateTime($u['creado_en']))->format('d/m/Y')) ?></td>
+            <td class="col-actions">
+              <div class="table-actions">
+                <button type="button" class="btn btn-sm" data-editar-usuario
+                  data-id="<?= (int) $u['id'] ?>"
+                  data-nombre="<?= e($u['nombre']) ?>"
+                  data-correo="<?= e($u['correo']) ?>"
+                  data-cargo="<?= $u['cargo_id'] !== null ? (int) $u['cargo_id'] : '' ?>"
+                  data-rol="<?= e($u['rol']) ?>"
+                  data-direccion="<?= $u['direccion_id'] !== null ? (int) $u['direccion_id'] : '' ?>">
+                  <i class="bi bi-pencil" aria-hidden="true"></i> Editar
+                </button>
+                <?php if (!$esYo): ?>
+                  <form action="<?= BASE_URL ?>/usuarios/eliminar" method="post" data-confirm="¿Eliminar a <?= e($u['nombre']) ?>?" data-confirm-text="No podrá volver a iniciar sesión." data-confirm-ok="Eliminar">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+                    <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
+                    <button type="submit" class="btn btn-sm btn-icon btn-danger-soft" aria-label="Eliminar a <?= e($u['nombre']) ?>"><i class="bi bi-trash" aria-hidden="true"></i></button>
+                  </form>
+                <?php endif; ?>
+              </div>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+    <div class="empty-state empty-state--compact empty-state--bare" data-filter-empty="tablaUsuarios" hidden>
+      <div class="ic" aria-hidden="true"><i class="bi bi-search" aria-hidden="true"></i></div><p>Ningún usuario coincide con la búsqueda.</p>
+    </div>
+  </div>
 <?php endif; ?>
 
-<script>
-  // El selector de dirección no tiene sentido para 'admin' (siempre ve/
-  // administra todo el portal) — se oculta solo para ese rol. Para
-  // 'admin_direccion' y 'usuario' sí aplica (obligatorio en el primero,
-  // opcional en el segundo — ver UsuariosController.php); queda igual de
-  // funcional sin JS, esto solo evita confundir con un campo que no aplica.
-  document.addEventListener('DOMContentLoaded', function () {
-    function conectar(rolSelect) {
-      var sufijo = rolSelect.className.replace('usuarios-rol-', '');
-      var direccionSelect = document.querySelector('.usuarios-direccion-' + sufijo);
-      if (!direccionSelect) return;
-      function actualizar() {
-        direccionSelect.style.display = rolSelect.value === 'admin' ? 'none' : '';
-      }
-      rolSelect.addEventListener('change', actualizar);
-      actualizar();
-    }
-    document.querySelectorAll('[class*="usuarios-rol-"]').forEach(conectar);
+<!-- ── Nuevo usuario ── -->
+<dialog class="drawer" id="usuarioNuevo" aria-labelledby="usuarioNuevoT">
+  <form action="<?= BASE_URL ?>/usuarios/crear" method="post" data-usuario-form>
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+    <header class="modal-header">
+      <div class="modal-heading">
+        <h2 class="modal-title" id="usuarioNuevoT">Nuevo usuario</h2>
+        <p class="modal-desc">La persona entra con este correo y contraseña.</p>
+      </div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </header>
+    <div class="modal-body">
+      <section class="form-section">
+        <h3 class="form-section-title">Cuenta</h3>
+        <div class="form-stack">
+          <div class="field">
+            <label class="field-label" for="unNombre">Nombre completo <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="text" id="unNombre" name="nombre" required autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field-label" for="unCorreo">Correo <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="email" id="unCorreo" name="correo" required placeholder="correo@coreducacion.edu.co" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field-label" for="unPassword">Contraseña <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="password" id="unPassword" name="password" required minlength="8" autocomplete="new-password">
+            <p class="field-hint">Mínimo 8 caracteres.</p>
+          </div>
+        </div>
+      </section>
+      <?php $camposAcceso('un'); ?>
+    </div>
+    <footer class="modal-footer">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus" aria-hidden="true"></i> Crear usuario</button>
+    </footer>
+  </form>
+</dialog>
 
-    // Select de cargo: "+ Agregar nuevo cargo..." revela el input de texto
-    // de al lado (ver $campoSelectCargo en este mismo archivo) — sin JS
-    // sigue funcional, solo queda visible todo el tiempo.
-    function conectarCargo(cargoSelect) {
-      var sufijo = cargoSelect.className.replace('usuarios-cargo-', '');
-      var nuevoInput = document.querySelector('.usuarios-cargo-nuevo-' + sufijo);
-      if (!nuevoInput) return;
-      function actualizar() {
-        nuevoInput.style.display = cargoSelect.value === '__nuevo__' ? '' : 'none';
-      }
-      cargoSelect.addEventListener('change', actualizar);
-      actualizar();
+<!-- ── Editar usuario (uno solo; se llena con los datos de la fila) ── -->
+<dialog class="drawer" id="usuarioEditar" aria-labelledby="usuarioEditarT">
+  <form action="<?= BASE_URL ?>/usuarios/editar" method="post" data-usuario-form>
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+    <input type="hidden" name="id" id="ueId">
+    <header class="modal-header">
+      <div class="modal-heading">
+        <h2 class="modal-title" id="usuarioEditarT">Editar usuario</h2>
+        <p class="modal-desc" id="ueDesc"></p>
+      </div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </header>
+    <div class="modal-body">
+      <section class="form-section">
+        <h3 class="form-section-title">Cuenta</h3>
+        <div class="form-stack">
+          <div class="field">
+            <label class="field-label" for="ueNombre">Nombre completo <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="text" id="ueNombre" name="nombre" required autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field-label" for="ueCorreo">Correo <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="email" id="ueCorreo" name="correo" required autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field-label" for="uePassword">Nueva contraseña <span class="opt">(opcional)</span></label>
+            <input class="input" type="password" id="uePassword" name="password" minlength="8" autocomplete="new-password">
+            <p class="field-hint">Déjala vacía para no cambiarla. Mínimo 8 caracteres.</p>
+          </div>
+        </div>
+      </section>
+      <?php $camposAcceso('ue'); ?>
+    </div>
+    <footer class="modal-footer">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar cambios</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Dentro de cada formulario: el área de trabajo no aplica al admin
+    // global (siempre administra todo) y "+ Agregar nuevo cargo…" revela el
+    // campo de texto. Sin JS ambos campos quedan visibles y funcionales.
+    function sincronizar(form) {
+      var rol = form.querySelector('[data-rol-select]');
+      var cargo = form.querySelector('[data-cargo-select]');
+      var campoDir = form.querySelector('[data-campo-direccion]');
+      var campoNuevo = form.querySelector('[data-campo-cargo-nuevo]');
+      if (rol && campoDir) campoDir.hidden = rol.value === 'admin';
+      if (cargo && campoNuevo) campoNuevo.hidden = cargo.value !== '__nuevo__';
     }
-    document.querySelectorAll('[class*="usuarios-cargo-"]:not([class*="usuarios-cargo-nuevo-"])').forEach(conectarCargo);
+    document.querySelectorAll('[data-usuario-form]').forEach(function (form) {
+      form.addEventListener('change', function () { sincronizar(form); });
+      sincronizar(form);
+    });
+
+    // "Editar" de una fila: llena el drawer compartido y lo abre.
+    var drawer = document.getElementById('usuarioEditar');
+    document.querySelectorAll('[data-editar-usuario]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = btn.dataset;
+        var form = drawer.querySelector('form');
+        form.reset();
+        document.getElementById('ueId').value = d.id;
+        document.getElementById('ueNombre').value = d.nombre;
+        document.getElementById('ueCorreo').value = d.correo;
+        document.getElementById('ueRol').value = d.rol;
+        document.getElementById('ueDireccion').value = d.direccion;
+        document.getElementById('ueCargo').value = d.cargo;
+        document.getElementById('ueDesc').textContent = d.nombre + ' · ' + d.correo;
+        sincronizar(form);
+        UI.open(drawer, btn);
+      });
+    });
   });
 </script>
 

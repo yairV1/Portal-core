@@ -50,8 +50,10 @@ $imagenFondo = BASE_URL . '/uploads/mascota/' . ($imagenesError[$codigo] ?? 'err
     margin: 1.4rem 0 1.1rem;
     padding: .45rem .9rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, .28);
-    color: #fff;
+    /* Antes blanco sobre píldora translúcida clara, encima de un fondo gris
+       claro: casi ilegible. Mismo magenta de marca que el código de error. */
+    background: rgba(158, 31, 99, .12);
+    color: var(--brand-magenta-700, #841a53);
     font-size: .78rem;
     font-weight: 700;
     letter-spacing: .08em;

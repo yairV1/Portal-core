@@ -103,8 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (el) el.remove();
   }
 
+  var origenFoco = null;
+
   function abrirPanel() {
+    origenFoco = document.activeElement;
     panel.hidden = false;
+    document.querySelectorAll('#btnAsistente, [data-asistente-open]').forEach(function (b) { b.setAttribute('aria-expanded', 'true'); });
     if (badge) badge.style.display = 'none';
     if (!abiertoAlgunaVez) {
       abiertoAlgunaVez = true;
@@ -119,7 +123,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function cerrarPanel() {
     panel.hidden = true;
+    document.querySelectorAll('#btnAsistente, [data-asistente-open]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    if (origenFoco && panel.contains(document.activeElement) && typeof origenFoco.focus === 'function') origenFoco.focus();
   }
+
+  // Otros puntos de entrada al asistente (el buscador de la barra superior,
+  // ver portal-header.php) y el atajo Ctrl/Cmd+K.
+  document.querySelectorAll('[data-asistente-open]').forEach(function (t) {
+    t.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (panel.hidden) abrirPanel(); else input.focus();
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      if (panel.hidden) abrirPanel(); else input.focus();
+    }
+  });
 
   btn.addEventListener('click', function () {
     if (panel.hidden) abrirPanel(); else cerrarPanel();
@@ -133,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', function (e) {
     if (panel.hidden) return;
     if (panel.contains(e.target) || btn.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('[data-asistente-open]')) return;
     cerrarPanel();
   });
 

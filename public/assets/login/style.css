@@ -1,16 +1,16 @@
 /* ============================================================
-   Sistema de Control de Salones AC — COREDUCACIÓN
-   Sistema de diseño. Colores institucionales intactos:
-   --pr (magenta) y --sec (naranja).
+   Login de Portal CORE — COREDUCACIÓN
+   Colores de marca y de estado desde core/tokens.css (compartidos con
+   el Portal y las landings); fondos y degradados son propios del login.
    ============================================================ */
 
 :root {
-  --pr: #9E1F63;
-  --pr-dark: #7a1850;
-  --pr-light: #c23e85;
-  --sec: #F4821F;
-  --sec-dark: #d66c0f;
-  --sec-light: #ff9c3f;
+  --pr: var(--brand-magenta-600);
+  --pr-dark: var(--brand-magenta-700);
+  --pr-light: var(--brand-magenta-400);
+  --sec: var(--brand-orange-500);
+  --sec-dark: var(--brand-orange-700);
+  --sec-light: #f47c55;
 
   --ink: #2b2038;
   --ink-soft: #6b6478;
@@ -18,14 +18,13 @@
   --surface: #ffffff;
   --border: #e8e5f0;
 
-  --ok: #1a9e6d;
-  --ok-bg: #e6f7f0;
-  --warn: #c98a00;
-  --warn-bg: #fff6e0;
-  --danger: #d63859;
-  --danger-bg: #fdeaee;
-  --info: #2b7fc9;
-  --info-bg: #e8f3fc;
+  --ok: var(--success-text);
+  --ok-bg: var(--success-subtle);
+  --warn: var(--warning-text);
+  --warn-bg: var(--warning-subtle);
+  --danger-bg: var(--danger-subtle);
+  --info: var(--info-text);
+  --info-bg: var(--info-subtle);
 
   --radius: 14px;
   --radius-sm: 10px;
@@ -166,7 +165,7 @@ a:hover {
   background-color: var(--sec-dark);
   border-color: var(--sec-dark);
   color: #fff;
-  box-shadow: 0 6px 16px rgba(244, 130, 31, 0.28);
+  box-shadow: 0 6px 16px rgba(241, 90, 41, 0.28);
 }
 
 .btn-outline-warning {
@@ -1317,12 +1316,16 @@ body[data-tema="oscuro"] .core-auth-google:hover {
    legible encima de la imagen. */
 .core-auth-mascot {
   position: absolute;
-  top: 50%;
+  top: 1.75rem;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 92%;
-  max-width: 300px;
-  height: auto;
+  transform: translateX(-50%);
+  /* Anclada arriba y con alto máximo que deja libre el bloque de texto de
+     abajo (logo + kicker + tagline + subtítulo ≈ 16rem): antes iba centrada
+     y tapaba el "PORTAL CORE". */
+  width: auto;
+  max-width: min(92%, 300px);
+  max-height: calc(100% - 17rem);
+  object-fit: contain;
   z-index: 2;
   filter: drop-shadow(0 18px 30px rgba(4, 1, 10, .5));
   pointer-events: none;
@@ -1526,16 +1529,16 @@ body[data-tema="oscuro"] .core-auth-google:hover {
   margin-top: .3rem;
   min-height: 52px;
   font-size: 1rem;
-  background-color: #e6007e !important;
-  border-color: #e6007e !important;
+  background-color: var(--pr) !important;
+  border-color: var(--pr) !important;
   color: #ffffff !important;
 }
 
 .core-auth-submit:hover,
 .core-auth-submit:focus {
-  background-color: #c9006b !important;
-  border-color: #c9006b !important;
-  box-shadow: 0 6px 16px rgba(230, 0, 126, 0.35) !important;
+  background-color: var(--pr-dark) !important;
+  border-color: var(--pr-dark) !important;
+  box-shadow: 0 6px 16px rgba(158, 31, 99, 0.32) !important;
   color: #ffffff !important;
 }
 

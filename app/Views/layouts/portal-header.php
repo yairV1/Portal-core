@@ -11,17 +11,21 @@ $nombre  = $_SESSION['usuario_nombre'] ?? 'Invitado';
 $correo  = $_SESSION['usuario_correo'] ?? '';
 $cargo   = $_SESSION['usuario_cargo'] ?? '';
 $foto    = $_SESSION['usuario_foto'] ?? '';
+// La foto siempre se guarda como usuario_{id}.ext (PerfilController.php):
+// sin versión en la URL, tras cambiarla el navegador seguía mostrando la
+// anterior desde su caché. v() le agrega ?v=<fecha de modificación>.
 // Sede única y real de COREDUCACIÓN (ver la landing pública) — no una
 // columna por usuario, es el mismo dato fijo para todos.
 $sede    = 'Honda, Tolima';
 $partes  = explode(' ', trim($nombre));
+if (!function_exists('ui_page_header')) require ROOT_PATH . '/app/Views/components/ui.php';
 $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '', 0, 1));
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#9E1F63">
 <script>
   // Si el navegador restaura esta página desde su caché de "atrás/adelante"
@@ -44,7 +48,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     if (!el || !valores || valores.length < 2) return;
     opts = opts || {};
     var w = opts.width || 64, h = opts.height || 24;
-    var color = opts.color || 'var(--color-accent)';
+    var color = opts.color || 'var(--primary)';
     var min = Math.min.apply(null, valores), max = Math.max.apply(null, valores);
     var rango = (max - min) || 1;
     var paso = w / (valores.length - 1);
@@ -67,17 +71,6 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       '</svg>';
   };
 
-  // tendenciaSintetica(valorTexto): arma 6 puntos crecientes que terminan
-  // en el valor mostrado, para dibujar un sparkline sin inventar un
-  // histórico "real" en datos de ejemplo — la usan las páginas de módulo.
-  window.tendenciaSintetica = function (valorTexto) {
-    var n = parseFloat(String(valorTexto).replace(/\./g, '').replace(',', '.')) || 0;
-    var base = n * 0.82;
-    var paso = (n - base) / 5;
-    var puntos = [];
-    for (var i = 0; i < 6; i++) puntos.push(base + paso * i);
-    return puntos;
-  };
 </script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/favicon-core.png">
@@ -85,12 +78,13 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" integrity="sha384-t1nt8BQoYMLFN5p42tRAtuAAFQaCQODekUVeKKZrEnEyp4H2R0RHFz0KWpmj7i8g" crossorigin="anonymous">
-<!-- Bootstrap Icons: la usan los <i class="bi bi-..."> que arman por JS
-     casi todas las vistas del Portal (accesos rápidos, KPIs, etc.) —
-     Font Awesome de arriba es solo para el topbar/sidebar estáticos. -->
+<!-- Bootstrap Icons: único set de íconos del Portal (Font Awesome se
+     retiró en la Fase 2 del rediseño para no cargar dos librerías). -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk" crossorigin="anonymous">
 
+<!-- Sistema de diseño (tokens → componentes) y luego el layout del Portal. -->
+<link rel="stylesheet" href="<?= v('/assets/core/tokens.css') ?>">
+<link rel="stylesheet" href="<?= v('/assets/core/components.css') ?>">
 <link rel="stylesheet" href="<?= v('/assets/layouts/css/paneles.css') ?>">
 </head>
 <body>
@@ -113,123 +107,123 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
   })();
 </script>
 
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
 <header class="topbar">
-  <button class="btn btn-icon" id="btnToggleNav" title="Menú">
-    <i class="fa-solid fa-bars"></i>
+  <button type="button" class="btn btn-ghost btn-icon topbar-menu" id="btnToggleNav" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar" aria-expanded="true">
+    <i class="bi bi-list" aria-hidden="true"></i>
   </button>
 
-  <div class="brand" onclick="location.reload()">
-    <div class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt="Portal CORE"></div>
-    <span>
-      <span class="brand-name">PORTAL CORE</span>
+  <a class="brand" href="<?= BASE_URL ?>/" aria-label="Portal CORE — Inicio">
+    <span class="brand-logo"><img src="<?= BASE_URL ?>/uploads/logo/logo-core.png" alt=""></span>
+    <span class="brand-text">
+      <span class="brand-name">Portal CORE</span>
       <span class="brand-sub">Coreducación</span>
     </span>
-  </div>
+  </a>
 
-  <div class="topbar-clock"><i class="fa-regular fa-clock"></i><span id="topbarClock"></span></div>
+  <!-- Buscador: abre a "Core", el asistente que ya lleva a cualquier
+       sección por palabras clave (ver asistente.js) — no es un buscador
+       de contenido aparte. Reemplaza al reloj que ocupaba este lugar. -->
+  <button type="button" class="topbar-search" data-asistente-open aria-controls="asistentePanel" aria-expanded="false">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <span class="topbar-search-text">Buscar o preguntar a Core…</span>
+    <kbd class="topbar-search-kbd" aria-hidden="true">Ctrl K</kbd>
+  </button>
 
   <div class="right-actions">
-    <button class="btn btn-icon" id="btnTheme" title="Modo claro / oscuro">
-      <i class="fa-regular fa-moon icon-claro"></i>
-      <i class="fa-regular fa-sun icon-oscuro"></i>
+    <button type="button" class="btn btn-ghost btn-icon topbar-search-icon" data-asistente-open aria-controls="asistentePanel" aria-expanded="false" aria-label="Buscar o preguntar a Core">
+      <i class="bi bi-search" aria-hidden="true"></i>
     </button>
-    <button class="btn btn-icon btn-bell" id="btnBell" title="Notificaciones">
-      <i class="fa-regular fa-bell"></i><span class="bell-dot"></span>
+    <button type="button" class="btn btn-ghost btn-icon" id="btnTheme" aria-label="Cambiar entre modo claro y oscuro">
+      <i class="bi bi-moon icon-claro" aria-hidden="true"></i>
+      <i class="bi bi-sun icon-oscuro" aria-hidden="true"></i>
     </button>
-    <div class="profile" id="btnProfile">
-      <span class="avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
-      <span>
+    <span class="topbar-divider" aria-hidden="true"></span>
+    <button type="button" class="profile" id="btnProfile" data-open="profileDrawer" aria-haspopup="dialog" aria-label="Abrir mi perfil">
+      <span class="avatar"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+      <span class="profile-text">
         <span class="profile-name"><?= e($nombre) ?></span>
         <span class="profile-role"><?= e($cargo) ?></span>
       </span>
-      <i class="fa-solid fa-chevron-down profile-chevron"></i>
-    </div>
+      <i class="bi bi-chevron-down profile-chevron" aria-hidden="true"></i>
+    </button>
   </div>
 </header>
 
-<div class="profile-drawer-backdrop" id="profileDrawerBackdrop"></div>
-<aside class="profile-drawer" id="profileDrawer">
-  <button class="profile-drawer-close" id="profileDrawerClose" title="Cerrar">
-    <i class="fa-solid fa-xmark"></i>
-  </button>
-
-  <!-- ── Vista (por defecto) ── -->
-  <div id="perfilVista">
-    <div class="profile-drawer-avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></div>
-
-    <div class="profile-drawer-name-row">
-      <h3 class="profile-drawer-name"><?= e($nombre) ?></h3>
-      <button type="button" class="profile-drawer-editar" id="btnEditarPerfil" title="Editar perfil">
-        <i class="fa-solid fa-pencil"></i>
-      </button>
+<!-- ── Mi perfil (drawer del sistema de diseño, ver core/components.css) ──
+     Cargo y Sede son de solo lectura a propósito: Cargo lo asigna el
+     administrador (si fuera autoeditable, cualquiera podría ponerse un
+     cargo falso) y Sede es un dato fijo de la institución. Solo nombre y
+     foto se editan acá (ver PerfilController.php). -->
+<dialog class="drawer drawer-sm" id="profileDrawer" aria-labelledby="profileDrawerTitle">
+  <header class="modal-header">
+    <div class="modal-heading">
+      <h2 class="modal-title" id="profileDrawerTitle">Mi perfil</h2>
+      <p class="modal-desc" id="perfilDesc">Tu información en el Portal CORE.</p>
     </div>
-    <p class="profile-drawer-desc">
-      <?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN.
-    </p>
+    <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+  </header>
 
-    <div class="profile-drawer-actions">
-      <button class="btn btn-primary"><i class="fa-solid fa-download"></i> Descargar</button>
-      <button class="btn"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
-    </div>
-
-    <!-- Cargo y Sede son de solo lectura acá a propósito: Cargo lo pone
-         quien administre la base de datos (si fuera autoeditable,
-         cualquiera podría ponerse a sí mismo un cargo falso), y Sede es
-         un dato fijo real de la institución (ver arriba), no una columna
-         por usuario. Dependencia/Extensión/Perfil de acceso se quitaron
-         del todo (ver migration 023_usuarios_perfil_revertir.sql): sin
-         un panel de admin real que las llene, quedaban vacías siempre. -->
-    <div class="profile-drawer-fields">
-      <div class="profile-drawer-field">
-        <span class="label">Cargo</span>
-        <span class="value"><?= e($cargo ?: '—') ?></span>
-      </div>
-      <div class="profile-drawer-field">
-        <span class="label">Correo</span>
-        <span class="value"><?= e($correo ?: '—') ?></span>
-      </div>
-      <div class="profile-drawer-field">
-        <span class="label">Sede</span>
-        <span class="value"><?= e($sede) ?></span>
+  <div class="modal-body" id="perfilVista">
+    <div class="profile-summary">
+      <span class="profile-summary-avatar"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+      <div>
+        <p class="profile-summary-name"><?= e($nombre) ?></p>
+        <p class="profile-summary-role"><?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN</p>
       </div>
     </div>
+    <dl class="profile-fields">
+      <div><dt>Cargo</dt><dd><?= e($cargo ?: '—') ?></dd></div>
+      <div><dt>Correo</dt><dd><?= e($correo ?: '—') ?></dd></div>
+      <div><dt>Sede</dt><dd><?= e($sede) ?></dd></div>
+    </dl>
   </div>
+  <footer class="modal-footer" id="perfilVistaAcciones">
+    <button type="button" class="btn" data-close>Cerrar</button>
+    <button type="button" class="btn btn-primary" id="btnEditarPerfil"><i class="bi bi-pencil" aria-hidden="true"></i> Editar perfil</button>
+  </footer>
 
-  <!-- ── Edición — oculto hasta tocar el lápiz. Solo nombre y foto: ver
-       nota de arriba sobre por qué Cargo dejó de ser autoeditable. ── -->
-  <form id="perfilForm" class="profile-drawer-form" action="<?= BASE_URL ?>/perfil" method="post" enctype="multipart/form-data" hidden>
+  <form id="perfilForm" action="<?= BASE_URL ?>/perfil" method="post" enctype="multipart/form-data" hidden>
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-
-    <div class="profile-drawer-avatar profile-drawer-avatar-edit">
-      <span class="profile-drawer-avatar-img"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
-      <label for="perfilFoto" class="profile-drawer-foto-btn" title="Cambiar foto"><i class="fa-solid fa-camera"></i></label>
-      <input type="file" id="perfilFoto" name="foto" accept="image/png,image/jpeg,image/webp">
+    <div class="modal-body form-stack">
+      <div class="profile-photo-edit">
+        <span class="profile-summary-avatar profile-drawer-avatar-img"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+        <div class="field">
+          <span class="field-label">Foto de perfil</span>
+          <label class="btn btn-sm file-btn" for="perfilFoto"><i class="bi bi-camera" aria-hidden="true"></i> Cambiar foto
+            <input type="file" id="perfilFoto" name="foto" accept="image/png,image/jpeg,image/webp">
+          </label>
+          <p class="field-hint">JPG, PNG o WEBP · máximo 2 MB</p>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="perfilNombre">Nombre <span class="req" aria-hidden="true">*</span></label>
+        <input class="input" type="text" id="perfilNombre" name="nombre" value="<?= e($nombre) ?>" required maxlength="100" autocomplete="name">
+      </div>
     </div>
-
-    <label class="profile-drawer-label">Nombre
-      <input type="text" name="nombre" value="<?= e($nombre) ?>" required maxlength="100">
-    </label>
-
-    <div class="profile-drawer-actions">
-      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <footer class="modal-footer">
       <button type="button" class="btn" id="btnCancelarPerfil">Cancelar</button>
-    </div>
+      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </footer>
   </form>
-</aside>
-
-<div class="breadcrumb-bar">
-  <div class="breadcrumb-path">
-    <span>Portal CORE</span>
-    <?php if (!empty($titulo)): ?>
-      <span class="sep">/</span>
-      <span class="current"><?= e($titulo) ?></span>
-    <?php endif; ?>
-  </div>
-  <div class="breadcrumb-date" id="breadcrumbDate"></div>
-</div>
+</dialog>
 
 <div class="app-shell">
 
   <?php require __DIR__ . '/sidebar.php'; ?>
 
-  <div class="content">
+  <main class="content" id="contenido" tabindex="-1">
+    <div class="content-inner">
+    <?php if (!empty($breadcrumbs)): ?>
+      <nav class="breadcrumbs" aria-label="Ruta de navegación">
+        <ol>
+          <?php foreach ($breadcrumbs as $nivel): ?>
+            <li><?php if ($nivel['enlace']): ?><a href="<?= BASE_URL . e($nivel['ruta']) ?>"><?= e($nivel['label']) ?></a><?php else: ?><span><?= e($nivel['label']) ?></span><?php endif; ?></li>
+          <?php endforeach; ?>
+          <?php $migaActual = $titulo ?? $breadcrumbActual ?? ''; if ($migaActual !== ''): ?>
+            <li aria-current="page"><?= e($migaActual) ?></li>
+          <?php endif; ?>
+        </ol>
+      </nav>
+    <?php endif; ?>

@@ -17,8 +17,8 @@
 
   function renderNormaChips(){
     document.getElementById('normaChips').innerHTML = TIPOS_NORMA.map(t => `
-      <button class="norma-chip ${filtroTipo===t?'active':''}" data-tipo="${t}">${t==='todo'?'Todas':t}</button>`).join('');
-    document.querySelectorAll('.norma-chip').forEach(btn => {
+      <button type="button" class="chip" aria-pressed="${filtroTipo===t}" data-tipo="${t}">${t==='todo'?'Todas':t}</button>`).join('');
+    document.querySelectorAll('#normaChips .chip').forEach(btn => {
       btn.addEventListener('click', () => { filtroTipo = btn.dataset.tipo; renderNormaChips(); renderTabla(); });
     });
   }
@@ -27,11 +27,11 @@
     const filtradas = filtroTipo === 'todo' ? NORMAS : NORMAS.filter(n => n.tipo === filtroTipo);
     document.getElementById('normasBody').innerHTML = filtradas.map(n => `
       <tr>
-        <td style="font-weight:800;white-space:nowrap">${n.codigo}</td>
+        <td class="cell-strong">${n.codigo}</td>
         <td>${n.titulo}</td>
-        <td style="opacity:.7">${n.tipo}</td>
-        <td style="opacity:.7;white-space:nowrap">${n.fecha}</td>
-        <td><span class="tag ${n.estado==='Vigente'?'tag-ok':'tag-neutral'}">${n.estado}</span></td>
+        <td class="cell-muted">${n.tipo}</td>
+        <td class="cell-muted">${n.fecha}</td>
+        <td><span class="badge badge-dot ${n.estado==='Vigente'?'badge-success':'badge-neutral'}">${n.estado}</span></td>
       </tr>`).join('');
   }
 

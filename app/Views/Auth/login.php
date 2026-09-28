@@ -32,8 +32,8 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
 
 <div class="auth-shell">
   <button type="button" class="auth-theme-toggle" id="btnLoginTheme" title="Modo claro / oscuro" aria-label="Cambiar modo de color">
-    <i class="fa-regular fa-moon auth-theme-icon-claro" aria-hidden="true"></i>
-    <i class="fa-regular fa-sun auth-theme-icon-oscuro" aria-hidden="true"></i>
+    <i class="bi bi-moon auth-theme-icon-claro" aria-hidden="true"></i>
+    <i class="bi bi-sun auth-theme-icon-oscuro" aria-hidden="true"></i>
   </button>
   <!-- ── Agua interactiva de fondo (toda la pantalla, detrás de la tarjeta):
        canvas + JS vanilla, sin librerías 3D. Reacciona al mouse y también
@@ -78,14 +78,14 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
           <div class="input-with-action">
             <input type="password" name="password" id="loginPassword" required autocomplete="current-password" placeholder="Tu contraseña" aria-describedby="errPassword">
             <button type="button" class="input-toggle-visibility" id="btnTogglePass" aria-label="Mostrar contraseña">
-              <i class="fa-solid fa-eye" aria-hidden="true"></i>
+              <i class="bi bi-eye" aria-hidden="true"></i>
             </button>
           </div>
           <span class="field-error" id="errPassword" role="alert" hidden></span>
         </div>
 
         <button type="submit" class="btn btn-primary core-auth-submit" id="btnLoginSubmit">
-          <span class="btn-label"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Ingresar</span>
+          <span class="btn-label"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Ingresar</span>
           <span class="btn-loading" hidden><span class="btn-spinner" aria-hidden="true"></span> Ingresando…</span>
         </button>
 
@@ -137,7 +137,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
         var oculta = loginPassword.type === 'password';
         loginPassword.type = oculta ? 'text' : 'password';
         btnTogglePass.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
-        btnTogglePass.querySelector('i').className = oculta ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+        btnTogglePass.querySelector('i').className = oculta ? 'bi bi-eye-slash' : 'bi bi-eye';
       });
     }
 
@@ -152,7 +152,7 @@ require ROOT_PATH . '/app/Views/layouts/header.php';
     function mostrarErrorCampo(input, errEl, mensaje) {
       input.classList.add('field-invalid');
       input.setAttribute('aria-invalid', 'true');
-      errEl.innerHTML = '<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> ' + mensaje;
+      errEl.innerHTML = '<i class="bi bi-exclamation-circle" aria-hidden="true"></i> ' + mensaje;
       errEl.hidden = false;
     }
     function limpiarErrorCampo(input, errEl) {

@@ -1,8 +1,9 @@
-</div><!-- /.content -->
+    </div><!-- /.content-inner -->
+  </main><!-- /.content -->
 </div><!-- /.app-shell -->
 
 <!-- ── Asistente flotante "Core" (ver asistente.js) ── -->
-<button class="asistente-fab" id="btnAsistente" title="Asistente del portal">
+<button type="button" class="asistente-fab" id="btnAsistente" aria-label="Abrir el asistente del portal">
   <img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core">
   <span class="badge-nuevo" id="asistenteBadge"></span>
 </button>
@@ -13,12 +14,12 @@
       <strong>Core</strong>
       <small>Asistente del Portal</small>
     </div>
-    <button type="button" class="asistente-close" id="asistenteClose" title="Cerrar">&times;</button>
+    <button type="button" class="asistente-close" id="asistenteClose" aria-label="Cerrar asistente"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
   </div>
   <div class="asistente-mensajes" id="asistenteMensajes"></div>
   <form class="asistente-form" id="asistenteForm">
-    <input type="text" id="asistenteInput" placeholder="¿Qué estás buscando?" autocomplete="off">
-    <button type="submit" title="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+    <input type="text" id="asistenteInput" placeholder="¿Qué estás buscando?" autocomplete="off" aria-label="Pregúntale a Core">
+    <button type="submit" aria-label="Enviar"><i class="bi bi-send" aria-hidden="true"></i></button>
   </form>
 </div>
 <script>
@@ -26,286 +27,139 @@
   window.usuarioNombre = <?= json_encode(!empty($nombre) && $nombre !== 'Invitado' ? explode(' ', trim($nombre))[0] : '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25" integrity="sha384-nLoOnA/BDh8A/jxqtckg4DumuCGOBYUnNJLZdQz/zfYNp3wcjGSoWTAzgko06G/2" crossorigin="anonymous"></script>
+<?php
+// ── Avisos tras una acción (toasts) ──
+// Cada controlador vuelve con ?grupo=resultado (ej. ?usuarios=creado, ver
+// UsuariosController.php) y acá se traduce a un aviso. Antes eran 12
+// bloques <script> casi idénticos con SweetAlert2; ahora es un solo mapa y
+// el componente de toast del sistema de diseño (UI.toast en core/ui.js).
+// Mismos grupos, mismos resultados y mismos textos que antes. Si llega un
+// resultado desconocido, se usa el 'error' de ese grupo.
+$AVISOS = [
+    'perfil' => [3000, [
+        '1'       => ['success', 'Perfil actualizado'],
+        'formato' => ['error', 'La foto debe ser JPG, PNG o WEBP'],
+        'tamano'  => ['error', 'La foto pesa más de 2 MB'],
+        'error'   => ['error', 'No se pudo guardar el perfil'],
+    ]],
+    'usuarios' => [3500, [
+        'creado'                => ['success', 'Usuario creado'],
+        'actualizado'           => ['success', 'Usuario actualizado'],
+        'eliminado'             => ['success', 'Usuario eliminado'],
+        'datos'                 => ['error', 'Revisa el correo y que la contraseña tenga al menos 8 caracteres'],
+        'direccion'             => ['error', 'Falta elegir la dirección para ese rol'],
+        'correo_existente'      => ['error', 'Ya existe un usuario con ese correo'],
+        'auto_rol'              => ['error', 'No puedes quitarte a ti mismo el rol de administrador global'],
+        'auto_eliminar'         => ['error', 'No puedes eliminar tu propio usuario'],
+        'ultimo_admin_rol'      => ['error', 'No se pudo cambiar el rol: es el único administrador global que queda'],
+        'ultimo_admin_eliminar' => ['error', 'No se pudo eliminar: es el único administrador global que queda'],
+        'error'                 => ['error', 'No se pudo completar la acción'],
+    ]],
+    'doc' => [3000, [
+        '1'           => ['success', 'Documento subido correctamente'],
+        'creado'      => ['success', 'Documento creado — ya puedes subirle el archivo'],
+        'editado'     => ['success', 'Documento actualizado'],
+        'visibilidad' => ['success', 'Visibilidad del documento actualizada'],
+        'eliminado'   => ['success', 'Documento eliminado'],
+        'nombre'      => ['error', 'Escribe un nombre y una fecha válida'],
+        'formato'     => ['error', 'El archivo debe ser PDF, Word, Excel o PowerPoint'],
+        'tamano'      => ['error', 'El archivo pesa más de 20 MB'],
+        'duplicado'   => ['error', 'Este empleado ya tiene un documento de este tipo — elimínalo antes de subir otro'],
+        'error'       => ['error', 'No se pudo subir el documento'],
+    ]],
+    'empleado' => [3500, [
+        'creado'           => ['success', 'Empleado agregado'],
+        'actualizado'      => ['success', 'Empleado actualizado'],
+        'eliminado'        => ['success', 'Empleado eliminado'],
+        'datos'            => ['error', 'Revisa el nombre, el documento y la fecha'],
+        'documento_existe' => ['error', 'Ya existe un empleado con ese número de documento'],
+        'error'            => ['error', 'No se pudo completar la acción'],
+    ]],
+    'drive' => [3000, [
+        '1'                    => ['success', 'Documento subido correctamente'],
+        'carpeta'              => ['success', 'Carpeta creada'],
+        'eliminado'            => ['success', 'Documento eliminado'],
+        'carpeta_eliminada'    => ['success', 'Carpeta eliminada'],
+        'nombre'               => ['error', 'Escribe un nombre de carpeta válido'],
+        'formato'              => ['error', 'El archivo debe ser PDF, Word, Excel, PowerPoint o una imagen (JPG/PNG/WEBP)'],
+        'tamano'               => ['error', 'El archivo pesa más de 15 MB'],
+        'importado'            => ['success', 'Documento importado desde Drive'],
+        'drive_link'           => ['error', 'Pega un link válido de Google Drive'],
+        'drive_no_encontrado'  => ['error', 'No se pudo acceder a ese archivo — revisa el link y que esté compartido con la cuenta de servicio'],
+        'drive_google_doc'     => ['error', 'Ese es un Doc/Sheet/Slide nativo de Google — expórtalo primero como PDF o Word desde Drive'],
+        'drive_no_configurado' => ['error', 'La importación desde Drive todavía no está configurada en este entorno'],
+        'error'                => ['error', 'No se pudo completar la acción'],
+    ]],
+    'carpeta_doc' => [3000, [
+        'visibilidad' => ['success', 'Visibilidad de la carpeta actualizada'],
+        'editado'     => ['success', 'Carpeta renombrada'],
+        'eliminado'   => ['success', 'Carpeta eliminada'],
+        'nombre'      => ['error', 'Escribe un nombre de carpeta válido'],
+        'error'       => ['error', 'No se pudo completar la acción'],
+    ]],
+    'drive_personal' => [3500, [
+        'conectado'      => ['success', 'Tu Google Drive quedó conectado'],
+        'desconectado'   => ['success', 'Desconectaste tu Google Drive'],
+        'importado'      => ['success', 'Documento importado desde tu Drive'],
+        'no_configurado' => ['error', 'Conectar Drive todavía no está configurado en este entorno'],
+        'sin_refresh'    => ['error', 'Google no autorizó el acceso — intenta conectar de nuevo'],
+        'no_conectado'   => ['error', 'Conecta tu Google Drive primero'],
+        'token_vencido'  => ['error', 'Tu conexión con Drive venció — conéctala de nuevo'],
+        'no_encontrado'  => ['error', 'No se pudo acceder a ese archivo'],
+        'formato'        => ['error', 'Ese archivo debe ser PDF, Word, Excel o PowerPoint (o un Doc/Sheet/Slide de Google)'],
+        'tamano'         => ['error', 'El archivo pesa más de 15 MB'],
+        'error'          => ['error', 'No se pudo completar la acción'],
+    ]],
+    'evento' => [3000, [
+        '1'         => ['success', 'Evento creado correctamente'],
+        'editado'   => ['success', 'Evento actualizado correctamente'],
+        'eliminado' => ['success', 'Evento eliminado'],
+        'error'     => ['error', 'No se pudo guardar el evento'],
+    ]],
+    'landing' => [3000, [
+        'guardado'  => ['success', 'Guardado correctamente'],
+        'eliminado' => ['success', 'Eliminado correctamente'],
+        'error'     => ['error', 'No se pudo guardar — revisa los campos obligatorios'],
+    ]],
+    'soporte' => [3000, [
+        '1'         => ['success', 'Soporte agregado'],
+        'eliminado' => ['success', 'Soporte eliminado'],
+        'error'     => ['error', 'No se pudo guardar el soporte'],
+    ]],
+    'pendiente' => [3000, [
+        '1'         => ['success', 'Pendiente agregado'],
+        'eliminado' => ['success', 'Pendiente eliminado'],
+        'error'     => ['error', 'No se pudo guardar el pendiente'],
+    ]],
+];
+$toasts = [];
+if (!empty($_GET['bienvenida'])) {
+    // AuthController agrega ?bienvenida=1 tras un login correcto.
+    $primerNombre = (!empty($nombre) && $nombre !== 'Invitado') ? explode(' ', trim($nombre))[0] : '';
+    $toasts[] = [
+        'type' => 'success',
+        'title' => '¡Bienvenido' . ($primerNombre !== '' ? ', ' . $primerNombre : '') . '!',
+        'text' => 'Core está lista para ayudarte a encontrar lo que necesites.',
+        'image' => BASE_URL . '/uploads/mascota/core-avatar.png',
+        'duration' => 3200,
+    ];
+}
+foreach ($AVISOS as $grupo => [$duracion, $mensajes]) {
+    if (!isset($_GET[$grupo]) || !is_string($_GET[$grupo])) continue;
+    [$tipo, $texto] = $mensajes[$_GET[$grupo]] ?? $mensajes['error'];
+    $toasts[] = ['type' => $tipo, 'title' => $texto, 'duration' => $duracion];
+}
+?>
+<script src="<?= v('/assets/core/ui.js') ?>"></script>
+<?php if ($toasts): ?>
 <script>
-  // Mismo tema institucional de SweetAlert2 que usa la pantalla de login
-  // (ver footer.php) — acá hace falta para el diálogo de "cerrar sesión".
-  if (typeof Swal !== 'undefined') {
-    window.SwalBrand = Swal.mixin({
-      confirmButtonColor: '#9E1F63',
-      cancelButtonColor: '#8b8496',
-      buttonsStyling: true,
-      customClass: { popup: 'rounded-4' }
-    });
-  }
-</script>
-
-<?php if (!empty($_GET['bienvenida'])): ?>
-<script>
-  // Aviso de bienvenida al iniciar sesión (AuthController agrega
-  // ?bienvenida=1 al redirigir a "/" tras un login correcto).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    // toast: true → aviso pequeño en la esquina, sin fondo oscurecido
-    // tapando el dashboard detrás.
-    SwalBrand.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      iconHtml: '<img src="<?= BASE_URL ?>/uploads/mascota/core-avatar.png" alt="Core" style="width:100%;height:100%;object-fit:cover;border-radius:50%">',
-      title: <?= json_encode('¡Bienvenido' . (!empty($nombre) && $nombre !== 'Invitado' ? ', ' . explode(' ', trim($nombre))[0] : '') . '!', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>,
-      text: 'Core está lista para ayudarte a encontrar lo que necesites.',
-      timer: 3200,
-      timerProgressBar: true,
-      showConfirmButton: false
-    });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['perfil'])): ?>
-<script>
-  // Aviso tras guardar el perfil (ver PerfilController.php, que agrega
-  // ?perfil=1|error|formato|tamano al volver a "/").
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['perfil'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Perfil actualizado' },
-      'formato': { icon: 'error', title: 'La foto debe ser JPG, PNG o WEBP' },
-      'tamano': { icon: 'error', title: 'La foto pesa más de 2 MB' },
-      'error': { icon: 'error', title: 'No se pudo guardar el perfil' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['usuarios'])): ?>
-<script>
-  // Aviso tras crear/editar/eliminar un usuario (ver UsuariosController.php,
-  // que agrega ?usuarios=... al volver a "/usuarios").
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['usuarios'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      'creado': { icon: 'success', title: 'Usuario creado' },
-      'actualizado': { icon: 'success', title: 'Usuario actualizado' },
-      'eliminado': { icon: 'success', title: 'Usuario eliminado' },
-      'datos': { icon: 'error', title: 'Revisa el correo y que la contraseña tenga al menos 8 caracteres' },
-      'direccion': { icon: 'error', title: 'Falta elegir la dirección para ese rol' },
-      'correo_existente': { icon: 'error', title: 'Ya existe un usuario con ese correo' },
-      'auto_rol': { icon: 'error', title: 'No puedes quitarte a ti mismo el rol de administrador global' },
-      'auto_eliminar': { icon: 'error', title: 'No puedes eliminar tu propio usuario' },
-      'ultimo_admin_rol': { icon: 'error', title: 'No se pudo cambiar el rol: es el único administrador global que queda' },
-      'ultimo_admin_eliminar': { icon: 'error', title: 'No se pudo eliminar: es el único administrador global que queda' },
-      'error': { icon: 'error', title: 'No se pudo completar la acción' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['doc'])): ?>
-<script>
-  // Aviso tras subir un documento (ver DocumentoController.php, que agrega
-  // ?doc=1|error|formato|tamano al volver a gestion-documental).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['doc'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Documento subido correctamente' },
-      'creado': { icon: 'success', title: 'Documento creado — ya puedes subirle el archivo' },
-      'editado': { icon: 'success', title: 'Documento actualizado' },
-      'visibilidad': { icon: 'success', title: 'Visibilidad del documento actualizada' },
-      'eliminado': { icon: 'success', title: 'Documento eliminado' },
-      'nombre': { icon: 'error', title: 'Escribe un nombre y una fecha válida' },
-      'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel o PowerPoint' },
-      'tamano': { icon: 'error', title: 'El archivo pesa más de 20 MB' },
-      'duplicado': { icon: 'error', title: 'Este empleado ya tiene un documento de este tipo — elimínalo antes de subir otro' },
-      'error': { icon: 'error', title: 'No se pudo subir el documento' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['empleado'])): ?>
-<script>
-  // Aviso tras crear/editar/eliminar un empleado (ver EmpleadoController.php,
-  // que agrega ?empleado=... al volver a Hojas de vida/Contratos/Certificaciones).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['empleado'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      'creado': { icon: 'success', title: 'Empleado agregado' },
-      'actualizado': { icon: 'success', title: 'Empleado actualizado' },
-      'eliminado': { icon: 'success', title: 'Empleado eliminado' },
-      'datos': { icon: 'error', title: 'Revisa el nombre, el documento y la fecha' },
-      'documento_existe': { icon: 'error', title: 'Ya existe un empleado con ese número de documento' },
-      'error': { icon: 'error', title: 'No se pudo completar la acción' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['drive'])): ?>
-<script>
-  // Aviso tras crear/subir/eliminar en el explorador de documentos (ver
-  // CarpetaController.php, que agrega ?drive=... al volver al módulo).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['drive'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Documento subido correctamente' },
-      'carpeta': { icon: 'success', title: 'Carpeta creada' },
-      'eliminado': { icon: 'success', title: 'Documento eliminado' },
-      'carpeta_eliminada': { icon: 'success', title: 'Carpeta eliminada' },
-      'nombre': { icon: 'error', title: 'Escribe un nombre de carpeta válido' },
-      'formato': { icon: 'error', title: 'El archivo debe ser PDF, Word, Excel, PowerPoint o una imagen (JPG/PNG/WEBP)' },
-      'tamano': { icon: 'error', title: 'El archivo pesa más de 15 MB' },
-      'importado': { icon: 'success', title: 'Documento importado desde Drive' },
-      'drive_link': { icon: 'error', title: 'Pega un link válido de Google Drive' },
-      'drive_no_encontrado': { icon: 'error', title: 'No se pudo acceder a ese archivo — revisa el link y que esté compartido con la cuenta de servicio' },
-      'drive_google_doc': { icon: 'error', title: 'Ese es un Doc/Sheet/Slide nativo de Google — expórtalo primero como PDF o Word desde Drive' },
-      'drive_no_configurado': { icon: 'error', title: 'La importación desde Drive todavía no está configurada en este entorno' },
-      'error': { icon: 'error', title: 'No se pudo completar la acción' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['carpeta_doc'])): ?>
-<script>
-  // Aviso tras alternar visibilidad/renombrar/eliminar una carpeta del
-  // repositorio institucional (ver CarpetaDocumentalController.php, que
-  // agrega ?carpeta_doc=... al volver a Gestión Documental).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['carpeta_doc'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      'visibilidad': { icon: 'success', title: 'Visibilidad de la carpeta actualizada' },
-      'editado': { icon: 'success', title: 'Carpeta renombrada' },
-      'eliminado': { icon: 'success', title: 'Carpeta eliminada' },
-      'nombre': { icon: 'error', title: 'Escribe un nombre de carpeta válido' },
-      'error': { icon: 'error', title: 'No se pudo completar la acción' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['drive_personal'])): ?>
-<script>
-  // Aviso del Drive personal en Gestión Documental (ver
-  // DriveUsuarioController.php, que agrega ?drive_personal=... al volver).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['drive_personal'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      'conectado': { icon: 'success', title: 'Tu Google Drive quedó conectado' },
-      'desconectado': { icon: 'success', title: 'Desconectaste tu Google Drive' },
-      'importado': { icon: 'success', title: 'Documento importado desde tu Drive' },
-      'no_configurado': { icon: 'error', title: 'Conectar Drive todavía no está configurado en este entorno' },
-      'sin_refresh': { icon: 'error', title: 'Google no autorizó el acceso — intenta conectar de nuevo' },
-      'no_conectado': { icon: 'error', title: 'Conecta tu Google Drive primero' },
-      'token_vencido': { icon: 'error', title: 'Tu conexión con Drive venció — conéctala de nuevo' },
-      'no_encontrado': { icon: 'error', title: 'No se pudo acceder a ese archivo' },
-      'formato': { icon: 'error', title: 'Ese archivo debe ser PDF, Word, Excel o PowerPoint (o un Doc/Sheet/Slide de Google)' },
-      'tamano': { icon: 'error', title: 'El archivo pesa más de 15 MB' },
-      'error': { icon: 'error', title: 'No se pudo completar la acción' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3500, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['evento'])): ?>
-<script>
-  // Aviso tras crear un evento (ver EventoController.php, que agrega
-  // ?evento=1|error al volver a calendario).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['evento'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Evento creado correctamente' },
-      'editado': { icon: 'success', title: 'Evento actualizado correctamente' },
-      'eliminado': { icon: 'success', title: 'Evento eliminado' },
-      'error': { icon: 'error', title: 'No se pudo guardar el evento' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['landing'])): ?>
-<script>
-  // Aviso tras guardar/eliminar contenido de la landing (ver
-  // ContenidoLandingController.php, que agrega ?landing=guardado|eliminado|error
-  // al volver a /contenido-landing).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['landing'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      'guardado': { icon: 'success', title: 'Guardado correctamente' },
-      'eliminado': { icon: 'success', title: 'Eliminado correctamente' },
-      'error': { icon: 'error', title: 'No se pudo guardar — revisa los campos obligatorios' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['soporte'])): ?>
-<script>
-  // Aviso tras crear/eliminar un soporte (ver SoportesController.php, que
-  // agrega ?soporte=1|eliminado|error al volver a Inicio).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['soporte'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Soporte agregado' },
-      'eliminado': { icon: 'success', title: 'Soporte eliminado' },
-      'error': { icon: 'error', title: 'No se pudo guardar el soporte' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
-  });
-</script>
-<?php endif; ?>
-
-<?php if (isset($_GET['pendiente'])): ?>
-<script>
-  // Aviso tras crear/eliminar un pendiente (ver PendienteController.php,
-  // que agrega ?pendiente=1|eliminado|error al volver a Inicio).
-  window.addEventListener('DOMContentLoaded', function () {
-    if (typeof SwalBrand === 'undefined') return;
-    var resultado = <?= json_encode($_GET['pendiente'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-    var textos = {
-      '1': { icon: 'success', title: 'Pendiente agregado' },
-      'eliminado': { icon: 'success', title: 'Pendiente eliminado' },
-      'error': { icon: 'error', title: 'No se pudo guardar el pendiente' }
-    };
-    var t = textos[resultado] || textos['error'];
-    SwalBrand.fire({ toast: true, position: 'top-end', icon: t.icon, title: t.title, timer: 3000, timerProgressBar: true, showConfirmButton: false });
+  (<?= json_encode($toasts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>).forEach(function (t, i) {
+    setTimeout(function () { UI.toast(t); }, i * 150);
   });
 </script>
 <?php endif; ?>
 
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
-<script src="<?= v('/assets/portal/js/fluid-orb.js') ?>"></script>
-<script src="<?= v('/assets/portal/js/doc-modal.js') ?>"></script>
 </body>
 </html>
