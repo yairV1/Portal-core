@@ -8,14 +8,10 @@
      2. Semánticos (--bg-*, --text-*, --border*, --primary*, --success*…):
         lo que usan los componentes. Cambian entre claro/oscuro.
      3. Escalas (tipografía, espaciado, radios, sombras, movimiento, capas).
-     4. Alias heredados (--color-accent, --fs-h1…): los nombres que ya usan
-        las vistas y CSS de página. Apuntan a los semánticos para que todo
-        el sitio se re-tematice junto; se irán retirando al migrar cada vista.
 
-   Modo oscuro: el Portal lo activa con body[data-tema="oscuro"]. Los alias
-   se declaran en ":root, body" a propósito — una var() se resuelve donde
-   se declara, así que si solo vivieran en :root quedarían congelados en
-   los valores claros aunque body cambie a oscuro.
+   Modo oscuro: el Portal (y el login) lo activan con body[data-tema="oscuro"].
+   (Los alias heredados --color-… y --fs-… de la primera versión se retiraron
+   al terminar la migración de todas las vistas.)
    ══════════════════════════════════════════════════════════ */
 
 :root{
@@ -173,39 +169,6 @@ body[data-tema="oscuro"]{
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .35), 0 1px 2px -1px rgba(0, 0, 0, .3);
   --shadow-md: 0 10px 28px -6px rgba(0, 0, 0, .55), 0 2px 6px -2px rgba(0, 0, 0, .3);
   --shadow-lg: 0 28px 64px -12px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .06);
-}
-
-/* ── 4. Alias heredados ──
-   Nombres que ya usan vistas y CSS de página. No crear usos nuevos. */
-:root, body{
-  --color-bg: var(--bg-surface);
-  --color-surface: var(--bg-canvas);
-  --color-text: var(--text);
-  --color-divider: var(--border);
-  --color-accent: var(--primary);
-  --color-accent-100: var(--primary-subtle);
-  --color-accent-200: var(--primary-subtle-hover);
-  --color-accent-700: var(--primary-text);
-  --color-accent-800: var(--primary-active);
-  --color-accent-2: var(--secondary);
-  --color-neutral-300: var(--border-strong);
-  --color-neutral-700: var(--text-muted);
-  --color-success: var(--success-text); --color-success-bg: var(--success-subtle);
-  --color-warning: var(--warning-text); --color-warning-bg: var(--warning-subtle);
-  --color-danger:  var(--danger);       --color-danger-bg:  var(--danger-subtle);
-  --color-info:    var(--info-text);    --color-info-bg:    var(--info-subtle);
-  --color-bg-subtle: var(--bg-subtle);
-  --font-heading: var(--font-sans);
-
-  --shadow-soft: var(--shadow-sm);
-  --shadow-hover: var(--shadow-md);
-  --shadow-accent: 0 10px 24px color-mix(in srgb, var(--primary) 22%, transparent);
-  --shadow-focus: var(--focus-ring), 0 0 0 1px var(--primary);
-
-  --fs-h1: var(--text-3xl); --fs-h2: var(--text-2xl); --fs-h3: var(--text-xl); --fs-h4: var(--text-md);
-  --fs-body: var(--text-base); --fs-small: var(--text-sm); --fs-caption: var(--text-xs);
-  --space-xs: var(--space-1); --space-sm: var(--space-2); --space-md: var(--space-4);
-  --space-lg: var(--space-6); --space-xl: var(--space-10);
 }
 
 @media (prefers-reduced-motion: reduce){

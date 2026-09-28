@@ -45,7 +45,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     if (!el || !valores || valores.length < 2) return;
     opts = opts || {};
     var w = opts.width || 64, h = opts.height || 24;
-    var color = opts.color || 'var(--color-accent)';
+    var color = opts.color || 'var(--primary)';
     var min = Math.min.apply(null, valores), max = Math.max.apply(null, valores);
     var rango = (max - min) || 1;
     var paso = w / (valores.length - 1);

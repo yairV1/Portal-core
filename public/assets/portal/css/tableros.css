@@ -20,7 +20,7 @@
   .exec-head{display:flex;justify-content:space-between;gap:var(--space-3);font-size:var(--text-sm);padding-bottom:6px}
   .progress-fill-alt{background:var(--secondary)}
 
-  .alert-row{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--color-divider)}
+  .alert-row{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--border)}
   .alert-row .ic{color:var(--warning);flex:0 0 auto}
   .alert-row .texto{font-size:var(--text-sm);flex:1}
 

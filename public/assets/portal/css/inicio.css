@@ -22,24 +22,24 @@
     letter-spacing: .2em;
     text-transform: uppercase;
     font-weight: 800;
-    color: var(--color-accent-700);
-    background: var(--color-accent-100);
+    color: var(--primary-text);
+    background: var(--primary-subtle);
     padding: 5px 12px;
     border-radius: 999px;
     margin-bottom: 10px
   }
 
   .card {
-    background: var(--color-bg);
-    border: 1px solid var(--color-divider);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition: box-shadow .2s ease, transform .2s ease
   }
 
   .card:hover {
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px)
   }
 
@@ -79,7 +79,7 @@
 
   #kpis .kpi {
     border-right: none;
-    border-bottom: 2px solid var(--color-divider);
+    border-bottom: 2px solid var(--border);
     padding: 0 0 16px
   }
 
@@ -111,7 +111,7 @@
   .acceso {
     display: block;
     position: relative;
-    border-top: 2px solid var(--color-divider);
+    border-top: 2px solid var(--border);
     padding-top: 12px;
     cursor: pointer;
     color: inherit;
@@ -120,13 +120,13 @@
   }
 
   .acceso:hover {
-    border-color: var(--color-accent);
+    border-color: var(--primary);
     color: inherit
   }
 
   .acceso:focus-visible {
     outline: none;
-    box-shadow: var(--shadow-focus);
+    box-shadow: var(--focus-ring);
     border-radius: var(--radius-sm)
   }
 
@@ -138,7 +138,7 @@
 
   .acceso .ic {
     display: block;
-    color: var(--color-accent);
+    color: var(--primary);
     font-size: 18px
   }
 
@@ -157,16 +157,16 @@
     margin-top: 4px
   }
 
-  /* var(--color-text) en vez del #201e1d fijo de antes: ese hex es
+  /* var(--text) en vez del #201e1d fijo de antes: ese hex es
      exactamente --text en tema claro, pero en oscuro --text pasa a casi
      blanco — con el valor fijo el borde "sugerido" quedaba invisible sobre
      el fondo oscuro (mismo color casi que --bg-canvas). Con el token se ve
      en los dos temas. */
   .acceso-sugerido {
-    border-top-color: var(--color-text)
+    border-top-color: var(--text)
   }
 
-  /* background/color: antes var(--color-accent-2) (naranja sólido) + #fff
+  /* background/color: antes var(--secondary) (naranja sólido) + #fff
      — contraste ~2.7:1 a 3.4:1 según tema, por debajo del 4.5:1 que pide un
      texto de este tamaño. Con el par subtle/text (mismo patrón que ya usan
      los badges de estado) queda con contraste AA en los dos temas. */
@@ -206,8 +206,8 @@
     font-size: 10px;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: var(--color-accent-700);
-    background: var(--color-accent-100);
+    color: var(--primary-text);
+    background: var(--primary-subtle);
     font-weight: 800;
     padding: 3px 10px;
     border-radius: 999px
@@ -235,7 +235,7 @@
     display: flex;
     gap: 12px;
     padding: 13px 0;
-    border-bottom: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--border);
     align-items: flex-start
   }
 
@@ -245,7 +245,7 @@
   }
 
   .pendiente-check-form { flex: 0 0 auto; margin-top: 2px }
-  .pendiente-check { width: 16px; height: 16px; cursor: pointer; margin: 0; accent-color: var(--color-accent); }
+  .pendiente-check { width: 16px; height: 16px; cursor: pointer; margin: 0; accent-color: var(--primary); }
 
   /* Tildado: no desaparece (eso es "eliminar"), se queda pero se ve
      claramente resuelto — mismo criterio que un to-do normal. */
@@ -276,7 +276,7 @@
     display: flex;
     gap: 16px;
     padding: 13px 0;
-    border-bottom: 1px solid var(--color-divider)
+    border-bottom: 1px solid var(--border)
   }
 
   .evento:last-child {
@@ -288,7 +288,7 @@
     width: 46px;
     flex: 0 0 auto;
     text-align: center;
-    background: var(--color-accent-100);
+    background: var(--primary-subtle);
     border-radius: var(--radius-sm);
     padding: 5px 0
   }
@@ -297,7 +297,7 @@
     font-weight: 800;
     font-size: 19px;
     line-height: 1;
-    color: var(--color-accent-700)
+    color: var(--primary-text)
   }
 
   .evento .mes {
@@ -305,7 +305,7 @@
     letter-spacing: .12em;
     text-transform: uppercase;
     opacity: .7;
-    color: var(--color-accent-700)
+    color: var(--primary-text)
   }
 
   .evento .t {
@@ -323,7 +323,7 @@
     gap: 12px;
     align-items: center;
     padding: 11px 0;
-    border-bottom: 1px solid var(--color-divider)
+    border-bottom: 1px solid var(--border)
   }
 
   .cumple:last-child {
@@ -335,8 +335,8 @@
     width: 30px;
     height: 30px;
     flex: 0 0 auto;
-    background: var(--color-accent-200);
-    color: var(--color-accent-800);
+    background: var(--primary-subtle-hover);
+    color: var(--primary-active);
     display: flex;
     align-items: center;
     justify-content: center;

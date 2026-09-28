@@ -812,9 +812,18 @@ dialog.drawer.is-closing::backdrop{ animation: ui-fade-out 180ms ease forwards; 
   .modal-header{ padding: 18px 18px 4px; }
   dialog.drawer .modal-header{ padding: 16px 18px 14px; }
   .modal-body, dialog.drawer .modal-body{ padding: 14px 18px 20px; }
+  .modal-toolbar{ padding: 12px 18px 0; }
   .modal-footer{ padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); }
   .modal-footer > .btn{ flex: 1 1 0; }
   .modal-footer-start{ flex-basis: 100%; }
+  /* Un .segmented--block de 3-4 pestañas (ej. "Agregar" del explorador
+     documental: Carpeta/Archivo/Drive/Nuevo) no cabe en una fila a este
+     ancho — .segmented trae overflow-x:auto sin ninguna pista visual de
+     scroll, así que la pestaña activa puede quedar fuera de vista contra
+     el borde del modal. Envolver en 2 filas es más legible que un scroll
+     invisible. */
+  .segmented--block{ flex-wrap: wrap; overflow: visible; }
+  .segmented--block > *{ flex: 1 1 40%; }
 }
 @keyframes ui-sheet-in{ from{ transform: translateY(100%); } }
 @keyframes ui-sheet-out{ to{ transform: translateY(100%); } }
