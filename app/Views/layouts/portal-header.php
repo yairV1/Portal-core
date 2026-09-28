@@ -11,6 +11,9 @@ $nombre  = $_SESSION['usuario_nombre'] ?? 'Invitado';
 $correo  = $_SESSION['usuario_correo'] ?? '';
 $cargo   = $_SESSION['usuario_cargo'] ?? '';
 $foto    = $_SESSION['usuario_foto'] ?? '';
+// La foto siempre se guarda como usuario_{id}.ext (PerfilController.php):
+// sin versión en la URL, tras cambiarla el navegador seguía mostrando la
+// anterior desde su caché. v() le agrega ?v=<fecha de modificación>.
 // Sede única y real de COREDUCACIÓN (ver la landing pública) — no una
 // columna por usuario, es el mismo dato fijo para todos.
 $sede    = 'Honda, Tolima';
@@ -138,7 +141,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     </button>
     <span class="topbar-divider" aria-hidden="true"></span>
     <button type="button" class="profile" id="btnProfile" data-open="profileDrawer" aria-haspopup="dialog" aria-label="Abrir mi perfil">
-      <span class="avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+      <span class="avatar"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
       <span class="profile-text">
         <span class="profile-name"><?= e($nombre) ?></span>
         <span class="profile-role"><?= e($cargo) ?></span>
@@ -164,7 +167,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
 
   <div class="modal-body" id="perfilVista">
     <div class="profile-summary">
-      <span class="profile-summary-avatar"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+      <span class="profile-summary-avatar"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
       <div>
         <p class="profile-summary-name"><?= e($nombre) ?></p>
         <p class="profile-summary-role"><?= e($cargo ?: 'Usuario') ?> · COREDUCACIÓN</p>
@@ -185,7 +188,7 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <div class="modal-body form-stack">
       <div class="profile-photo-edit">
-        <span class="profile-summary-avatar profile-drawer-avatar-img"><?php if ($foto): ?><img src="<?= BASE_URL . e($foto) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
+        <span class="profile-summary-avatar profile-drawer-avatar-img"><?php if ($foto): ?><img src="<?= e(v($foto)) ?>" alt=""><?php else: ?><?= e($inicial) ?><?php endif; ?></span>
         <div class="field">
           <span class="field-label">Foto de perfil</span>
           <label class="btn btn-sm file-btn" for="perfilFoto"><i class="bi bi-camera" aria-hidden="true"></i> Cambiar foto
