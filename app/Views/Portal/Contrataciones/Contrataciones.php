@@ -42,7 +42,7 @@ $urlContratacion = fn (string $token) => $origenAbsoluto . BASE_URL . '/contrata
   ]); ?>
 <?php else: ?>
   <div class="table-wrap">
-    <table class="table table--stack">
+    <table class="table table--stack table--stack-md">
       <thead><tr><th>Candidato</th><th>Estado</th><th>Detalle</th><th>Documentos</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
       <tbody>
         <?php foreach ($contrataciones as $c): ?>

@@ -424,6 +424,7 @@ a.badge-outline:hover{ background: var(--primary-solid); color: var(--text-on-pr
   border-radius: var(--radius-xs);
 }
 .page-back:hover{ color: var(--primary-text); }
+@media (pointer: coarse){ .page-back{ min-height: 40px; } }
 .page-back i{ transition: transform var(--duration-fast) ease; }
 .page-back:hover i{ transform: translateX(-2px); }
 .page-eyebrow{
@@ -516,12 +517,16 @@ a.badge-outline:hover{ background: var(--primary-solid); color: var(--text-on-pr
    </div>
    .table-wrap   contenedor con borde y scroll horizontal propio.
    .table--stack en móvil cada fila pasa a ser una tarjeta con etiquetas
+                 (.table--stack-md: ya desde 960px, para tablas muy anchas)
                  (core/ui.js copia el texto de cada <th> al data-label de su
                  celda; la 1ª celda queda como título de la tarjeta).
    .col-actions  celda de acciones (derecha, sin cortar).
    .col-num      números alineados a la derecha.
    tr[data-href] / .is-clickable  filas navegables (únicas con cursor de mano). */
 .table-wrap{
+  /* position:relative: sin esto, los .sr-only (position:absolute) de las
+     cabeceras escapan del scroll de la tabla y ensanchan toda la página. */
+  position: relative;
   background: var(--bg-surface);
   border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-xs);
   overflow-x: auto;
@@ -578,8 +583,11 @@ a.badge-outline:hover{ background: var(--primary-solid); color: var(--text-on-pr
   .table--stack td{
     display: grid; grid-template-columns: minmax(92px, 38%) minmax(0, 1fr); gap: var(--space-3);
     padding: 4px 0; border: 0; text-align: left;
+    /* Correos y otras cadenas largas sin espacios (ver .cell-muted con <br>)
+       no tenían dónde partirse y se salían de la tarjeta a 320-390px. */
+    overflow-wrap: anywhere;
   }
-  .table--stack td > *{ justify-self: start; }
+  .table--stack td > *{ grid-column: 2; justify-self: start; min-width: 0; overflow-wrap: anywhere; }
   .table--stack td::before{ content: attr(data-label); font-size: 12px; font-weight: var(--weight-semibold); color: var(--text-muted); }
   .table--stack td:first-child{ display: block; padding-bottom: 8px; font-weight: var(--weight-semibold); font-size: var(--text-md); }
   .table--stack td:first-child::before,
@@ -587,7 +595,39 @@ a.badge-outline:hover{ background: var(--primary-solid); color: var(--text-on-pr
   .table--stack td:is([data-label=""], [colspan]){ display: block; }
   .table--stack td.col-actions{ display: flex; justify-content: flex-start; width: 100%; padding-top: 10px; }
   .table--stack .col-num{ text-align: left; }
+  /* Roles/estados con texto largo (ej. "Administrador de dirección") se
+     salían de la tarjeta: el badge es nowrap por diseño, pero en tarjeta
+     apilada sí puede partirse a varias líneas. */
+  .table--stack td .badge{ white-space: normal; overflow-wrap: anywhere; max-width: 100%; text-align: left; }
 
+}
+
+/* .table--stack-md: tablas con muchas columnas (usuarios, empleados…)
+   pasan a tarjetas ya en tablet, en vez de esconder las acciones tras un
+   scroll horizontal. Lleva también .table--stack (etiquetas por JS). */
+@media (max-width: 960px){
+  .table--stack-md, .table--stack-md tbody, .table--stack-md tr, .table--stack-md td{ display: block; width: 100%; }
+  .table--stack-md thead{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .table--stack-md tr{ padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .table--stack-md tbody tr:last-child{ border-bottom: 0; }
+  .table--stack-md td{
+    display: grid; grid-template-columns: minmax(92px, 38%) minmax(0, 1fr); gap: var(--space-3);
+    padding: 4px 0; border: 0; text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .table--stack-md td > *{ grid-column: 2; justify-self: start; min-width: 0; overflow-wrap: anywhere; }
+  .table--stack-md td::before{ content: attr(data-label); font-size: 12px; font-weight: var(--weight-semibold); color: var(--text-muted); }
+  .table--stack-md td:first-child{ display: block; padding-bottom: 8px; font-weight: var(--weight-semibold); font-size: var(--text-md); }
+  .table--stack-md td:first-child::before,
+  .table--stack-md td:is([data-label=""], .col-actions, [colspan])::before{ content: none; }
+  .table--stack-md td:is([data-label=""], [colspan]){ display: block; }
+  .table--stack-md td.col-actions{ display: flex; justify-content: flex-start; width: 100%; padding-top: 10px; }
+  .table--stack-md .col-num{ text-align: left; }
+  .table--stack-md td .badge{ white-space: normal; overflow-wrap: anywhere; max-width: 100%; text-align: left; }
+
+}
+
+@media (max-width: 640px){
   /* Tablas aún sin .table--stack ni .table-wrap: al menos scroll propio,
      sin empujar toda la página. */
   .table:not(.table--stack){ display: block; overflow-x: auto; }

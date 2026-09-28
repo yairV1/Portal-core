@@ -42,9 +42,10 @@
 .form-postular input:focus{ outline:2px solid var(--orange); outline-offset:1px; }
 
 .form-file{
-  display:flex; flex-direction:column; gap:6px; font-size:.8rem; color:var(--text-soft);
+  display:flex; flex-direction:column; gap:6px; min-width:0; font-size:.8rem; color:var(--text-soft);
 }
 .form-file input[type="file"]{
+  width:100%; max-width:100%; min-width:0;
   border:1px dashed var(--line); border-radius:8px; padding:10px; font-size:.82rem; background:var(--paper);
 }
 

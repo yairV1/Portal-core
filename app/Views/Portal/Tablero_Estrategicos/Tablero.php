@@ -29,7 +29,7 @@
       <?php else: foreach ($tableroMatricula as $b): ?>
         <div class="bar-col">
           <span class="bar-value"><?= number_format((int)$b['estudiantes'], 0, ',', '.') ?></span>
-          <span class="bar-fill" style="height:<?= (int)$b['h'] ?>%"></span>
+          <span class="bar-fill" style="--pct:<?= (int)$b['h'] ?>%"></span>
           <span class="bar-label"><?= e($b['facultad']) ?></span>
         </div>
       <?php endforeach; endif; ?>

@@ -87,7 +87,7 @@ $camposAcceso = function (string $pref, string $rolActual = 'usuario') use ($ROL
   </div>
 
   <div class="table-wrap">
-    <table class="table table--stack" id="tablaUsuarios">
+    <table class="table table--stack table--stack-md" id="tablaUsuarios">
       <thead><tr><th>Nombre</th><th>Correo</th><th>Cargo</th><th>Rol</th><th>Creado</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
       <tbody>
         <?php foreach ($usuarios as $u): [$rolLabel, $rolClase] = $ROL_LABEL[$u['rol']] ?? ['Desconocido', 'badge-neutral']; $esYo = (int) $u['id'] === $miId; ?>

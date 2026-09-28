@@ -48,7 +48,7 @@ $urlDoc = BASE_URL . '/talento-humano/' . $ED['segmento'];
   </div>
 
   <div class="table-wrap">
-    <table class="table table--stack" id="tablaEmpleados">
+    <table class="table table--stack table--stack-md" id="tablaEmpleados">
       <thead><tr><th>Nombre</th><th>Documento</th><th>Cargo</th><th><?= e($ED['columna']) ?></th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
       <tbody>
         <?php foreach ($empleados as $emp): $tieneDoc = $emp['doc_id'] && $emp['doc_archivo']; ?>

@@ -16,7 +16,7 @@
     <span class="filter-bar-end text-muted"><?= count($postulaciones) ?> postulación<?= count($postulaciones) === 1 ? '' : 'es' ?></span>
   </div>
   <div class="table-wrap">
-  <table class="table table--stack" id="tablaPostulaciones">
+  <table class="table table--stack table--stack-md" id="tablaPostulaciones">
     <thead>
       <tr>
         <th>Candidato</th>

@@ -22,7 +22,7 @@
   /* Botón de menú (solo en pantallas angostas, ver @media 760px) */
   .menu-toggle{
     display:none; flex-direction:column; justify-content:center; align-items:center; gap:4px;
-    width:40px; height:40px; margin-left:auto; padding:0; cursor:pointer;
+    flex:0 0 auto; width:40px; height:40px; margin-left:auto; padding:0; cursor:pointer;
     background:none; border:1px solid var(--line); border-radius:50%;
   }
   .menu-toggle span{ display:block; width:16px; height:2px; border-radius:2px; background:var(--ink); transition:transform .18s ease, opacity .18s ease; }
@@ -176,3 +176,11 @@
   .hero-giant--sm{ font-size:clamp(2.2rem,7vw,4.2rem); }
   .texto-suave{ color:var(--text-soft); }
   .espaciador-pie{ height:70px; }
+
+  /* Teléfonos muy angostos (≤380px): logo + menú + "Iniciar sesión" no
+     caben con el tamaño normal. */
+  @media (max-width: 380px){
+    .brand-logo-full{ height:28px; width:auto; }
+    .navbar .btn-pill{ padding:8px 14px; font-size:.8rem; }
+    .nav-row{ gap:8px; }
+  }
