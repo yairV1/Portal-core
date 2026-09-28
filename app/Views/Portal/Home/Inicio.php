@@ -154,42 +154,7 @@ $titulo = 'Inicio'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; 
 
   <div class="side-col">
     <?php if (!in_array('pendientes', $widgetsOcultos, true)): ?>
-    <div class="section-header">
-      <h2 class="section-heading"><i class="bi bi-check2-square"></i> Mis pendientes</h2>
-      <button type="button" class="btn btn-link" id="btnNuevoPendiente"><i class="bi bi-plus-lg"></i> Agregar</button>
-    </div>
-
-    <form action="<?= BASE_URL ?>/pendientes/crear" method="post" class="pendiente-form" id="formNuevoPendiente" hidden>
-      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-      <input type="text" name="titulo" placeholder="¿Qué tienes pendiente?" maxlength="200" required>
-      <input type="text" name="meta" placeholder="Detalle (opcional, ej. vence hoy)" maxlength="150">
-      <button type="submit" class="btn btn-primary">Agregar</button>
-    </form>
-
-    <div id="pendientes">
-      <?php if (!$pendientes): ?>
-        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-check2-circle"></i></div><p>Sin pendientes por ahora.</p></div>
-      <?php else: foreach ($pendientes as $p): ?>
-        <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
-          <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <input type="hidden" name="completado" value="0">
-            <input type="checkbox" name="completado" value="1" class="pendiente-check"
-                   <?= $p['completado'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Marcar como hecho">
-          </form>
-          <span class="item-copy">
-            <span class="t"><?= e($p['titulo']) ?></span>
-            <?php if ($p['meta']): ?><span class="m"><?= e($p['meta']) ?></span><?php endif; ?>
-          </span>
-          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este pendiente?" data-confirm-ok="Eliminar">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
-          </form>
-        </div>
-      <?php endforeach; endif; ?>
-    </div>
+    <?php $listaPendientes = $pendientes; require ROOT_PATH . '/app/Views/Portal/_shared/_widget_pendientes.php'; ?>
     <?php endif; ?>
 
     <?php if (!in_array('agenda', $widgetsOcultos, true)): ?>

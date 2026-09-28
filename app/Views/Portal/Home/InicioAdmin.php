@@ -30,19 +30,22 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
   <?php if (!in_array('soportes', $widgetsOcultos, true)): ?>
   <div>
     <div class="section-header">
-      <h2 class="section-heading"><i class="bi bi-life-preserver"></i> Soportes</h2>
-      <button type="button" class="btn btn-link" id="btnNuevoSoporte"><i class="bi bi-plus-lg"></i> Agregar</button>
+      <h2 class="section-heading"><i class="bi bi-life-preserver" aria-hidden="true"></i> Soportes</h2>
+      <button type="button" class="btn btn-link" data-reveal="formNuevoSoporte" aria-expanded="false" aria-controls="formNuevoSoporte"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar</button>
     </div>
 
-    <form action="<?= BASE_URL ?>/soportes/crear" method="post" class="pendiente-form" id="formNuevoSoporte" hidden>
+    <form action="<?= BASE_URL ?>/soportes/crear" method="post" class="quick-form" id="formNuevoSoporte" hidden>
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-      <input type="text" name="titulo" placeholder="¿Qué fallo o mejora quieres anotar?" maxlength="200" required>
-      <input type="text" name="descripcion" placeholder="Detalle (opcional)" maxlength="500">
-      <div class="soporte-tipo-radios">
-        <label><input type="radio" name="tipo" value="fallo" checked> Fallo</label>
-        <label><input type="radio" name="tipo" value="mejora"> Mejora</label>
+      <div class="segmented" role="radiogroup" aria-label="Tipo de soporte">
+        <input type="radio" name="tipo" value="fallo" id="soporteFallo" checked><label for="soporteFallo"><i class="bi bi-bug" aria-hidden="true"></i> Fallo</label>
+        <input type="radio" name="tipo" value="mejora" id="soporteMejora"><label for="soporteMejora"><i class="bi bi-lightbulb" aria-hidden="true"></i> Mejora</label>
       </div>
-      <button type="submit" class="btn btn-primary">Agregar</button>
+      <input class="input input-sm" type="text" name="titulo" placeholder="¿Qué fallo o mejora quieres anotar?" aria-label="Soporte" maxlength="200" required>
+      <input class="input input-sm" type="text" name="descripcion" placeholder="Detalle (opcional)" aria-label="Detalle del soporte (opcional)" maxlength="500">
+      <div class="quick-form-actions">
+        <button type="button" class="btn btn-ghost btn-sm" data-reveal-cancel>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Agregar</button>
+      </div>
     </form>
 
     <div id="soportes">
@@ -55,7 +58,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
             <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
             <input type="hidden" name="resuelto" value="0">
             <input type="checkbox" name="resuelto" value="1" class="pendiente-check"
-                   <?= $s['resuelto'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Marcar como resuelto">
+                   <?= $s['resuelto'] ? 'checked' : '' ?> onchange="this.form.submit()" aria-label="Marcar «<?= e($s['titulo']) ?>» como resuelto">
           </form>
           <span class="item-copy">
             <span class="t"><span class="badge <?= e($tipoClase) ?> soporte-tag"><?= e($tipoLabel) ?></span><?= e($s['titulo']) ?></span>
@@ -64,7 +67,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
           <form action="<?= BASE_URL ?>/soportes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este soporte?" data-confirm-ok="Eliminar">
             <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
             <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            <button type="submit" class="btn btn-ghost btn-sm btn-icon pendiente-eliminar" aria-label="Eliminar «<?= e($s['titulo']) ?>»"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
           </form>
         </div>
       <?php endforeach; endif; ?>
@@ -74,42 +77,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
 
   <?php if (!in_array('pendientes', $widgetsOcultos, true)): ?>
   <div>
-    <div class="section-header">
-      <h2 class="section-heading"><i class="bi bi-check2-square"></i> Mis pendientes</h2>
-      <button type="button" class="btn btn-link" id="btnNuevoPendiente"><i class="bi bi-plus-lg"></i> Agregar</button>
-    </div>
-
-    <form action="<?= BASE_URL ?>/pendientes/crear" method="post" class="pendiente-form" id="formNuevoPendiente" hidden>
-      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-      <input type="text" name="titulo" placeholder="¿Qué tienes pendiente?" maxlength="200" required>
-      <input type="text" name="meta" placeholder="Detalle (opcional, ej. vence hoy)" maxlength="150">
-      <button type="submit" class="btn btn-primary">Agregar</button>
-    </form>
-
-    <div id="pendientes">
-      <?php if (!$misPendientes): ?>
-        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-check2-circle"></i></div><p>Sin pendientes por ahora.</p></div>
-      <?php else: foreach ($misPendientes as $p): ?>
-        <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
-          <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <input type="hidden" name="completado" value="0">
-            <input type="checkbox" name="completado" value="1" class="pendiente-check"
-                   <?= $p['completado'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Marcar como hecho">
-          </form>
-          <span class="item-copy">
-            <span class="t"><?= e($p['titulo']) ?></span>
-            <?php if ($p['meta']): ?><span class="m"><?= e($p['meta']) ?></span><?php endif; ?>
-          </span>
-          <form action="<?= BASE_URL ?>/pendientes/eliminar" method="post" class="pendiente-eliminar-form" data-confirm="¿Eliminar este pendiente?" data-confirm-ok="Eliminar">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-            <input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
-            <button type="submit" class="pendiente-eliminar" aria-label="Eliminar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
-          </form>
-        </div>
-      <?php endforeach; endif; ?>
-    </div>
+    <?php $listaPendientes = $misPendientes; require ROOT_PATH . '/app/Views/Portal/_shared/_widget_pendientes.php'; ?>
 
     <?php // Va dentro de esta misma columna (el grid de arriba es fijo a 2:
           // Soportes / Mis pendientes) — si algún día se oculta 'pendientes'
@@ -132,21 +100,4 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
 
 </div>
 
-<script>
-  // Mismo criterio que btnNuevoPendiente de inicio.js, pero ese archivo
-  // solo conecta un botón/form con id fijo — acá hay dos pares (Soportes y
-  // Mis pendientes), así que se resuelve aparte en vez de generalizar
-  // inicio.js para un caso que solo usa esta página.
-  document.addEventListener('DOMContentLoaded', function () {
-    [['btnNuevoSoporte', 'formNuevoSoporte'], ['btnNuevoPendiente', 'formNuevoPendiente']].forEach(function (par) {
-      var btn = document.getElementById(par[0]);
-      var form = document.getElementById(par[1]);
-      if (!btn || !form) return;
-      btn.addEventListener('click', function () {
-        form.hidden = !form.hidden;
-        if (!form.hidden) form.querySelector('input[name="titulo"]').focus();
-      });
-    });
-  });
-</script>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

@@ -1,0 +1,8 @@
+/* Hojas de vida / Contratos / Certificaciones (ver
+   _shared/_empleados_documento.php). Todo lo demás viene de
+   core/components.css; acá solo el resumen del documento en la celda. */
+.emp-doc{ display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.emp-doc-info{ min-width: 0; }
+.emp-doc-nombre{ display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font-weight: var(--weight-medium); }
+.emp-doc-meta{ display: block; font-size: var(--text-sm); color: var(--text-muted); }
+@media (max-width: 640px){ .emp-doc{ align-items: flex-start; flex-direction: column; } }

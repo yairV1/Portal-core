@@ -2,7 +2,7 @@
   var popover = document.getElementById('calPopover');
   if (!popover) return; // nada que crear — ver Calendario.php ($puedeCrear)
 
-  var POP_WIDTH = 280; // mismo valor que .cal-popover en calendario.css
+  var POP_WIDTH = 320; // mismo valor que .cal-popover en calendario.css
   var form = document.getElementById('calPopForm');
   var deleteForm = document.getElementById('calPopDeleteForm');
   var tituloModo = document.getElementById('calPopTituloModo');

@@ -133,43 +133,49 @@ function cal_render_evento_item(array $ev, bool $puedeEditar, bool $conFecha = f
 </div>
 
 <?php if ($puedeCrear): ?>
-<div class="cal-popover" id="calPopover" hidden>
+<div class="cal-popover" id="calPopover" role="dialog" aria-modal="false" aria-labelledby="calPopTituloModo" hidden>
   <div class="cal-pop-head">
-    <strong id="calPopTituloModo"><i class="bi bi-calendar-event"></i> Nuevo evento</strong>
-    <button type="button" class="cal-pop-close" id="calPopClose" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+    <h2 class="modal-title" id="calPopTituloModo"><i class="bi bi-calendar-event"></i> Nuevo evento</h2>
+    <button type="button" class="modal-close" id="calPopClose" aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
   </div>
-  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-pop-form" id="calPopForm">
+  <form action="<?= BASE_URL ?>/calendario/crear-evento" method="post" class="cal-pop-form form-stack" id="calPopForm">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="hidden" name="id" id="calPopId" value="">
 
-    <label class="cal-pop-label" for="calPopTitulo">Título</label>
-    <input type="text" name="titulo" id="calPopTitulo" placeholder="Ej. Día de descanso institucional" maxlength="200" required>
-
-    <label class="cal-pop-label" for="calPopFecha">Fecha</label>
-    <input type="date" name="fecha" id="calPopFecha" required>
-
-    <label class="cal-pop-label" for="calPopHoraLugar">Hora y lugar</label>
-    <input type="text" name="hora_lugar" id="calPopHoraLugar" placeholder="Ej. 10:00 · Sala de juntas" maxlength="100">
+    <div class="field">
+      <label class="field-label" for="calPopTitulo">Título <span class="req" aria-hidden="true">*</span></label>
+      <input class="input" type="text" name="titulo" id="calPopTitulo" placeholder="Ej. Día de descanso institucional" maxlength="200" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="calPopFecha">Fecha <span class="req" aria-hidden="true">*</span></label>
+      <input class="input" type="date" name="fecha" id="calPopFecha" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="calPopHoraLugar">Hora y lugar <span class="opt">(opcional)</span></label>
+      <input class="input" type="text" name="hora_lugar" id="calPopHoraLugar" placeholder="Ej. 10:00 · Sala de juntas" maxlength="100">
+    </div>
 
     <?php if ($esAdmin): ?>
-      <span class="cal-pop-label">Visibilidad</span>
-      <div class="segmented cal-pop-visibilidad" id="calPopVisibilidad">
-        <button type="button" class="segmented-item active" data-valor="publico"><i class="bi bi-globe2"></i> Público</button>
-        <button type="button" class="segmented-item" data-valor="privado"><i class="bi bi-lock-fill"></i> Privado</button>
+      <div class="field">
+        <span class="field-label" id="calPopVisibilidadL">Visibilidad</span>
+        <div class="segmented segmented--block cal-pop-visibilidad" id="calPopVisibilidad" role="group" aria-labelledby="calPopVisibilidadL">
+          <button type="button" class="segmented-item active" data-valor="publico"><i class="bi bi-globe2" aria-hidden="true"></i> Público</button>
+          <button type="button" class="segmented-item" data-valor="privado"><i class="bi bi-lock-fill" aria-hidden="true"></i> Privado</button>
+        </div>
+        <input type="hidden" name="visibilidad" id="calPopVisibilidadInput" value="publico">
       </div>
-      <input type="hidden" name="visibilidad" id="calPopVisibilidadInput" value="publico">
     <?php else: ?>
-      <p class="cal-pop-nota"><i class="bi bi-lock-fill"></i> Se crea como recordatorio privado, solo visible para ti.</p>
+      <p class="field-hint cal-pop-nota"><i class="bi bi-lock-fill" aria-hidden="true"></i> Se crea como recordatorio privado, solo visible para ti.</p>
     <?php endif; ?>
 
-    <button type="submit" class="btn btn-primary" id="calPopSubmitBtn"><i class="bi bi-check-lg"></i> Crear evento</button>
+    <button type="submit" class="btn btn-primary btn-block" id="calPopSubmitBtn"><i class="bi bi-check-lg"></i> Crear evento</button>
   </form>
   <form action="<?= BASE_URL ?>/calendario/eliminar-evento" method="post" class="cal-pop-delete" id="calPopDeleteForm" hidden data-confirm="¿Eliminar este evento?" data-confirm-text="Esta acción no se puede deshacer." data-confirm-ok="Eliminar">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
     <input type="hidden" name="mes" value="<?= e($calMesActual) ?>">
     <input type="hidden" name="id" id="calPopDeleteId" value="">
-    <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i> Eliminar evento</button>
+    <button type="submit" class="btn btn-danger-soft btn-block"><i class="bi bi-trash3" aria-hidden="true"></i> Eliminar evento</button>
   </form>
 </div>
 <?php endif; ?>

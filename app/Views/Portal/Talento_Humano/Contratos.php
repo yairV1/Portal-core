@@ -6,121 +6,43 @@ $TIPO_CONTRATO_LABEL = [
     'indefinido'            => 'Indefinido',
     'prestacion_servicios'  => 'Prestación de servicios',
 ];
+// Configuración para el listado compartido (ver _shared/_empleados_documento.php).
+$ED = [
+    'titulo'    => 'Contratos',
+    'desc'      => 'Contrato vigente por empleado, con tipo y vigencia.',
+    'icono'     => 'file-earmark-ruled',
+    'columna'   => 'Contrato',
+    'segmento'  => 'contratos',
+    'singular'  => 'contrato',
+    'confirmar' => '¿Eliminar este contrato?',
+    'resumen'   => function (array $emp) use ($TIPO_CONTRATO_LABEL) { ?>
+        <span class="emp-doc-nombre"><?= e($emp['doc_nombre']) ?> <span class="badge badge-neutral"><?= e($TIPO_CONTRATO_LABEL[$emp['tipo_contrato']] ?? $emp['tipo_contrato']) ?></span></span>
+        <span class="emp-doc-meta"><?= e((new DateTime($emp['fecha_inicio']))->format('d/m/Y')) ?> — <?= $emp['fecha_fin'] ? e((new DateTime($emp['fecha_fin']))->format('d/m/Y')) : 'indefinido' ?></span>
+    <?php },
+    'campos'    => function () use ($TIPO_CONTRATO_LABEL) { ?>
+        <div class="field">
+          <label class="field-label" for="dsTipo">Tipo de contrato <span class="req" aria-hidden="true">*</span></label>
+          <select class="select" id="dsTipo" name="tipo_contrato" required>
+            <option value="">Selecciona…</option>
+            <?php foreach ($TIPO_CONTRATO_LABEL as $valor => $label): ?>
+              <option value="<?= e($valor) ?>"><?= e($label) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label" for="dsInicio">Fecha de inicio <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" type="date" id="dsInicio" name="fecha_inicio" required>
+          </div>
+          <div class="field">
+            <label class="field-label" for="dsFin">Fecha de fin <span class="opt">(opcional)</span></label>
+            <input class="input" type="date" id="dsFin" name="fecha_fin">
+            <p class="field-hint">Vacía = indefinido.</p>
+          </div>
+        </div>
+    <?php },
+];
 ?>
-<link rel="stylesheet" href="<?= v('/assets/portal/css/modulo-generico.css') ?>">
-<link rel="stylesheet" href="<?= v('/assets/portal/css/centro-documental.css') ?>">
-
-<a href="<?= BASE_URL ?>/talento-humano" class="doc-back">
-  <i class="bi bi-arrow-left"></i> Volver a Talento Humano
-</a>
-
-<div class="doc-hero">
-  <h1 class="doc-hero-titulo">Contratos</h1>
-  <p class="doc-hero-desc">Contrato vigente por empleado, con tipo y vigencia.</p>
-</div>
-
-<?php if ($puedeAdministrar): ?>
-<div class="section-header"><h2 class="section-heading">Nuevo empleado</h2></div>
-<form action="<?= BASE_URL ?>/talento-humano/empleados/crear" method="post" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px;align-items:flex-start">
-  <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-  <input type="hidden" name="volver" value="<?= e($rutaBase) ?>">
-  <input type="text" name="nombre_completo" placeholder="Nombre completo" required class="input" style="flex:1 1 200px">
-  <input type="text" name="documento" placeholder="Documento de identidad" required class="input" style="flex:1 1 160px">
-  <input type="text" name="cargo" placeholder="Cargo" class="input" style="flex:1 1 160px">
-  <input type="date" name="fecha_ingreso" class="input" style="flex:1 1 160px">
-  <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus"></i> Agregar empleado</button>
-</form>
-<?php endif; ?>
-
-<div class="section-header"><h2 class="section-heading">Empleados</h2></div>
-<?php if (!$empleados): ?>
-  <div class="empty-state">
-    <div class="ic"><i class="bi bi-file-earmark-ruled"></i></div>
-    <h4>Aún no hay empleados</h4>
-    <p>Agrega el primero con el formulario de arriba.</p>
-  </div>
-<?php else: ?>
-  <div class="table-wrap">
-  <table class="table table--stack">
-    <thead><tr><th>Nombre</th><th>Documento</th><th>Cargo</th><th>Contrato</th><th class="col-actions"><span class="sr-only">Acciones</span></th></tr></thead>
-    <tbody>
-      <?php foreach ($empleados as $emp): ?>
-        <tr>
-          <td><strong><?= e($emp['nombre_completo']) ?></strong></td>
-          <td class="cell-muted"><?= e($emp['documento']) ?></td>
-          <td class="cell-muted"><?= e($emp['cargo'] ?: '—') ?></td>
-          <td>
-            <?php if ($emp['doc_id'] && $emp['doc_archivo']): ?>
-              <span><?= e($emp['doc_nombre']) ?></span>
-              <span class="badge" style="margin-left:4px"><?= e($TIPO_CONTRATO_LABEL[$emp['tipo_contrato']] ?? $emp['tipo_contrato']) ?></span>
-              <span class="text-muted" style="font-size:12px">
-                <?= e((new DateTime($emp['fecha_inicio']))->format('d/m/Y')) ?> — <?= $emp['fecha_fin'] ? e((new DateTime($emp['fecha_fin']))->format('d/m/Y')) : 'indefinido' ?>
-              </span>
-              <a class="btn btn-icon" href="<?= BASE_URL ?>/talento-humano/contratos/descargar?id=<?= (int) $emp['doc_id'] ?>" target="_blank" rel="noopener" title="Descargar"><i class="bi bi-download"></i></a>
-              <?php if ($puedeAdministrar): ?>
-                <form action="<?= BASE_URL ?>/talento-humano/contratos/eliminar" method="post" style="display:inline-block" data-confirm="¿Eliminar este contrato?" data-confirm-ok="Eliminar">
-                  <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                  <input type="hidden" name="doc_id" value="<?= (int) $emp['doc_id'] ?>">
-                  <button type="submit" class="btn btn-danger-soft btn-icon" aria-label="Eliminar"><i class="bi bi-trash"></i></button>
-                </form>
-              <?php endif; ?>
-            <?php elseif ($puedeAdministrar): ?>
-              <details>
-                <summary class="btn" style="display:inline-flex;cursor:pointer"><i class="bi bi-upload"></i> Subir</summary>
-                <form action="<?= BASE_URL ?>/talento-humano/contratos/subir" method="post" enctype="multipart/form-data" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
-                  <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                  <input type="hidden" name="empleado_id" value="<?= (int) $emp['id'] ?>">
-                  <input type="text" name="nombre" placeholder="Nombre del documento" required class="input" style="flex:1 1 160px">
-                  <select name="tipo_contrato" required class="select" style="flex:1 1 160px">
-                    <option value="">Tipo de contrato</option>
-                    <?php foreach ($TIPO_CONTRATO_LABEL as $valor => $label): ?>
-                      <option value="<?= e($valor) ?>"><?= e($label) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                  <input type="date" name="fecha_inicio" required title="Fecha de inicio" class="input" style="flex:1 1 140px">
-                  <input type="date" name="fecha_fin" title="Fecha de fin (vacío = indefinido)" class="input" style="flex:1 1 140px">
-                  <input type="file" name="archivo" required accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
-                  <button type="submit" class="btn btn-primary">Subir</button>
-                </form>
-              </details>
-            <?php else: ?>
-              <span class="text-muted">— sin subir —</span>
-            <?php endif; ?>
-          </td>
-          <td class="col-actions">
-            <?php if ($puedeAdministrar): ?>
-              <details>
-                <summary class="btn" style="display:inline-flex;cursor:pointer"><i class="bi bi-pencil"></i> Editar</summary>
-                <form action="<?= BASE_URL ?>/talento-humano/empleados/editar" method="post" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding:14px;border:1px solid var(--color-divider);border-radius:10px;background:var(--color-surface)">
-                  <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                  <input type="hidden" name="volver" value="<?= e($rutaBase) ?>">
-                  <input type="hidden" name="id" value="<?= (int) $emp['id'] ?>">
-                  <input type="text" name="nombre_completo" value="<?= e($emp['nombre_completo']) ?>" required class="input" style="flex:1 1 200px">
-                  <input type="text" name="documento" value="<?= e($emp['documento']) ?>" required class="input" style="flex:1 1 160px">
-                  <input type="text" name="cargo" value="<?= e($emp['cargo'] ?? '') ?>" placeholder="Cargo" class="input" style="flex:1 1 160px">
-                  <input type="text" name="telefono" value="<?= e($emp['telefono'] ?? '') ?>" placeholder="Teléfono" class="input" style="flex:1 1 140px">
-                  <input type="email" name="correo" value="<?= e($emp['correo'] ?? '') ?>" placeholder="Correo" class="input" style="flex:1 1 180px">
-                  <input type="date" name="fecha_ingreso" value="<?= e($emp['fecha_ingreso'] ?? '') ?>" class="input" style="flex:1 1 160px">
-                  <select name="estado" class="select" style="flex:1 1 120px">
-                    <option value="activo" <?= $emp['estado'] === 'activo' ? 'selected' : '' ?>>Activo</option>
-                    <option value="inactivo" <?= $emp['estado'] === 'inactivo' ? 'selected' : '' ?>>Inactivo</option>
-                  </select>
-                  <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
-                </form>
-              </details>
-              <form action="<?= BASE_URL ?>/talento-humano/empleados/eliminar" method="post" style="display:inline-block" data-confirm="¿Eliminar a <?= e($emp['nombre_completo']) ?>?" data-confirm-text="También se borran su hoja de vida, contrato y certificaciones." data-confirm-ok="Eliminar">
-                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                <input type="hidden" name="volver" value="<?= e($rutaBase) ?>">
-                <input type="hidden" name="id" value="<?= (int) $emp['id'] ?>">
-                <button type="submit" class="btn btn-danger-soft btn-icon" aria-label="Eliminar empleado"><i class="bi bi-trash"></i></button>
-              </form>
-            <?php endif; ?>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-  </div>
-<?php endif; ?>
-
+<link rel="stylesheet" href="<?= v('/assets/portal/css/empleados.css') ?>">
+<?php require ROOT_PATH . '/app/Views/Portal/_shared/_empleados_documento.php'; ?>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

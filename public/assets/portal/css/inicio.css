@@ -269,28 +269,13 @@
   }
 
   .pendiente-eliminar-form { flex: 0 0 auto }
-  .pendiente-eliminar {
-    width: 24px; height: 24px; border: none; background: none; cursor: pointer;
-    color: var(--color-text); opacity: .35; border-radius: var(--radius-sm);
-  }
-  .pendiente-eliminar:hover { opacity: 1; background: var(--color-surface) }
+  .pendiente-eliminar { color: var(--text-muted); }
 
-  .pendiente-form {
-    flex-direction: column; gap: 8px;
-    padding: 12px; margin-bottom: 14px;
-    border: 1px solid var(--color-divider); border-radius: var(--radius-md);
-  }
-  /* "display:flex" tiene que ir condicionado a que NO esté [hidden] —
-     puesto a secas en .pendiente-form le ganaba al "display:none" que el
-     navegador aplica por defecto a [hidden] (misma especificidad, esta
-     regla cae después en la hoja), y el formulario quedaba siempre
-     visible sin importar el atributo. */
-  .pendiente-form:not([hidden]) { display: flex; }
-  .pendiente-form input[type="text"] {
-    width: 100%; box-sizing: border-box; border: 1px solid var(--color-divider); border-radius: var(--radius-sm);
-    padding: 7px 10px; font-size: 12.5px; background: var(--color-bg); color: var(--color-text); font-family: inherit;
-  }
-  .pendiente-form .btn { align-self: flex-end }
+  /* Formulario rápido (pendientes/soportes): se despliega con data-reveal
+     (core/ui.js); campos y botones son los del sistema. */
+  .quick-form { flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-4); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); }
+  .quick-form:not([hidden]) { display: flex; }
+  .quick-form-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 
   .evento {
     display: flex;

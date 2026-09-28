@@ -35,7 +35,12 @@
             <?php endforeach; endif; ?>
           </div>
 
-          <div class="section-header" style="margin-top:40px"><h2 class="section-heading">Documentación destacada</h2></div>
+          <div class="section-header section-header--spaced">
+            <h2 class="section-heading">Documentación destacada</h2>
+            <?php if ($direccion && usuario_admin_de($direccion['id'])): ?>
+              <button type="button" class="btn btn-sm btn-primary" data-open="docNuevo" aria-haspopup="dialog"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar documento</button>
+            <?php endif; ?>
+          </div>
           <div class="table-wrap">
   <table class="table table--stack">
             <thead><tr><th>Documento</th><th>Tipo</th><th>Ver.</th><th>Actualizado</th><th>Archivo</th></tr></thead>
@@ -54,15 +59,14 @@
                         <i class="bi bi-download"></i> Descargar
                       </a>
                     <?php elseif (usuario_admin_de($direccion['id'] ?? null)): ?>
-                      <form action="<?= BASE_URL ?>/documentos/subir" method="post" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center">
+                      <form action="<?= BASE_URL ?>/documentos/subir" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                         <input type="hidden" name="tipo" value="direccion">
                         <input type="hidden" name="volver" value="/novedades">
                         <input type="hidden" name="archivo_id" value="<?= (int) $d['id'] ?>">
-                        <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required style="max-width:160px;font-size:11px">
-                        <button type="submit" class="btn btn-sm">
-                          <i class="bi bi-upload"></i> Subir
-                        </button>
+                        <label class="file-btn btn btn-sm"><i class="bi bi-upload" aria-hidden="true"></i> Subir archivo
+                          <input type="file" name="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required onchange="this.form.submit()" aria-label="Subir archivo para <?= e($d['nombre']) ?>">
+                        </label>
                       </form>
                     <?php else: ?>
                       <span class="text-muted">Sin archivo</span>
@@ -73,19 +77,6 @@
             </tbody>
           </table>
   </div>
-          <?php if ($direccion && usuario_admin_de($direccion['id'])): ?>
-            <form action="<?= BASE_URL ?>/documentos/crear" method="post" class="modulo-add">
-              <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-              <input type="hidden" name="tipo" value="direccion">
-              <input type="hidden" name="volver" value="/novedades">
-              <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
-              <input type="text" name="nombre" placeholder="Nombre del documento" required>
-              <input type="text" name="tipo_doc" placeholder="Tipo">
-              <input type="text" name="version" placeholder="v1.0">
-              <input type="date" name="fecha" value="<?= date('Y-m-d') ?>">
-              <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Agregar documento</button>
-            </form>
-          <?php endif; ?>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:28px">
@@ -147,4 +138,46 @@
         </div>
       </div>
 <script src="<?= BASE_URL ?>/assets/portal/js/novedades.js"></script>
+
+<?php if ($direccion && usuario_admin_de($direccion['id'])): ?>
+<dialog class="modal" id="docNuevo" aria-labelledby="docNuevoT">
+  <form action="<?= BASE_URL ?>/documentos/crear" method="post">
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+    <input type="hidden" name="tipo" value="direccion">
+    <input type="hidden" name="volver" value="/novedades">
+    <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
+    <header class="modal-header">
+      <div class="modal-heading">
+        <h2 class="modal-title" id="docNuevoT">Agregar documento</h2>
+        <p class="modal-desc">Regístralo primero; el archivo se adjunta después desde la tabla.</p>
+      </div>
+      <button type="button" class="modal-close" data-close aria-label="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </header>
+    <div class="modal-body form-stack">
+      <div class="field">
+        <label class="field-label" for="dnNombre">Nombre del documento <span class="req" aria-hidden="true">*</span></label>
+        <input class="input" type="text" id="dnNombre" name="nombre" required>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="dnTipo">Tipo <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" id="dnTipo" name="tipo_doc" placeholder="Ej. Informe">
+        </div>
+        <div class="field">
+          <label class="field-label" for="dnVersion">Versión <span class="opt">(opcional)</span></label>
+          <input class="input" type="text" id="dnVersion" name="version" placeholder="v1.0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="dnFecha">Fecha</label>
+          <input class="input" type="date" id="dnFecha" name="fecha" value="<?= date('Y-m-d') ?>">
+        </div>
+      </div>
+    </div>
+    <footer class="modal-footer">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar documento</button>
+    </footer>
+  </form>
+</dialog>
+<?php endif; ?>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

@@ -357,6 +357,82 @@
     });
   });
 
+  // ── Formulario rápido desplegable ───────────────────────
+  // <button data-reveal="idForm"> muestra/oculta #idForm y enfoca su primer
+  // campo; un [data-reveal-cancel] dentro del formulario lo vuelve a ocultar.
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-reveal]');
+    if (b) {
+      var destino = document.getElementById(b.getAttribute('data-reveal'));
+      if (!destino) return;
+      destino.hidden = !destino.hidden;
+      b.setAttribute('aria-expanded', destino.hidden ? 'false' : 'true');
+      if (!destino.hidden) {
+        var primero = destino.querySelector('input:not([type="hidden"]), textarea, select');
+        if (primero) primero.focus();
+      }
+      return;
+    }
+    var c = e.target.closest && e.target.closest('[data-reveal-cancel]');
+    if (c) {
+      var form = c.closest('form');
+      if (!form) return;
+      form.reset();
+      form.hidden = true;
+      var disparador = document.querySelector('[data-reveal="' + form.id + '"]');
+      if (disparador) { disparador.setAttribute('aria-expanded', 'false'); disparador.focus(); }
+    }
+  });
+
+  // ── Copiar al portapapeles ──────────────────────────────
+  // <button data-copy="texto" data-copy-label="Enlace copiado">
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-copy]');
+    if (!b) return;
+    var texto = b.getAttribute('data-copy');
+    var aviso = b.getAttribute('data-copy-label') || 'Copiado al portapapeles';
+    var ok = function () { UI.toast({ type: 'success', title: aviso, duration: 2200 }); };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(texto).then(ok, function () { copiarRespaldo(texto) && ok(); });
+    } else if (copiarRespaldo(texto)) {
+      ok();
+    }
+  });
+  // Respaldo para HTTP sin contexto seguro (entorno local): textarea temporal.
+  function copiarRespaldo(texto) {
+    var t = document.createElement('textarea');
+    t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) {}
+    t.remove();
+    return ok;
+  }
+
+  // ── Filtro de tabla en el cliente ───────────────────────
+  // <input data-table-filter="idTabla"> oculta las filas del <tbody> que no
+  // contienen el texto (sin distinguir tildes ni mayúsculas). Si ninguna
+  // coincide, muestra el elemento [data-filter-empty="idTabla"].
+  function normalizarTexto(t) {
+    return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+  document.addEventListener('input', function (e) {
+    var campo = e.target;
+    if (!(campo instanceof HTMLInputElement) || !campo.hasAttribute('data-table-filter')) return;
+    var id = campo.getAttribute('data-table-filter');
+    var tabla = document.getElementById(id);
+    if (!tabla) return;
+    var q = normalizarTexto(campo.value.trim());
+    var visibles = 0;
+    tabla.querySelectorAll('tbody tr').forEach(function (tr) {
+      var coincide = !q || normalizarTexto(tr.textContent).indexOf(q) !== -1;
+      tr.hidden = !coincide;
+      if (coincide) visibles++;
+    });
+    var vacio = document.querySelector('[data-filter-empty="' + id + '"]');
+    if (vacio) vacio.hidden = visibles > 0;
+  });
+
   // ── Inicialización ──────────────────────────────────────
   function etiquetarTablas(raiz) {
     (raiz || document).querySelectorAll('table.table--stack').forEach(function (tabla) {

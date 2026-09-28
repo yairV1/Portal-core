@@ -44,31 +44,9 @@
   .responsable .cargo{display:block;font-size:11px;opacity:.6}
   .software-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--color-divider);font-size:12.5px}
 
-  /* ── Tarjeta "agregar" ──
-     Envuelve los formularios de crear carpeta/documento/traer de Drive
-     (antes eran filas sueltas de <input style="..."> repetidas en cada
-     vista) — mismo tratamiento visual que .side-box, para que se vean
-     como una acción propia y no como controles perdidos. */
-  .modulo-add{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:14px 16px;margin:12px 0 24px;background:var(--color-surface);min-width:0;box-sizing:border-box;max-width:100%}
-  .modulo-add input[type="text"],
-  .modulo-add input[type="date"],
-  .modulo-add select{padding:9px 12px;border-radius:8px;border:1px solid var(--color-divider);font:inherit;background:var(--color-bg)}
-  .modulo-add input[type="text"]{flex:1 1 160px}
-  .modulo-add input[type="date"]{flex:0 0 150px}
-  .modulo-add .modulo-add-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.5;flex:0 0 100%;margin-bottom:-2px}
-
   /* — responsive: apila la columna lateral debajo en pantallas angostas — */
   @media (max-width: 880px){
     .modulo-titulo{font-size:30px}
     .modulo-grid{grid-template-columns:1fr}
   }
 
-  /* En pantallas angostas cada campo ocupa su propia fila — evita que la
-     suma de anchos mínimos (sobre todo el <input type="date">, que el
-     navegador nunca encoge del todo) empuje el formulario más ancho que
-     la pantalla y provoque scroll horizontal. */
-  @media (max-width: 480px){
-    .modulo-add input[type="text"],
-    .modulo-add input[type="date"],
-    .modulo-add select{flex-basis:100%}
-  }
