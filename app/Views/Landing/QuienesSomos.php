@@ -27,7 +27,8 @@
     <a href="<?= BASE_URL ?>/" class="brand">
       <img src="<?= BASE_URL ?>/uploads/logo/Core-logo-black-removebg-preview.png" alt="COREDUCACIÓN" class="brand-logo-full">
     </a>
-    <nav class="links" aria-label="Navegación principal">
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="navPrincipal" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+    <nav class="links" id="navPrincipal" aria-label="Navegación principal">
       <a href="<?= BASE_URL ?>/">Inicio</a>
       <a href="#modulos">El portal</a>
       <a href="#directivos">Directivos</a>
@@ -80,7 +81,7 @@
               <?php if ($p['foto']): ?>
                 <img src="<?= BASE_URL . e($p['foto']) ?>" alt="<?= e($p['nombre'] ?: $p['cargo']) ?>">
               <?php else: ?>
-                <i class="bi bi-person-fill"></i>
+                <i class="bi bi-person-fill" aria-hidden="true"></i>
               <?php endif; ?>
             </div>
             <strong><?= $p['nombre'] ? e($p['nombre']) : 'Vacante' ?></strong>
@@ -109,7 +110,7 @@
                 <?php if ($p['foto']): ?>
                   <img src="<?= BASE_URL . e($p['foto']) ?>" alt="<?= e($p['nombre']) ?>">
                 <?php else: ?>
-                  <i class="bi bi-person-fill"></i>
+                  <i class="bi bi-person-fill" aria-hidden="true"></i>
                 <?php endif; ?>
               </div>
               <strong><?= e($p['nombre']) ?></strong>
@@ -124,6 +125,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
+<script src="<?= v('/assets/web/js/nav.js') ?>"></script>
 <script src="<?= v('/assets/web/js/quienes-somos.js') ?>"></script>
 </body>
 </html>

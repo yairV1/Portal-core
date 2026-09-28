@@ -1,32 +1,31 @@
 <?php $titulo = 'Cuadro de Mando Integral'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/portal/css/tableros.css">
-<h1 class="page-title">Cuadro de Mando Integral</h1>
-<p class="page-desc">Indicadores institucionales en tiempo real. Vista Rectoría, con descenso a dirección y área.</p>
+<link rel="stylesheet" href="<?= v('/assets/portal/css/tableros.css') ?>">
+<?php ui_page_header([
+    'title' => 'Cuadro de Mando Integral',
+    'desc'  => 'Indicadores institucionales, matrícula y ejecución presupuestal, con acceso a cada perspectiva.',
+]); ?>
 
-<div class="segmented" style="margin-bottom:28px" id="tableroTabs"></div>
-
-<div class="kpis" id="kpisTablero" style="margin-bottom:36px">
+<div class="kpis tablero-kpis">
   <?php if (!$tableroKpis): ?>
-    <p class="text-muted">Sin indicadores por ahora.</p>
+    <div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></div><p>Sin indicadores por ahora.</p></div>
   <?php else: foreach ($tableroKpis as $k): ?>
     <div class="kpi">
-      <div class="kpi-label"><?= e($k['label']) ?></div>
+      <div class="kpi-head"><div class="kpi-label"><?= e($k['label']) ?></div></div>
       <div class="kpi-value"><?= e($k['valor']) ?></div>
       <div class="kpi-meta">Meta <?= e($k['meta']) ?></div>
-      <div class="progress-track"><div class="progress-fill" style="width:<?= (int)$k['pct'] ?>%"></div></div>
+      <div class="progress-track" role="progressbar" aria-valuenow="<?= (int)$k['pct'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de <?= e($k['label']) ?>"><div class="progress-fill" style="width:<?= (int)$k['pct'] ?>%"></div></div>
     </div>
   <?php endforeach; endif; ?>
 </div>
 
 <div class="dashboard-grid">
   <div class="box-card">
-    <div class="chart-card-head">
-      <h4>Matrícula por facultad · 2026-II</h4>
-      <span class="badge-live">Power BI · en vivo</span>
+    <div class="box-card-header">
+      <h2 class="box-card-title">Matrícula por facultad · 2026-II</h2>
     </div>
     <div class="bar-chart" id="barras">
       <?php if (!$tableroMatricula): ?>
-        <p class="text-muted">Sin datos de matrícula por ahora.</p>
+<div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-bar-chart" aria-hidden="true"></i></div><p>Sin datos de matrícula por ahora.</p></div>
       <?php else: foreach ($tableroMatricula as $b): ?>
         <div class="bar-col">
           <span class="bar-value"><?= number_format((int)$b['estudiantes'], 0, ',', '.') ?></span>
@@ -39,26 +38,26 @@
 
   <div class="dashboard-col">
     <div class="box-card box-card--flat">
-      <h4 class="section-title">Ejecución presupuestal</h4>
+      <h2 class="box-card-title tablero-titulo">Ejecución presupuestal</h2>
       <div id="ejecucion">
         <?php if (!$tableroEjecucion): ?>
-          <p class="text-muted">Sin datos de ejecución por ahora.</p>
+<div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-cash-coin" aria-hidden="true"></i></div><p>Sin datos de ejecución por ahora.</p></div>
         <?php else: foreach ($tableroEjecucion as $e): ?>
           <div class="exec-row">
             <div class="exec-head"><span><?= e($e['label']) ?></span><strong><?= (int)$e['pct'] ?>%</strong></div>
-            <div class="progress-track"><div class="progress-fill progress-fill-alt" style="width:<?= (int)$e['pct'] ?>%"></div></div>
+            <div class="progress-track" role="progressbar" aria-valuenow="<?= (int)$e['pct'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="<?= e($e['label']) ?>"><div class="progress-fill progress-fill-alt" style="width:<?= (int)$e['pct'] ?>%"></div></div>
           </div>
         <?php endforeach; endif; ?>
       </div>
     </div>
     <div class="box-card box-card--flat">
-      <h4 class="section-title">Alertas de indicador</h4>
+      <h2 class="box-card-title tablero-titulo">Alertas de indicador</h2>
       <div id="alertasKpi">
         <?php if (!$tableroAlertas): ?>
-          <p class="text-muted">Sin alertas por ahora.</p>
+<div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-check2-circle" aria-hidden="true"></i></div><p>Sin alertas por ahora.</p></div>
         <?php else: foreach ($tableroAlertas as $a): ?>
           <div class="alert-row">
-            <span class="ic"><i class="bi bi-exclamation-triangle"></i></span>
+            <span class="ic" aria-hidden="true"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
             <span class="texto"><?= e($a['texto']) ?></span>
           </div>
         <?php endforeach; endif; ?>
@@ -67,19 +66,18 @@
   </div>
 </div>
 
-<div class="subsection">
-  <h4 class="section-title">Submódulos</h4>
+<div class="section-header section-header--spaced"><h2 class="section-heading">Perspectivas</h2></div>
+<div>
   <div class="tile-grid">
     <?php if (!$tableroSubmodulos): ?>
-      <p class="text-muted">Sin submódulos registrados por ahora.</p>
+      <div class="empty-state empty-state--compact empty-state--bare"><div class="ic" aria-hidden="true"><i class="bi bi-grid" aria-hidden="true"></i></div><p>Sin perspectivas registradas por ahora.</p></div>
     <?php else: foreach ($tableroSubmodulos as $s): ?>
       <a class="tile tile-submodulo" href="<?= BASE_URL . e($s['ruta']) ?>">
-        <i class="bi bi-<?= e($s['icono'] ?: 'app') ?>"></i>
+        <i class="bi bi-<?= e($s['icono'] ?: 'app') ?>" aria-hidden="true"></i>
         <span class="label"><?= e($s['label']) ?></span>
       </a>
     <?php endforeach; endif; ?>
   </div>
 </div>
 
-<script src="<?= BASE_URL ?>/assets/portal/js/tableros.js"></script>
 <?php require ROOT_PATH . '/app/Views/layouts/portal-footer.php'; ?>

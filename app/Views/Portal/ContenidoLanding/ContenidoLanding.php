@@ -131,7 +131,7 @@ $tablaLista = function (string $tipo, array $L) use ($csrf) {
               <tr>
                 <td>
                   <span class="landing-item">
-                    <span class="landing-item-ic" aria-hidden="true"><i class="bi bi-<?= e($item['icono'] ?: 'dot') ?>"></i></span>
+                    <span class="landing-item-ic" aria-hidden="true"><i class="bi bi-<?= e($item['icono'] ?: 'dot') ?>" aria-hidden="true"></i></span>
                     <span class="cell-strong"><?= e($item[$L['principal']]) ?></span>
                   </span>
                 </td>

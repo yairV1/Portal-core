@@ -161,6 +161,5 @@ foreach ($AVISOS as $grupo => [$duracion, $mensajes]) {
 
 <script src="<?= v('/assets/layouts/js/paneles.js') ?>"></script>
 <script src="<?= v('/assets/layouts/js/asistente.js') ?>"></script>
-<script src="<?= v('/assets/portal/js/fluid-orb.js') ?>"></script>
 </body>
 </html>

@@ -156,7 +156,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
 
   <?php if (!$subcarpetas && !$archivosCarpeta): ?>
     <div class="empty-state">
-      <div class="ic"><i class="bi bi-folder2-open"></i></div>
+      <div class="ic"><i class="bi bi-folder2-open" aria-hidden="true"></i></div>
       <h4>Esta carpeta está vacía</h4>
       <p>
         <?php if (!$esAdminExplorador): ?>
@@ -172,7 +172,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
     <div class="explorador-grid">
       <?php foreach ($subcarpetas as $c): ?>
         <a href="<?= BASE_URL . $rutaModuloActual ?>?carpeta=<?= (int) $c['id'] ?>" class="explorador-item explorador-item-carpeta">
-          <i class="bi bi-folder-fill"></i>
+          <i class="bi bi-folder-fill" aria-hidden="true"></i>
           <span><?= e($c['nombre']) ?></span>
         </a>
       <?php endforeach; ?>
@@ -180,14 +180,14 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
       <?php foreach ($archivosCarpeta as $a): ?>
         <div class="explorador-item explorador-item-archivo">
           <a href="<?= BASE_URL . $rutaModuloActual ?>/carpetas/descargar?id=<?= (int) $a['id'] ?>" class="explorador-item-link" target="_blank" rel="noopener">
-            <i class="bi bi-file-earmark-text-fill"></i>
+            <i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i>
             <span><?= e($a['nombre']) ?></span>
             <?php if (!empty($a['tipo'])): ?><span class="doc-tag-origen"><?= e($a['tipo']) ?></span><?php endif; ?>
           </a>
           <?php if (onlyoffice_configurado() && onlyoffice_editable($a['archivo'])): ?>
             <a href="<?= BASE_URL ?>/editor?tipo=carpeta&id=<?= (int) $a['id'] ?>&volver=<?= urlencode($urlVolverExplorador) ?>"
-               class="btn btn-icon explorador-item-editar" aria-label="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal" title="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal">
-              <i class="bi <?= $esAdminExplorador ? 'bi-pencil-square' : 'bi-eye' ?>"></i>
+               class="btn btn-ghost btn-sm btn-icon explorador-item-editar" aria-label="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal" title="<?= $esAdminExplorador ? 'Editar' : 'Abrir' ?> dentro del portal">
+              <i class="bi <?= $esAdminExplorador ? 'bi-pencil-square' : 'bi-eye' ?>" aria-hidden="true"></i>
             </a>
           <?php endif; ?>
           <?php if ($esAdminExplorador): ?>
@@ -195,7 +195,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
               <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
               <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
               <input type="hidden" name="archivo_id" value="<?= (int) $a['id'] ?>">
-              <button type="submit" class="btn btn-danger-soft btn-icon explorador-item-borrar" aria-label="Eliminar documento"><i class="bi bi-trash"></i></button>
+              <button type="submit" class="btn btn-danger-soft btn-sm btn-icon explorador-item-borrar" aria-label="Eliminar documento"><i class="bi bi-trash" aria-hidden="true"></i></button>
             </form>
           <?php endif; ?>
         </div>
@@ -210,7 +210,7 @@ $urlVolverExplorador = BASE_URL . $rutaModuloActual . ($carpetaActual ? '?carpet
       <input type="hidden" name="direccion_id" value="<?= (int) $direccion['id'] ?>">
       <input type="hidden" name="carpeta_id" value="<?= (int) $carpetaActual['id'] ?>">
       <button type="submit" class="btn btn-danger-soft">
-        <i class="bi bi-trash"></i> Eliminar esta carpeta
+        <i class="bi bi-trash" aria-hidden="true"></i> Eliminar esta carpeta
       </button>
     </form>
   <?php endif; ?>

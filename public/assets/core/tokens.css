@@ -87,6 +87,9 @@
 
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--primary) 28%, transparent);
 
+  /* Degradado de marca para superficies protagonistas (hero del Inicio). */
+  --gradient-brand: linear-gradient(135deg, var(--brand-magenta-900) 0%, var(--brand-magenta-600) 62%, var(--brand-orange-500) 100%);
+
   /* ── 3. Escalas ── */
   --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: var(--font-sans); /* las landings lo cambian por Oswald */

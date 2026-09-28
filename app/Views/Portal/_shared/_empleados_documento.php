@@ -110,7 +110,7 @@ $urlDoc = BASE_URL . '/talento-humano/' . $ED['segmento'];
       </tbody>
     </table>
     <div class="empty-state empty-state--compact empty-state--bare" data-filter-empty="tablaEmpleados" hidden>
-      <div class="ic" aria-hidden="true"><i class="bi bi-search"></i></div><p>Ningún empleado coincide con la búsqueda.</p>
+      <div class="ic" aria-hidden="true"><i class="bi bi-search" aria-hidden="true"></i></div><p>Ningún empleado coincide con la búsqueda.</p>
     </div>
   </div>
 <?php endif; ?>

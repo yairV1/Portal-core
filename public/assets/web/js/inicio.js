@@ -1,6 +1,8 @@
 (function () {
   'use strict';
   var track = document.getElementById('module-track');
+  // Sin módulos cargados la vista no pinta el carrusel (ver Landing/Inicio.php).
+  if (!track || !track.children.length) return;
   var cards = track.children;
   var total = cards.length;
   var dotsWrap = document.getElementById('carousel-dots');

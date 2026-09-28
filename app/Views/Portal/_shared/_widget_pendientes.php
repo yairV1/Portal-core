@@ -22,7 +22,7 @@
 
 <div id="pendientes">
   <?php if (!$listaPendientes): ?>
-    <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-check2-circle"></i></div><p>Sin pendientes por ahora.</p></div>
+    <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-check2-circle" aria-hidden="true"></i></div><p>Sin pendientes por ahora.</p></div>
   <?php else: foreach ($listaPendientes as $p): ?>
     <div class="pendiente<?= $p['completado'] ? ' pendiente-hecho' : '' ?>">
       <form action="<?= BASE_URL ?>/pendientes/completar" method="post" class="pendiente-check-form">

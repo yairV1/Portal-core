@@ -1316,12 +1316,16 @@ body[data-tema="oscuro"] .core-auth-google:hover {
    legible encima de la imagen. */
 .core-auth-mascot {
   position: absolute;
-  top: 50%;
+  top: 1.75rem;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 92%;
-  max-width: 300px;
-  height: auto;
+  transform: translateX(-50%);
+  /* Anclada arriba y con alto máximo que deja libre el bloque de texto de
+     abajo (logo + kicker + tagline + subtítulo ≈ 16rem): antes iba centrada
+     y tapaba el "PORTAL CORE". */
+  width: auto;
+  max-width: min(92%, 300px);
+  max-height: calc(100% - 17rem);
+  object-fit: contain;
   z-index: 2;
   filter: drop-shadow(0 18px 30px rgba(4, 1, 10, .5));
   pointer-events: none;
@@ -1525,16 +1529,16 @@ body[data-tema="oscuro"] .core-auth-google:hover {
   margin-top: .3rem;
   min-height: 52px;
   font-size: 1rem;
-  background-color: #e6007e !important;
-  border-color: #e6007e !important;
+  background-color: var(--pr) !important;
+  border-color: var(--pr) !important;
   color: #ffffff !important;
 }
 
 .core-auth-submit:hover,
 .core-auth-submit:focus {
-  background-color: #c9006b !important;
-  border-color: #c9006b !important;
-  box-shadow: 0 6px 16px rgba(230, 0, 126, 0.35) !important;
+  background-color: var(--pr-dark) !important;
+  border-color: var(--pr-dark) !important;
+  box-shadow: 0 6px 16px rgba(158, 31, 99, 0.32) !important;
   color: #ffffff !important;
 }
 

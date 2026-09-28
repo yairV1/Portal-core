@@ -213,7 +213,7 @@ if (isset($pdo)) {
             <a href="#<?= $idSub ?>" class="sidebar-item<?= $activo ? ' active' : '' ?>"
               data-bs-toggle="collapse" role="button"
               aria-expanded="<?= $activo ? 'true' : 'false' ?>" aria-controls="<?= $idSub ?>">
-              <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
+              <i class="bi bi-<?= e($item['icono']) ?>" aria-hidden="true"></i><span class="label"><?= e($item['label']) ?></span>
               <i class="bi bi-chevron-down chevron" aria-hidden="true"></i>
             </a>
             <div class="collapse<?= $activo ? ' show' : '' ?>" id="<?= $idSub ?>">
@@ -226,7 +226,7 @@ if (isset($pdo)) {
           </div>
           <?php else: ?>
           <a href="<?= BASE_URL . e($ruta) ?>" class="sidebar-item<?= sb_activo($ruta, $rutaActual) ?>">
-            <i class="bi bi-<?= e($item['icono']) ?>"></i><span class="label"><?= e($item['label']) ?></span>
+            <i class="bi bi-<?= e($item['icono']) ?>" aria-hidden="true"></i><span class="label"><?= e($item['label']) ?></span>
           </a>
           <?php endif; ?>
         <?php endforeach; ?>

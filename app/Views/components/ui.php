@@ -63,7 +63,7 @@ if (!function_exists('ui_page_header')) {
         $clase = 'empty-state' . (!empty($o['compact']) ? ' empty-state--compact' : '');
         ?>
 <div class="<?= $clase ?>">
-  <div class="ic" aria-hidden="true"><i class="bi bi-<?= e($o['icon'] ?? 'inbox') ?>"></i></div>
+  <div class="ic" aria-hidden="true"><i class="bi bi-<?= e($o['icon'] ?? 'inbox') ?>" aria-hidden="true"></i></div>
   <div>
     <h4><?= e($o['title'] ?? '') ?></h4>
     <?php if (!empty($o['text'])): ?><p><?= e($o['text']) ?></p><?php endif; ?>

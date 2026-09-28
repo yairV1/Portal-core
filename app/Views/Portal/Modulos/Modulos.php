@@ -1,39 +1,38 @@
 <?php $titulo = 'Todos los módulos'; require ROOT_PATH . '/app/Views/layouts/portal-header.php'; ?>
 <link rel="stylesheet" href="<?= v('/assets/portal/css/centro-documental.css') ?>">
 
-<h1 class="page-title">Todos los módulos</h1>
-<p class="page-desc">Todo el Portal, agrupado en un solo lugar — cada tarjeta te lleva a su propia página.</p>
+<?php ui_page_header(['title' => 'Todos los módulos', 'desc' => 'Todo el Portal, agrupado en un solo lugar. Cada tarjeta te lleva a su propia página.']); ?>
 
 <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
   <div class="section-header"><h2 class="section-heading">Administración</h2></div>
   <div class="doc-categorias">
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/usuarios" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-people-fill"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
         <span class="nombre">Usuarios y roles</span>
       </a>
     </article>
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/contenido-landing" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-window-stack"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-window-stack" aria-hidden="true"></i></span>
         <span class="nombre">Contenido landing</span>
       </a>
     </article>
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/contrataciones" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-file-earmark-person"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-file-earmark-person" aria-hidden="true"></i></span>
         <span class="nombre">Contrataciones</span>
       </a>
     </article>
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/postulaciones" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-person-lines-fill"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-person-lines-fill" aria-hidden="true"></i></span>
         <span class="nombre">Postulaciones</span>
       </a>
     </article>
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL ?>/permisos-por-rol" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-shield-lock"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
         <span class="nombre">Permisos por rol</span>
       </a>
     </article>
@@ -69,7 +68,7 @@ foreach (modulos_config() as $clave => $m) {
   <?php foreach ($modulosSeccion as $clave => $m): ?>
     <article class="doc-categoria-card">
       <a href="<?= BASE_URL . $m['rutas'][0] ?>" class="doc-categoria-link">
-        <span class="ic"><i class="bi bi-<?= e($m['icono']) ?>"></i></span>
+        <span class="ic" aria-hidden="true"><i class="bi bi-<?= e($m['icono']) ?>" aria-hidden="true"></i></span>
         <span class="nombre"><?= e($m['label']) ?></span>
       </a>
     </article>

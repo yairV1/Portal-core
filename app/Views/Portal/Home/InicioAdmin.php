@@ -19,11 +19,36 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
 
 <div class="hero">
   <div class="hero-main">
-    <div class="kicker"><i class="bi bi-shield-check"></i> Centro de administración</div>
+    <div class="kicker"><i class="bi bi-shield-check" aria-hidden="true"></i> Centro de administración</div>
     <h1><?= e($nombre) ?>, esto es lo tuyo.</h1>
     <p>Tu bitácora técnica y tus pendientes — el resto del portal lo administras desde <a href="<?= BASE_URL ?>/modulos">Todos los módulos</a>.</p>
   </div>
 </div>
+
+<?php
+// Atajos a los paneles que solo el admin global gestiona (mismos destinos
+// que la página /administracion y "Todos los módulos"). Navegación, no datos.
+$ACCESOS_ADMIN = [
+    ['/usuarios', 'people', 'Usuarios y roles', 'Cuentas, roles y áreas de trabajo'],
+    ['/permisos-por-rol', 'shield-lock', 'Permisos por rol', 'Qué módulos ve cada rol y cargo'],
+    ['/contenido-landing', 'window-stack', 'Contenido landing', 'Lo que ve la portada pública'],
+    ['/contrataciones', 'file-earmark-person', 'Contrataciones', 'Enlaces y documentos de candidatos'],
+    ['/postulaciones', 'person-lines-fill', 'Postulaciones', 'Hojas de vida recibidas'],
+    ['/modulos', 'grid-3x3-gap', 'Todos los módulos', 'Direcciones, recursos y analítica'],
+];
+?>
+<section class="admin-accesos">
+  <div class="section-header"><h2 class="section-heading"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Accesos de administración</h2></div>
+  <div class="tile-grid">
+    <?php foreach ($ACCESOS_ADMIN as [$ruta, $icono, $label, $meta]): ?>
+      <a class="tile admin-acceso" href="<?= BASE_URL . $ruta ?>">
+        <span class="admin-acceso-ic" aria-hidden="true"><i class="bi bi-<?= $icono ?>" aria-hidden="true"></i></span>
+        <span class="admin-acceso-label"><?= e($label) ?></span>
+        <span class="admin-acceso-meta"><?= e($meta) ?></span>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</section>
 
 <div class="admin-two-col">
 
@@ -50,7 +75,7 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
 
     <div id="soportes">
       <?php if (!$soportes): ?>
-        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-life-preserver"></i></div><p>Sin soportes registrados por ahora.</p></div>
+        <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-life-preserver" aria-hidden="true"></i></div><p>Sin soportes registrados por ahora.</p></div>
       <?php else: foreach ($soportes as $s): [$tipoLabel, $tipoClase] = $TIPO_LABEL[$s['tipo']]; ?>
         <div class="pendiente soporte<?= $s['resuelto'] ? ' pendiente-hecho' : '' ?>">
           <form action="<?= BASE_URL ?>/soportes/completar" method="post" class="pendiente-check-form">
@@ -84,16 +109,8 @@ $TIPO_LABEL = ['fallo' => ['Fallo', 'badge-danger'], 'mejora' => ['Mejora', 'bad
           // por rol, esto se oculta con él; independizarlo necesitaría una
           // 3ra columna o reacomodar el grid, fuera de alcance por ahora. ?>
     <?php if (!in_array('drive_personal', $widgetsOcultos, true)): ?>
-    <div class="section-header section-header--spaced"><h2 class="section-heading"><i class="bi bi-google"></i> Mi Google Drive</h2></div>
-    <?php if (!$miDriveOauthConfigurado): ?>
-      <div class="empty-state empty-state--compact"><div class="ic" aria-hidden="true"><i class="bi bi-google"></i></div><p>No configurado en este entorno.</p></div>
-    <?php elseif ($miDriveConectado): ?>
-      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px"><i class="bi bi-check-circle-fill" style="color:var(--color-success)"></i> Tu cuenta está conectada.</p>
-      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-link" style="text-decoration:none"><i class="bi bi-folder2"></i> Ver mis archivos</a>
-    <?php else: ?>
-      <p class="text-muted" style="margin:0 0 10px;font-size:12.5px">Trae tus propios archivos de Drive al portal.</p>
-      <a href="<?= BASE_URL ?>/mi-drive" class="btn btn-primary" style="text-decoration:none"><i class="bi bi-google"></i> Conectar</a>
-    <?php endif; ?>
+    <div class="section-header section-header--spaced"><h2 class="section-heading"><i class="bi bi-google" aria-hidden="true"></i> Mi Google Drive</h2></div>
+    <?php require ROOT_PATH . '/app/Views/Portal/_shared/_widget_drive.php'; ?>
     <?php endif; ?>
   </div>
   <?php endif; ?>

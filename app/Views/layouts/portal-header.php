@@ -68,17 +68,6 @@ $inicial = strtoupper(substr($partes[0] ?? 'U', 0, 1) . substr(end($partes) ?: '
       '</svg>';
   };
 
-  // tendenciaSintetica(valorTexto): arma 6 puntos crecientes que terminan
-  // en el valor mostrado, para dibujar un sparkline sin inventar un
-  // histórico "real" en datos de ejemplo — la usan las páginas de módulo.
-  window.tendenciaSintetica = function (valorTexto) {
-    var n = parseFloat(String(valorTexto).replace(/\./g, '').replace(',', '.')) || 0;
-    var base = n * 0.82;
-    var paso = (n - base) / 5;
-    var puntos = [];
-    for (var i = 0; i < 6; i++) puntos.push(base + paso * i);
-    return puntos;
-  };
 </script>
 <title><?= isset($titulo) ? e($titulo) . ' - ' : '' ?>Portal CORE</title>
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>/uploads/logo/favicon-core.png">

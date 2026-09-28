@@ -5,7 +5,7 @@
    detalle propio de Soportes (etiqueta Fallo/Mejora, radios de tipo).
    ══════════════════════════════════════════════════════════ */
 
-.hero-main p a { color: #fff; text-decoration: underline; font-weight: 600; }
+.hero-main p a { color: var(--text-on-primary); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
 .hero-main p a:hover { opacity: .85; }
 
 .admin-two-col {
@@ -22,3 +22,12 @@
 @media (max-width: 880px) {
   .admin-two-col { grid-template-columns: 1fr; gap: 32px; }
 }
+
+/* Accesos de administración (atajos a los paneles del admin global). */
+.admin-accesos { margin-top: var(--space-8); }
+.admin-acceso-ic {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); font-size: 17px;
+}
+.admin-acceso-label { font-weight: var(--weight-semibold); }
+.admin-acceso-meta { font-size: var(--text-sm); color: var(--text-muted); }

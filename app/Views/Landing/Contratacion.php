@@ -57,7 +57,7 @@ $pasosForm = [
   </div>
 </nav>
 
-<section class="hero" style="min-height:220px">
+<section class="hero hero--mini">
   <div class="hero-content">
     <span class="hero-kicker">Portal institucional de COREDUCACIÓN</span>
     <h1 class="ct-titulo">Formulario de contratación</h1>
@@ -79,7 +79,7 @@ $pasosForm = [
 
 <?php if ($yaCompletado && $reciente): ?>
   <div class="ct-aviso ct-aviso-ok">
-    <i class="bi bi-check-circle-fill"></i>
+    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
     <div>
       <strong>¡Gracias! Tu información quedó registrada.</strong>
       <p>El equipo de Gestión Humana revisará tus documentos y se pondrá en contacto contigo para los siguientes pasos.</p>
@@ -88,7 +88,7 @@ $pasosForm = [
 
 <?php elseif ($yaCompletado): ?>
   <div class="ct-aviso ct-aviso-info">
-    <i class="bi bi-info-circle-fill"></i>
+    <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
     <div>
       <strong>Esta postulación ya fue enviada.</strong>
       <p>Este enlace ya se usó. Si necesitas corregir algo de tu información, comunícate directamente con Gestión Humana.</p>
@@ -97,7 +97,7 @@ $pasosForm = [
 
 <?php elseif ($expirado): ?>
   <div class="ct-aviso ct-aviso-info">
-    <i class="bi bi-clock-history"></i>
+    <i class="bi bi-clock-history" aria-hidden="true"></i>
     <div>
       <strong>Este enlace ya expiró.</strong>
       <p>Solicita uno nuevo a Gestión Humana para continuar con tu proceso de contratación.</p>
@@ -115,7 +115,7 @@ $pasosForm = [
       ];
     ?>
     <div class="ct-aviso ct-aviso-error">
-      <i class="bi bi-exclamation-triangle-fill"></i>
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
       <div><?= e($mensajesError[$errorEnvio] ?? $mensajesError['1']) ?></div>
     </div>
   <?php endif; ?>
@@ -180,7 +180,7 @@ $pasosForm = [
 <?php endif; ?>
 
 </div>
-<div style="height:70px"></div>
+<div class="espaciador-pie" aria-hidden="true"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 <script>window.CT_TOTAL_PASOS = <?= count($pasosForm) ?>;</script>
 <script>window.CT_TITULOS_PASOS = <?= json_encode(array_column($pasosForm, 'titulo'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;</script>

@@ -26,7 +26,8 @@
     <a href="<?= BASE_URL ?>/" class="brand">
       <img src="<?= BASE_URL ?>/uploads/logo/Core-logo-black-removebg-preview.png" alt="COREDUCACIÓN" class="brand-logo-full">
     </a>
-    <nav class="links" aria-label="Navegación principal">
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="navPrincipal" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+    <nav class="links" id="navPrincipal" aria-label="Navegación principal">
       <a href="<?= BASE_URL ?>/">Inicio</a>
       <a href="#vacantes">Vacantes</a>
       <a href="#postular">Postularme</a>
@@ -35,10 +36,10 @@
   </div>
 </nav>
 
-<section class="hero" style="min-height:360px">
+<section class="hero hero--compacto">
   <div class="hero-content">
     <span class="hero-kicker">Portal institucional de COREDUCACIÓN</span>
-    <div class="hero-giant" style="font-size:clamp(2.2rem,7vw,4.2rem)">Trabaja con<br>nosotros</div>
+    <h1 class="hero-giant hero-giant--sm">Trabaja con<br>nosotros</h1>
     <p class="hero-desc">COREDUCACIÓN es una institución educativa con sede en Honda, Tolima. Buscamos personas comprometidas con la formación de calidad — estas son nuestras vacantes abiertas hoy.</p>
     <div class="hero-ctas">
       <a href="#vacantes" class="btn-pill btn-pill-white">Ver vacantes</a>
@@ -71,7 +72,7 @@
     </div>
 
     <?php if (!$vacantes): ?>
-      <p style="color:var(--text-soft)">No hay vacantes abiertas por el momento. Vuelve a revisar pronto.</p>
+      <p class="texto-suave">No hay vacantes abiertas por el momento. Vuelve a revisar pronto.</p>
     <?php else: ?>
       <div class="vacantes-grid">
         <?php foreach ($vacantes as $v): ?>
@@ -132,6 +133,7 @@
   </div>
 </section>
 
+<script src="<?= v('/assets/web/js/nav.js') ?>"></script>
 <script src="<?= v('/assets/web/js/trabajo.js') ?>"></script>
 </body>
 </html>
