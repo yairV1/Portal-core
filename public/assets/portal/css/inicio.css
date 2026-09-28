@@ -1,12 +1,8 @@
   /* Tokens y componentes (.table, .badge…) vienen de core/tokens.css y core/components.css
      (componente único) — acá solo lo específico de esta página. */
-* {
-  box-sizing: border-box;
-  scrollbar-gutter: stable;
-}
-/* El color/grosor del scroll ya se define una sola vez, para todo el
-   portal, en paneles.css — acá solo queda scrollbar-gutter (evita que el
-   contenido salte al aparecer el scroll, propio de esta página). */
+/* box-sizing y scrollbar-gutter ya son globales (components.css, sobre html).
+   No volver a ponerlos en `*`: el gutter se reserva dentro de TODO elemento con
+   overflow oculto y encogía la foto del avatar de la barra superior. */
 
   h1,
   h2,
