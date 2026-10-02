@@ -2,10 +2,14 @@ FROM php:8.2-apache
 
 # Extensiones PHP que el proyecto realmente usa:
 # - pdo_mysql: config/database.php (conexión a MySQL)
+# - curl: AuthController.php y GoogleDrive.php (solicitudes OAuth a Google)
 # - fileinfo: ya viene habilitada por defecto en esta imagen (finfo, usada
 #   en TrabajoController.php/ContratacionController.php/DocumentoController.php
 #   para validar el contenido real de PDFs/imágenes, no la extensión)
-RUN docker-php-ext-install pdo_mysql \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libcurl4-openssl-dev \
+    && docker-php-ext-install pdo_mysql curl \
+    && rm -rf /var/lib/apt/lists/* \
     && a2enmod rewrite
 
 # Todo pasa por public/index.php (ver public/.htaccess) — el DocumentRoot

@@ -13,3 +13,7 @@ public/uploads/*
 !storage/documentos/.gitkeep
 .env
 config/local.php
+config/database.local.php
+config/google.local.php
+storage/google/*
+!storage/google/.gitkeep

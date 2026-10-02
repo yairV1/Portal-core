@@ -1,6 +1,7 @@
 {
     "name": "coreducacion/portal-core",
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.1",
+        "ext-curl": "*"
     }
 }

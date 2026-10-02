@@ -40,6 +40,9 @@ el contenido institucional de la portada pública (módulos, roles, pasos,
 estadísticas y textos), para que ya no haya que editar la vista para
 actualizar esa información.
 
+La imagen PHP instala la extensión `curl`, requerida por el login de Google
+y las integraciones de Google Drive.
+
 Los scripts auxiliares de Apache nativo y los hooks Git específicos de Linux
 no forman parte del repositorio compartido: la carpeta `scripts/` está
 ignorada para evitar cambios de permisos (`100755`/`100644`) al trabajar
